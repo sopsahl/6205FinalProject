@@ -21,7 +21,9 @@ module uart_receive
   localparam BIT_COUNT_WIDTH = $clog2(NUM_BITS + 1); // + 1 because of the necessity of the STOP bit
 
   logic count_done;
-  logic [MAX_CTR_SIZE - 1 : 0] cycle_period = (state == START) ? UART_START_PERIOD : (state == STOP) ? UART_STOP_PERIOD : UART_DATA_PERIOD;
+  
+  logic [MAX_CTR_SIZE - 1 : 0] cycle_period;
+  assign cycle_period = (state == START) ? UART_START_PERIOD : (state == STOP) ? UART_STOP_PERIOD : UART_DATA_PERIOD;
   
   cycle_counter #(.CTR_SIZE(MAX_CTR_SIZE)) counter (
     .clk_in(clk_in),
@@ -42,7 +44,9 @@ module uart_receive
   enum {IDLE, START, DATA, STOP, DONE} state;
 
   assign new_data_out = (state == DONE); // Data is valid if state is DONE
-  logic all_bits_received = (bit_count == NUM_BITS && count_done); // Once we have the last count, pulse all_bits_received
+  
+  logic all_bits_received;
+  assign all_bits_received = (bit_count == NUM_BITS && count_done); // Once we have the last count, pulse all_bits_received
 
   always_ff @(posedge clk_in) begin
     
@@ -56,7 +60,7 @@ module uart_receive
       
       else if (state == DATA && count_done) begin
           if (all_bits_received) state <= (rx_wire_in) ? STOP : IDLE; // Transition to STOP if all data received and stop bit valid (1)
-          else data <= {rx_wire_in, data[NUM_BITS - 1:1]}; // Store the received bit
+          else data_byte_out <= {rx_wire_in, data_byte_out[NUM_BITS - 1:1]}; // Store the received bit
 
       end else if (state == STOP) state <= (!rx_wire_in) ? IDLE : (count_done) ? DONE : STOP; // Transition to DONE if stop bit remains valid
 
