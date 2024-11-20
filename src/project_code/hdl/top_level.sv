@@ -60,31 +60,40 @@ module top_level(
   //x_com and y_com are the image sprite locations
   logic [10:0] x_com;
   logic [9:0] y_com;
-  logic pop;
+  logic [39:0][63:0] terminal_grid;
+  logic move;
   //update center of mass x_com, y_com based on new_com signal
-  always_ff @(posedge clk_pixel)begin
-    if (sys_rst)begin
+  always_ff @(posedge clk_pixel) begin
+    if (sys_rst) begin
       x_com <= 0;
       y_com <= 0;
-      pop <= 0;
-    end if(btn[1])begin
-      //do some random stuff here to popocat
+      move <= 0;
+      terminal_grid <= 0;
+    end else begin
+      move <= btn[1];
+
+      if (btn[1] && !move) begin
+        x_com <= x_com + 10;
+        y_com <= y_com + 10;
+        terminal_grid[x_com][y_com] <= 1;
+      end
     end
   end
 
   //use this in the first part of checkoff 01:
   //instance of image sprite.
-  alphabet_sprite #(
+  character_sprites #(
     .WIDTH(20),
     .HEIGHT(471))
     com_sprite_m (
     .pixel_clk_in(clk_pixel),
     .rst_in(sys_rst),
-    .character(sw),
-    .hcount_in(hcount),   //TODO: needs to use pipelined signal (PS1)
-    .vcount_in(vcount),   //TODO: needs to use pipelined signal (PS1)
-    .x_in(x_com>128 ? x_com-128 : 0),
-    .y_in(y_com>128 ? y_com-128 : 0),
+    .terminal_grid(terminal_grid),
+    .character_select(sw),
+    .hcount_in(hcount),
+    .vcount_in(vcount),
+    .x_in(x_com), // what is this for? x_com>128 ? x_com-128 : 0
+    .y_in(y_com),
     .red_out(img_red),
     .green_out(img_green),
     .blue_out(img_blue));

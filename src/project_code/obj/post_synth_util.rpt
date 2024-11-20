@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Sun Nov 17 22:54:55 2024
-| Host         : eecs-digital-07 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Tue Nov 19 16:46:31 2024
+| Host         : eecs-digital-12 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_utilization -file obj/post_synth_util.rpt -hierarchical -hierarchical_depth 4
 | Design       : top_level
 | Device       : xc7s50csga324-1
@@ -19,23 +19,23 @@ Table of Contents
 1. Utilization by Hierarchy
 ---------------------------
 
-+--------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
-|      Instance      |                       Module                      | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP Blocks |
-+--------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
-| top_level          |                                             (top) |        267 |        267 |       0 |    0 |  64 |     16 |      1 |          2 |
-|   (top_level)      |                                             (top) |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   blue_ser         |                                   tmds_serializer |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   com_sprite_m     |                                   alphabet_sprite |        174 |        174 |       0 |    0 |   0 |     16 |      1 |          2 |
-|     (com_sprite_m) |                                   alphabet_sprite |         11 |         11 |       0 |    0 |   0 |      0 |      0 |          2 |
-|     popcat_image   |                 xilinx_single_port_ram_read_first |          0 |          0 |       0 |    0 |   0 |     16 |      0 |          0 |
-|     popcat_pallete | xilinx_single_port_ram_read_first__parameterized0 |        163 |        163 |       0 |    0 |   0 |      0 |      1 |          0 |
-|   green_ser        |                                 tmds_serializer_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   mhdmicw          |                                 hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   mvg              |                                     video_sig_gen |         89 |         89 |       0 |    0 |  21 |      0 |      0 |          0 |
-|   red_ser          |                                 tmds_serializer_1 |          1 |          1 |       0 |    0 |   1 |      0 |      0 |          0 |
-|   tmds_blue        |                                      tmds_encoder |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
-|   tmds_green       |                                    tmds_encoder_2 |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
-|   tmds_red         |                                    tmds_encoder_3 |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
-+--------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
++-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
+|        Instance       |                       Module                      | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP Blocks |
++-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
+| top_level             |                                             (top) |        311 |        311 |       0 |    0 |  84 |     16 |      1 |          2 |
+|   (top_level)         |                                             (top) |         15 |         15 |       0 |    0 |  20 |      0 |      0 |          0 |
+|   blue_ser            |                                   tmds_serializer |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   com_sprite_m        |                                 character_sprites |        165 |        165 |       0 |    0 |   0 |     16 |      1 |          2 |
+|     (com_sprite_m)    |                                 character_sprites |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          2 |
+|     character_image   |                 xilinx_single_port_ram_read_first |          4 |          4 |       0 |    0 |   0 |     16 |      0 |          0 |
+|     character_pallete | xilinx_single_port_ram_read_first__parameterized0 |        161 |        161 |       0 |    0 |   0 |      0 |      1 |          0 |
+|   green_ser           |                                 tmds_serializer_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   mhdmicw             |                                 hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   mvg                 |                                     video_sig_gen |        122 |        122 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   red_ser             |                                 tmds_serializer_1 |          1 |          1 |       0 |    0 |   1 |      0 |      0 |          0 |
+|   tmds_blue           |                                      tmds_encoder |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_green          |                                    tmds_encoder_2 |          5 |          5 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_red            |                                    tmds_encoder_3 |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
++-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
 
 

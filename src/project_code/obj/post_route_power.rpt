@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date             : Sun Nov 17 22:55:08 2024
-| Host             : eecs-digital-07 running 64-bit Ubuntu 24.04.1 LTS
+| Date             : Tue Nov 19 16:46:59 2024
+| Host             : eecs-digital-12 running 64-bit Ubuntu 24.04.1 LTS
 | Command          : report_power -file obj/post_route_power.rpt
 | Design           : top_level
 | Device           : xc7s50csga324-1
@@ -30,10 +30,10 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.362        |
+| Total On-Chip Power (W)  | 0.364        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.289        |
+| Dynamic (W)              | 0.291        |
 | Device Static (W)        | 0.073        |
 | Effective TJA (C/W)      | 4.9          |
 | Max Ambient (C)          | 83.2         |
@@ -53,18 +53,18 @@ Table of Contents
 | On-Chip        | Power (W) | Used     | Available | Utilization (%) |
 +----------------+-----------+----------+-----------+-----------------+
 | Clocks         |     0.003 |        6 |       --- |             --- |
-| Slice Logic    |    <0.001 |      432 |       --- |             --- |
-|   LUT as Logic |    <0.001 |      267 |     32600 |            0.82 |
-|   CARRY4       |    <0.001 |       17 |      8150 |            0.21 |
-|   Register     |    <0.001 |       64 |     65200 |            0.10 |
+| Slice Logic    |     0.001 |      555 |       --- |             --- |
+|   LUT as Logic |     0.001 |      317 |     32600 |            0.97 |
+|   CARRY4       |    <0.001 |       26 |      8150 |            0.32 |
+|   Register     |    <0.001 |       85 |     65200 |            0.13 |
 |   Others       |     0.000 |       29 |       --- |             --- |
-| Signals        |     0.003 |      404 |       --- |             --- |
+| Signals        |     0.004 |      472 |       --- |             --- |
 | Block RAM      |     0.025 |     16.5 |        75 |           22.00 |
 | MMCM           |     0.105 |        1 |         5 |           20.00 |
-| DSPs           |    <0.001 |        2 |       120 |            1.67 |
-| I/O            |     0.151 |       70 |       210 |           33.33 |
+| DSPs           |     0.001 |        2 |       120 |            1.67 |
+| I/O            |     0.152 |       71 |       210 |           33.81 |
 | Static Power   |     0.073 |          |           |                 |
-| Total          |     0.362 |          |           |                 |
+| Total          |     0.364 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
 
 
@@ -74,7 +74,7 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.044 |       0.033 |      0.010 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.045 |       0.035 |      0.010 |       NA    | Unspecified | NA         |
 | Vccaux    |       1.800 |     0.071 |       0.059 |      0.013 |       NA    | Unspecified | NA         |
 | Vcco33    |       3.300 |     0.046 |       0.045 |      0.001 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -141,15 +141,15 @@ Table of Contents
 3.1 By Hierarchy
 ----------------
 
-+--------------------+-----------+
-| Name               | Power (W) |
-+--------------------+-----------+
-| top_level          |     0.289 |
-|   com_sprite_m     |     0.028 |
-|     popcat_image   |     0.024 |
-|     popcat_pallete |     0.003 |
-|   mhdmicw          |     0.105 |
-|   mvg              |     0.002 |
-+--------------------+-----------+
++-----------------------+-----------+
+| Name                  | Power (W) |
++-----------------------+-----------+
+| top_level             |     0.291 |
+|   com_sprite_m        |     0.028 |
+|     character_image   |     0.024 |
+|     character_pallete |     0.003 |
+|   mhdmicw             |     0.105 |
+|   mvg                 |     0.003 |
++-----------------------+-----------+
 
 
