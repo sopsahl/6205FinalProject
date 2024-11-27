@@ -17,6 +17,8 @@ module top_level(
   output logic [3:0] ss0_an,
   output logic [3:0] ss1_an
   );
+  localparam SCREEN_WIDTH = 76;
+  localparam SCREEN_HEIGHT = 44;
 
   assign led = sw;
   //shut up those rgb LEDs (active high):
@@ -55,48 +57,108 @@ module top_level(
       .nf_out(new_frame),
       .fc_out(frame_count));
 
-  logic [7:0] img_red, img_green, img_blue;
-
   //x_com and y_com are the image sprite locations
-  logic [10:0] x_com;
-  logic [9:0] y_com;
-  logic [39:0][63:0] terminal_grid;
-  logic move;
+  logic terminal_grid_write_enable;
+  logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] terminal_grid_addr;
+  logic [7:0] terminal_grid_input;
+
+  logic [$clog2(SCREEN_WIDTH)-1:0] cursor_x;
+  logic [$clog2(SCREEN_HEIGHT)-1:0] cursor_y;
+  logic [1:0] x_btn;
+  logic [1:0] y_btn;
+  logic [1:0] bksp_btn;
+
   //update center of mass x_com, y_com based on new_com signal
   always_ff @(posedge clk_pixel) begin
     if (sys_rst) begin
-      x_com <= 0;
-      y_com <= 0;
-      move <= 0;
-      terminal_grid <= 0;
+      cursor_x <= 0;
+      cursor_y <= 0;
+      terminal_grid_write_enable <= 0;
+      terminal_grid_addr <= 0;
+      terminal_grid_input <= 0;
     end else begin
-      move <= btn[1];
+      terminal_grid_write_enable <= 0;
+      x_btn[1] <= x_btn[0];
+      y_btn[1] <= y_btn[0];
+      bksp_btn[1] <= bksp_btn[0];
 
-      if (btn[1] && !move) begin
-        x_com <= x_com + 10;
-        y_com <= y_com + 10;
-        terminal_grid[x_com][y_com] <= 1;
+      if (bksp_btn[1] && !bksp_btn[0] && !(cursor_x == 0 && cursor_y == 0)) begin
+          terminal_grid_write_enable <= 1;
+          terminal_grid_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+          terminal_grid_input <= 0;
+
+        if (cursor_x == 0) begin
+          cursor_y <= cursor_y - 1;
+          cursor_x <= SCREEN_WIDTH - 1;
+        end else begin
+          cursor_x <= cursor_x - 1;
+        end
+      end else begin
+        if (x_btn[1] && !x_btn[0] && cursor_x < SCREEN_WIDTH) begin
+          terminal_grid_write_enable <= 1;
+          terminal_grid_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+          terminal_grid_input <= sw;
+          cursor_x <= cursor_x + 1;
+        end
+
+        if (y_btn[1] && !y_btn[0] && cursor_y < SCREEN_HEIGHT) begin
+          terminal_grid_write_enable <= 1;
+          terminal_grid_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+          terminal_grid_input <= sw;
+          cursor_x <= 0;
+          cursor_y <= cursor_y + 1;
+        end
       end
     end
   end
 
+  debouncer #(
+    .CLK_PERIOD_NS(10),
+    .DEBOUNCE_TIME_MS(5))
+  x_b (
+    .clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .dirty_in(btn[1]),
+    .clean_out(x_btn[0]));
+
+  debouncer #(
+    .CLK_PERIOD_NS(10),
+    .DEBOUNCE_TIME_MS(5))
+  y_b (
+    .clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .dirty_in(btn[2]),
+    .clean_out(y_btn[0]));
+
+  debouncer #(
+    .CLK_PERIOD_NS(10),
+    .DEBOUNCE_TIME_MS(5))
+  bksp_b (
+    .clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .dirty_in(btn[3]),
+    .clean_out(bksp_btn[0]));
+
   //use this in the first part of checkoff 01:
   //instance of image sprite.
-  character_sprites #(
-    .WIDTH(20),
-    .HEIGHT(471))
-    com_sprite_m (
-    .pixel_clk_in(clk_pixel),
-    .rst_in(sys_rst),
-    .terminal_grid(terminal_grid),
-    .character_select(sw),
-    .hcount_in(hcount),
-    .vcount_in(vcount),
-    .x_in(x_com), // what is this for? x_com>128 ? x_com-128 : 0
-    .y_in(y_com),
-    .red_out(img_red),
-    .green_out(img_green),
-    .blue_out(img_blue));
+  logic [7:0] img_red, img_green, img_blue;
+
+  character_sprite #(
+  .SIZE(16),
+  .HEIGHT(512),
+  .SCREEN_WIDTH(SCREEN_WIDTH),
+  .SCREEN_HEIGHT(SCREEN_HEIGHT))
+  com_sprite_m (
+  .pixel_clk_in(clk_pixel),
+  .rst_in(sys_rst),
+  .tg_write_en(terminal_grid_write_enable),
+  .tg_addr(terminal_grid_addr),
+  .tg_input(terminal_grid_input),
+  .hcount_in(hcount),
+  .vcount_in(vcount), // what is this for? x_com>128 ? x_com-128 : 0
+  .red_out(img_red),
+  .green_out(img_green),
+  .blue_out(img_blue));
 
   logic [7:0] red, green, blue;
 

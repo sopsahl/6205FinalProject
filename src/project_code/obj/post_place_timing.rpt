@@ -1,31 +1,31 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Tue Nov 19 16:46:39 2024
-| Host         : eecs-digital-12 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Wed Nov 27 14:42:39 2024
+| Host         : eecs-digital-19 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_timing -file obj/post_place_timing.rpt
 | Design       : top_level
 | Device       : 7s50-csga324
 | Speed File   : -1  PRODUCTION 1.23 2018-06-13
-| Design State : Physopt postPlace
+| Design State : Fully Placed
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
 Timing Report
 
-Slack (VIOLATED) :        -1.881ns  (required time - arrival time)
-  Source:                 mvg/vcount_out_reg[1]_replica/C
+Slack (MET) :             3.882ns  (required time - arrival time)
+  Source:                 com_sprite_m/v_reg[1][4]/C
                             (rising edge-triggered cell FDRE clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
-  Destination:            com_sprite_m/character_image/BRAM_reg_1_3/ADDRARDADDR[12]
+  Destination:            com_sprite_m/character_image/BRAM_reg_1_5/ADDRARDADDR[12]
                             (rising edge-triggered cell RAMB36E1 clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
   Path Group:             clk_pixel_clk_wiz_0
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            13.468ns  (clk_pixel_clk_wiz_0 rise@13.468ns - clk_pixel_clk_wiz_0 rise@0.000ns)
-  Data Path Delay:        14.431ns  (logic 9.474ns (65.650%)  route 4.957ns (34.350%))
-  Logic Levels:           12  (CARRY4=7 DSP48E1=2 LUT2=2 LUT3=1)
-  Clock Path Skew:        -0.002ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    -1.573ns = ( 11.895 - 13.468 ) 
-    Source Clock Delay      (SCD):    -1.019ns
-    Clock Pessimism Removal (CPR):    0.553ns
+  Data Path Delay:        8.521ns  (logic 3.602ns (42.272%)  route 4.919ns (57.728%))
+  Logic Levels:           8  (CARRY4=6 LUT5=2)
+  Clock Path Skew:        -0.149ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.593ns = ( 11.875 - 13.468 ) 
+    Source Clock Delay      (SCD):    -0.971ns
+    Clock Pessimism Removal (CPR):    0.474ns
   Clock Uncertainty:      0.168ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
     Discrete Jitter          (DJ):    0.329ns
@@ -43,45 +43,34 @@ Slack (VIOLATED) :        -1.881ns  (required time - arrival time)
                                                      -7.025    -4.352 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, estimated)        1.666    -2.686    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.096    -2.590 r  mhdmicw/clkout1_buf/O
-                         net (fo=110, estimated)      1.571    -1.019    mvg/clk_pixel
-    SLICE_X55Y9          FDRE                                         r  mvg/vcount_out_reg[1]_replica/C
+                         net (fo=238, estimated)      1.619    -0.971    com_sprite_m/clk_pixel
+    SLICE_X5Y23          FDRE                                         r  com_sprite_m/v_reg[1][4]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X55Y9          FDRE (Prop_fdre_C_Q)         0.456    -0.563 r  mvg/vcount_out_reg[1]_replica/Q
-                         net (fo=2, estimated)        0.439    -0.124    mvg/vcount[1]_repN
-    SLICE_X54Y10         LUT2 (Prop_lut2_I0_O)        0.124     0.000 r  mvg/image_addr1_i_13/O
-                         net (fo=1, routed)           0.000     0.000    mvg/image_addr1_i_13_n_0
-    SLICE_X54Y10         CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.533     0.533 r  mvg/image_addr1_i_3/CO[3]
-                         net (fo=1, estimated)        0.000     0.533    mvg/image_addr1_i_3_n_0
-    SLICE_X54Y11         CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117     0.650 r  mvg/image_addr1_i_2/CO[3]
-                         net (fo=1, estimated)        0.000     0.650    mvg/image_addr1_i_2_n_0
-    SLICE_X54Y12         CARRY4 (Prop_carry4_CI_O[1])
-                                                      0.323     0.973 r  mvg/image_addr1_i_1/O[1]
-                         net (fo=1, estimated)        0.573     1.546    com_sprite_m/A[9]
-    DSP48_X1Y4           DSP48E1 (Prop_dsp48e1_A[9]_P[12])
-                                                      4.023     5.569 r  com_sprite_m/image_addr1/P[12]
-                         net (fo=1, estimated)        0.788     6.357    com_sprite_m/image_addr1_n_93
-    DSP48_X1Y6           DSP48E1 (Prop_dsp48e1_C[12]_P[1])
-                                                      1.820     8.177 r  com_sprite_m/image_addr/P[1]
-                         net (fo=1, estimated)        0.969     9.146    mvg/P[1]
-    SLICE_X45Y15         LUT2 (Prop_lut2_I1_O)        0.124     9.270 r  mvg/BRAM_reg_0_0_i_24/O
-                         net (fo=1, routed)           0.000     9.270    mvg/BRAM_reg_0_0_i_24_n_0
-    SLICE_X45Y15         CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.550     9.820 r  mvg/BRAM_reg_0_0_i_5/CO[3]
-                         net (fo=1, estimated)        0.000     9.820    mvg/BRAM_reg_0_0_i_5_n_0
-    SLICE_X45Y16         CARRY4 (Prop_carry4_CI_O[2])
-                                                      0.239    10.059 r  mvg/BRAM_reg_0_0_i_13/O[2]
-                         net (fo=2, estimated)        0.466    10.525    mvg/com_sprite_m/PCOUT[6]
-    SLICE_X43Y17         LUT3 (Prop_lut3_I2_O)        0.302    10.827 r  mvg/BRAM_reg_0_0_i_16/O
-                         net (fo=1, routed)           0.000    10.827    mvg/BRAM_reg_0_0_i_16_n_0
-    SLICE_X43Y17         CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.550    11.377 r  mvg/BRAM_reg_0_0_i_3/CO[3]
-                         net (fo=1, estimated)        0.000    11.377    mvg/BRAM_reg_0_0_i_3_n_0
-    SLICE_X43Y18         CARRY4 (Prop_carry4_CI_O[3])
-                                                      0.313    11.690 r  mvg/BRAM_reg_0_0_i_2/O[3]
-                         net (fo=16, estimated)       1.722    13.412    com_sprite_m/character_image/ADDRARDADDR[12]
-    RAMB36_X2Y7          RAMB36E1                                     r  com_sprite_m/character_image/BRAM_reg_1_3/ADDRARDADDR[12]
+    SLICE_X5Y23          FDRE (Prop_fdre_C_Q)         0.419    -0.552 f  com_sprite_m/v_reg[1][4]/Q
+                         net (fo=6, estimated)        1.036     0.484    com_sprite_m/v_reg[1]_2[4]
+    SLICE_X4Y23          LUT5 (Prop_lut5_I0_O)        0.299     0.783 r  com_sprite_m/image_addr2_carry_i_3/O
+                         net (fo=1, routed)           0.000     0.783    com_sprite_m/image_addr2_carry_i_3_n_0
+    SLICE_X4Y23          CARRY4 (Prop_carry4_S[1]_O[3])
+                                                      0.640     1.423 r  com_sprite_m/image_addr2_carry/O[3]
+                         net (fo=2, estimated)        0.716     2.139    com_sprite_m/image_addr2_carry_n_4
+    SLICE_X8Y23          CARRY4 (Prop_carry4_DI[3]_CO[3])
+                                                      0.578     2.717 r  com_sprite_m/image_addr_carry/CO[3]
+                         net (fo=1, estimated)        0.000     2.717    com_sprite_m/image_addr_carry_n_0
+    SLICE_X8Y24          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219     2.936 r  com_sprite_m/image_addr_carry__0/O[0]
+                         net (fo=1, estimated)        0.462     3.398    com_sprite_m/terminal_grid/BRAM_reg_1_7_1[3]
+    SLICE_X9Y23          CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.696     4.094 r  com_sprite_m/terminal_grid/i___5_carry__0_i_1/CO[3]
+                         net (fo=1, estimated)        0.000     4.094    com_sprite_m/terminal_grid/i___5_carry__0_i_1_n_0
+    SLICE_X9Y24          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222     4.316 r  com_sprite_m/terminal_grid/i___5_carry__1_i_5/O[0]
+                         net (fo=1, estimated)        0.450     4.766    com_sprite_m/terminal_grid/PCOUT[12]
+    SLICE_X8Y22          LUT5 (Prop_lut5_I4_O)        0.299     5.065 r  com_sprite_m/terminal_grid/i___5_carry__1_i_2/O
+                         net (fo=1, routed)           0.000     5.065    com_sprite_m/terminal_grid_n_3
+    SLICE_X8Y22          CARRY4 (Prop_carry4_S[1]_O[1])
+                                                      0.230     5.295 r  com_sprite_m/image_addr_inferred__1/i___5_carry__1/O[1]
+                         net (fo=16, estimated)       2.255     7.550    com_sprite_m/character_image/ADDRARDADDR[9]
+    RAMB36_X0Y11         RAMB36E1                                     r  com_sprite_m/character_image/BRAM_reg_1_5/ADDRARDADDR[12]
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_pixel_clk_wiz_0 rise edge)
@@ -94,17 +83,17 @@ Slack (VIOLATED) :        -1.881ns  (required time - arrival time)
                                                      -7.279     8.731 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, estimated)        1.583    10.314    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    10.405 r  mhdmicw/clkout1_buf/O
-                         net (fo=110, estimated)      1.490    11.895    com_sprite_m/character_image/clk_pixel
-    RAMB36_X2Y7          RAMB36E1                                     r  com_sprite_m/character_image/BRAM_reg_1_3/CLKARDCLK
-                         clock pessimism              0.553    12.448    
-                         clock uncertainty           -0.168    12.279    
-    RAMB36_X2Y7          RAMB36E1 (Setup_ramb36e1_CLKARDCLK_ADDRARDADDR[12])
-                                                     -0.748    11.531    com_sprite_m/character_image/BRAM_reg_1_3
+                         net (fo=238, estimated)      1.470    11.875    com_sprite_m/character_image/clk_pixel
+    RAMB36_X0Y11         RAMB36E1                                     r  com_sprite_m/character_image/BRAM_reg_1_5/CLKARDCLK
+                         clock pessimism              0.474    12.349    
+                         clock uncertainty           -0.168    12.180    
+    RAMB36_X0Y11         RAMB36E1 (Setup_ramb36e1_CLKARDCLK_ADDRARDADDR[12])
+                                                     -0.748    11.432    com_sprite_m/character_image/BRAM_reg_1_5
   -------------------------------------------------------------------
-                         required time                         11.531    
-                         arrival time                         -13.412    
+                         required time                         11.432    
+                         arrival time                          -7.550    
   -------------------------------------------------------------------
-                         slack                                 -1.881    
+                         slack                                  3.882    
 
 
 

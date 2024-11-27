@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Tue Nov 19 16:46:31 2024
-| Host         : eecs-digital-12 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Wed Nov 27 14:42:35 2024
+| Host         : eecs-digital-19 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_utilization -file obj/post_synth_util.rpt -hierarchical -hierarchical_depth 4
 | Design       : top_level
 | Device       : xc7s50csga324-1
@@ -22,20 +22,24 @@ Table of Contents
 +-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
 |        Instance       |                       Module                      | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP Blocks |
 +-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
-| top_level             |                                             (top) |        311 |        311 |       0 |    0 |  84 |     16 |      1 |          2 |
-|   (top_level)         |                                             (top) |         15 |         15 |       0 |    0 |  20 |      0 |      0 |          0 |
+| top_level             |                                             (top) |        357 |        357 |       0 |    0 | 212 |     17 |      1 |          0 |
+|   (top_level)         |                                             (top) |         16 |         16 |       0 |    0 |  37 |      0 |      0 |          0 |
+|   bksp_b              |                                         debouncer |         25 |         25 |       0 |    0 |  21 |      0 |      0 |          0 |
 |   blue_ser            |                                   tmds_serializer |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   com_sprite_m        |                                 character_sprites |        165 |        165 |       0 |    0 |   0 |     16 |      1 |          2 |
-|     (com_sprite_m)    |                                 character_sprites |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          2 |
-|     character_image   |                 xilinx_single_port_ram_read_first |          4 |          4 |       0 |    0 |   0 |     16 |      0 |          0 |
-|     character_pallete | xilinx_single_port_ram_read_first__parameterized0 |        161 |        161 |       0 |    0 |   0 |      0 |      1 |          0 |
+|   com_sprite_m        |                                  character_sprite |        207 |        207 |       0 |    0 |  48 |     17 |      1 |          0 |
+|     (com_sprite_m)    |                                  character_sprite |         22 |         22 |       0 |    0 |  48 |      0 |      0 |          0 |
+|     character_image   | xilinx_single_port_ram_read_first__parameterized0 |          4 |          4 |       0 |    0 |   0 |     16 |      0 |          0 |
+|     character_pallete | xilinx_single_port_ram_read_first__parameterized1 |        163 |        163 |       0 |    0 |   0 |      0 |      1 |          0 |
+|     terminal_grid     |                 xilinx_single_port_ram_read_first |         18 |         18 |       0 |    0 |   0 |      1 |      0 |          0 |
 |   green_ser           |                                 tmds_serializer_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
 |   mhdmicw             |                                 hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   mvg                 |                                     video_sig_gen |        122 |        122 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   mvg                 |                                     video_sig_gen |         80 |         80 |       0 |    0 |  21 |      0 |      0 |          0 |
 |   red_ser             |                                 tmds_serializer_1 |          1 |          1 |       0 |    0 |   1 |      0 |      0 |          0 |
-|   tmds_blue           |                                      tmds_encoder |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
-|   tmds_green          |                                    tmds_encoder_2 |          5 |          5 |       0 |    0 |  14 |      0 |      0 |          0 |
-|   tmds_red            |                                    tmds_encoder_3 |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_blue           |                                      tmds_encoder |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_green          |                                    tmds_encoder_2 |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_red            |                                    tmds_encoder_3 |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   x_b                 |                                       debouncer_4 |         12 |         12 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   y_b                 |                                       debouncer_5 |         11 |         11 |       0 |    0 |  21 |      0 |      0 |          0 |
 +-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
 
 
