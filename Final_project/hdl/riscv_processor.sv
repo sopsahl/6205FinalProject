@@ -8,9 +8,7 @@ module riscv_processor (
     // Program Counter
     logic [31:0] pc;
     assign pc_out = pc;
-    // logic [31:0] next_pc;
-    // Memory and Registers
-    // logic [31:0] imem [1023:0];  // Instruction memory
+
     logic [31:0] dmem [1023:0];  // Data memory
 
     logic [31:0] registers [31:0];
@@ -117,27 +115,7 @@ module riscv_processor (
         end
 
     end
-    // always_comb begin
-    //    imem[0] = 32'b00000000010100000000000010010011; // addi x1, x0, 5
-    //     imem[4] = 32'h00A00113; // addi x2, x0, 10
-    //     imem[8] = 32'b00000000001000001000000110110011; // add x3, x1, x2
-    //     imem[12] = 32'h0140006F;; // jal x1,  (jump to line 8)
-    //     imem[32] = 32'h00218223; // sw x3, 4(x1)
-    //     imem[36]= 32'b0100000_00010_00011_000_11111_0110011;//SUB x31,x3,x2
-    //     imem[40] = 32'b0100000_00010_11111_000_11110_0110011;//xor x30,x31,x2
-    //     imem[44]= 32'b0000000_00011_00000_000_11101_0110011;//or x29,x3,x0
 
-
-
-
-    
-
-
-    //     // imem[1]=32'hA00113;
-    //     // imem[2]=32'h2081B3;
-        
-    // end
-    // Instruction fetch
     assign instruction = fetch_state==FETCH_AVAILABLE?douta:32'b0;
     
     // Instruction decode
@@ -179,26 +157,6 @@ module riscv_processor (
         .jump(jump),
         .alu_ctrl(alu_ctrl)
     );
-    // ALU
-
-    // always_comb begin
-    //     case (alu_ctrl)
-    //         4'b0000: alu_result = rs1_val + (alu_src ? imm : rs2_val); // ADD
-    //         4'b0001: alu_result = rs1_val - rs2_val; // SUB
-    //         4'b0010: alu_result = rs1_val & rs2_val; // AND
-    //         4'b0011: alu_result = rs1_val | rs2_val; // OR
-    //         4'b0100: alu_result = rs1_val ^ rs2_val; // XOR
-    //         4'b0101: alu_result = rs1_val << rs2_val[4:0]; // SLL
-    //         4'b0110: alu_result = rs1_val >> rs2_val[4:0]; // SRL
-    //         4'b0111: alu_result = $signed(rs1_val) >>> rs2_val[4:0]; // SRA
-    //         4'b1000: alu_result = $signed(rs1_val) < $signed(rs2_val) ? 32'd1 : 32'd0; // SLT
-    //         4'b1001: alu_result = (rs1_val < rs2_val) ? 32'd1 : 32'd0; // SLTU
-    //         4'b1010: alu_result = imm; // LUI
-    //         4'b1011: alu_result = pc + imm;             // AUIPC
-
-    //         default: alu_result = rs1_val + (alu_src ? imm : rs2_val);
-    //     endcase
-    // end
 
     ALU alu(
         .rs1_val(rs1_val),
@@ -209,8 +167,7 @@ module riscv_processor (
         .alu_src(alu_src),
         .alu_result(alu_result)
     );
-    // logic [31:0] load_result;
-    // logic [31:0] store_data;
+
     logic [3:0] memory_store_enable;
     logic [31:0] final_store_data;
 
@@ -250,11 +207,7 @@ always_ff @(posedge clk) begin
     end
 end
 
-    // Memory operations
-    // always_ff @(posedge clk) begin
-    //     if (mem_write)
-    //         dmem[alu_result] <= rs2_val;
-    // end
+
     logic [4:0] destination_register;
     // Register write
     assign destination_register = inst_fields.rd;
@@ -273,22 +226,7 @@ end
     // Branch unit
 logic branch_taken;
 
-// // Branch comparison logic
-// always_comb begin
-//     branch_taken = 1'b0;
-    
-//     if (branch) begin
-//         case (inst_fields.funct3)
-//             3'b000: branch_taken = (rs1_val == rs2_val);              // BEQ
-//             3'b001: branch_taken = (rs1_val != rs2_val);              // BNE
-//             3'b100: branch_taken = ($signed(rs1_val) < $signed(rs2_val));   // BLT
-//             3'b101: branch_taken = ($signed(rs1_val) >= $signed(rs2_val));  // BGE
-//             3'b110: branch_taken = (rs1_val < rs2_val);               // BLTU
-//             3'b111: branch_taken = (rs1_val >= rs2_val);              // BGEU
-//             default: branch_taken = 1'b0;
-//         endcase
-//     end
-// end
+
 branch_unit bu(
     .branch(branch),
     .funct3(inst_fields.funct3),
