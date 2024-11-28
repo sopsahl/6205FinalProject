@@ -50,9 +50,6 @@ class RISCVInstruction:
 
 
 
-def format_hex32(value):
-    """Format 32-bit value as 8-digit hex string"""
-    return f"{value & 0xFFFFFFFF:08x}"
 
 async def test_add_operation(dut):
         REG_OP_CODE=51
@@ -61,12 +58,6 @@ async def test_add_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
-        value = RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        value = format_hex32(value)
-        instructions=[value]
-        with open("../data/instructionMem.mem", "w") as f:
-            for i in instructions:
-                f.write(str(i) + "\n")
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -75,14 +66,9 @@ async def test_add_operation(dut):
         #inverted
         dut.registers[1].value=10
         dut.registers[2].value=5
-       
-        
-        
-        # dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        # await ClockCycles(dut.clk,1)
-        # await RisingEdge(dut.clk)
-        await ClockCycles(dut.clk,4)
-
+        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
+        await ClockCycles(dut.clk,1)
+        await RisingEdge(dut.clk)
         assert hex(dut.registers[3].value) == hex(15)  
 async def test_sub_operation(dut):
         REG_OP_CODE=51
@@ -900,9 +886,8 @@ async def test_ALU_operations(dut):
     await ClockCycles(dut.clk,1)
     dut.rst.value = 0
     # await test_jump_and_link(dut)
-    await test_add_operation(dut)
     
-    # await ClockCycles(dut.clk,20)
+    await ClockCycles(dut.clk,20)
     # await test_load(dut)
     # await test_store(dut)
     # await test_branch(dut)
@@ -937,7 +922,6 @@ def ALU_runner():
     sources+= [proj_path / "hdl" / "control_unit.sv"]
     sources += [proj_path / "hdl" / "ALU.sv"]
     sources += [proj_path / "hdl" / "xilinx_single_port_ram_read_first.v"]
-    sources += [proj_path / "hdl" / "memory_access_unit.sv"]
     # sources += [proj_path / "data" / "instructionMem.mem"]
     build_test_args = ["-Wall"]
     # build_test_args.append(f"+readmemh={str(proj_path / 'data' / 'instructionMem.mem')}")
@@ -959,7 +943,7 @@ def ALU_runner():
     run_test_args = []
     runner.test(
         hdl_toplevel="riscv_processor",
-        test_module="test_riscv_processor",
+        test_module="test_riscv_processor_2",
         test_args=run_test_args,
         waves=True
     )

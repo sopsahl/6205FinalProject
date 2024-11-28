@@ -3,14 +3,14 @@ module riscv_processor (
     input  logic        rst,
   
     output logic [31:0] pc_out,
-    output logic [31:0] pc_out_valid, 
+    output logic  instruction_done
 );
     // Program Counter
     logic [31:0] pc;
     assign pc_out = pc;
-
+    // logic [31:0] next_pc;
     // Memory and Registers
-    logic [31:0] imem [1023:0];  // Instruction memory
+    // logic [31:0] imem [1023:0];  // Instruction memory
     logic [31:0] dmem [1023:0];  // Data memory
 
     logic [31:0] registers [31:0];
@@ -48,10 +48,33 @@ module riscv_processor (
     // ALU
     logic [31:0] alu_result;
     logic [3:0] alu_ctrl;
-
+    logic [31:0] douta;
+    typedef enum logic [1:0] {
+      FETCH_REQUEST,
+      FETCH_WAIT,
+      FETCH_AVAILABLE
+    } fetch_state_e;
+    fetch_state_e fetch_state;
+// fetch_state_t fetch_state;
     // Initialize registers at start
-   
-
+   xilinx_single_port_ram_read_first #(
+    .RAM_WIDTH(32),                       // Specify RAM data width
+    .RAM_DEPTH(2048),                     // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+    .INIT_FILE("/Users/ziyadhassan/6205/6205FinalProject/Final_project/data/instructionMem.mem")          // Specify name/location of RAM initialization file if using one (leave blank if not)
+   ) imem (
+    .addra(pc>>2),     // Address bus, width determined from RAM_DEPTH
+    .dina(),       // RAM input data, width determined from RAM_WIDTH
+    .clka(clk),       // Clock
+    .wea(0),         // Write enable
+    .ena(fetch_state==FETCH_REQUEST),         // RAM Enable, for additional power savings, disable port when not in use
+    .rsta(0),       // Output reset (does not affect memory contents)
+    .regcea(1),   // Output register enable
+    .douta(douta)      // RAM output data, width determined from RAM_WIDTH
+  );
+    // Fetch state machine
+    logic data_ready;
+    assign instruction_done = fetch_state==FETCH_AVAILABLE;
     always_ff @(posedge clk)begin 
         if(rst)begin 
             registers_initialized<=1'b0;
@@ -61,27 +84,37 @@ module riscv_processor (
                 registers[i] <= 32'b0;
             end
             for(int i=0;i<1024;i++)begin
-                imem[i]<=32'b0;
+                // imem[i]<=32'b0;
                 dmem[i]<=32'b0;
             end
             registers_initialized <= 1'b1;
-            
+            fetch_state<=FETCH_REQUEST;
 
         end
         else begin 
+            case(fetch_state)
+                FETCH_REQUEST:begin
+                    fetch_state<=FETCH_WAIT;
+                end
+                FETCH_WAIT:begin
+                    fetch_state<=FETCH_AVAILABLE;
+                end
+                FETCH_AVAILABLE:begin
+                    fetch_state<=FETCH_REQUEST;
+                    if(jump && alu_src)//jalr
+                        pc <= alu_result;
+                    else if (jump )//jal
+                        pc <= pc + imm;
+                    else if (branch && branch_taken)
+                        pc <= pc + imm;
+            
+                    else
+                        pc <= pc + 4;  // Increment by 1 instead of 4 for debugging
+                end
+                
+            endcase
         
-            if(jump && alu_src)//jalr
-                pc <= alu_result;
-            else if (jump )//jal
-                pc <= pc + imm;
-            else if (branch && branch_taken)
-                pc <= pc + imm;
-       
-            else
-                pc <= pc + 4;  // Increment by 1 instead of 4
-
         end
-
 
     end
     // always_comb begin
@@ -105,7 +138,7 @@ module riscv_processor (
         
     // end
     // Instruction fetch
-    assign instruction = imem[pc];
+    assign instruction = fetch_state==FETCH_AVAILABLE?douta:32'b0;
     
     // Instruction decode
     always_comb begin
@@ -176,121 +209,139 @@ module riscv_processor (
         .alu_src(alu_src),
         .alu_result(alu_result)
     );
-    // Load operations
     logic [31:0] load_result;
-    logic [1:0] byte_offset;
-    logic [31:0] aligned_addr;
-    logic is_unsigned;
+    logic [31:0] store_data;
+    logic [3:0] memory_store_enable;
+    logic [31:0] final_store_data;
+    // Load operations
+    // logic [31:0] load_result;
+    // logic [1:0] byte_offset;
+    // logic [31:0] aligned_addr;
+    // logic is_unsigned;
 
-    // Extract byte offset and aligned address
-    assign byte_offset = alu_result[1:0];
-    assign aligned_addr = {alu_result[31:2], 2'b00};
-    assign is_unsigned = inst_fields.funct3[2];
-    // Load operation implementation
-    logic [31:0] load_value;
-    assign load_value = dmem[aligned_addr];
-    always_comb begin
-    case (inst_fields.funct3[1:0])
-        2'b00: begin // Load Byte (lb/lbu)
-            case (byte_offset)
-                2'b00: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][7:0]} :
-                                                 {{24{dmem[aligned_addr][7]}}, dmem[aligned_addr][7:0]};
-                2'b01: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][15:8]} :
-                                                 {{24{dmem[aligned_addr][15]}}, dmem[aligned_addr][15:8]};
-                2'b10: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][23:16]} :
-                                                 {{24{dmem[aligned_addr][23]}}, dmem[aligned_addr][23:16]};
-                2'b11: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][31:24]} :
-                                                 {{24{dmem[aligned_addr][31]}}, dmem[aligned_addr][31:24]};
-            endcase
-        end
+    // // Extract byte offset and aligned address
+    // assign byte_offset = alu_result[1:0];
+    // assign aligned_addr = {alu_result[31:2], 2'b00};
+    // assign is_unsigned = inst_fields.funct3[2];
+    // // Load operation implementation
+    // logic [31:0] load_value;
+    // assign load_value = dmem[aligned_addr];
+    // always_comb begin
+    // case (inst_fields.funct3[1:0])
+    //     2'b00: begin // Load Byte (lb/lbu)
+    //         case (byte_offset)
+    //             2'b00: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][7:0]} :
+    //                                              {{24{dmem[aligned_addr][7]}}, dmem[aligned_addr][7:0]};
+    //             2'b01: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][15:8]} :
+    //                                              {{24{dmem[aligned_addr][15]}}, dmem[aligned_addr][15:8]};
+    //             2'b10: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][23:16]} :
+    //                                              {{24{dmem[aligned_addr][23]}}, dmem[aligned_addr][23:16]};
+    //             2'b11: load_result = is_unsigned ? {24'b0, dmem[aligned_addr][31:24]} :
+    //                                              {{24{dmem[aligned_addr][31]}}, dmem[aligned_addr][31:24]};
+    //         endcase
+    //     end
 
-        2'b01: begin // Load Halfword (lh/lhu)
-            case (byte_offset[1])
-                1'b0: load_result = is_unsigned ? {16'b0, dmem[aligned_addr][15:0]} :
-                                                {{16{dmem[aligned_addr][15]}}, dmem[aligned_addr][15:0]};
-                1'b1: load_result = is_unsigned ? {16'b0, dmem[aligned_addr][31:16]} :
-                                                {{16{dmem[aligned_addr][31]}}, dmem[aligned_addr][31:16]};
-            endcase
-        end
+    //     2'b01: begin // Load Halfword (lh/lhu)
+    //         case (byte_offset[1])
+    //             1'b0: load_result = is_unsigned ? {16'b0, dmem[aligned_addr][15:0]} :
+    //                                             {{16{dmem[aligned_addr][15]}}, dmem[aligned_addr][15:0]};
+    //             1'b1: load_result = is_unsigned ? {16'b0, dmem[aligned_addr][31:16]} :
+    //                                             {{16{dmem[aligned_addr][31]}}, dmem[aligned_addr][31:16]};
+    //         endcase
+    //     end
 
-        2'b10: begin // Load Word (lw)
-            load_result = dmem[aligned_addr];
-        end
+    //     2'b10: begin // Load Word (lw)
+    //         load_result = dmem[aligned_addr];
+    //     end
 
-        default: load_result = 32'b0;
-    endcase
-    end
+    //     default: load_result = 32'b0;
+    // endcase
+    // end
     // Store operations
-logic [3:0] store_mask;
-logic [31:0] store_data;
-logic [31:0] final_store_data;
-logic [1:0] store_offset;
+// logic [3:0] store_mask;
+// logic [31:0] store_data;
+// logic [31:0] final_store_data;
+// logic [1:0] store_offset;
 logic [31:0] store_addr;
 
-// Extract offset and aligned address for stores
-assign store_offset = alu_result[1:0];
+// // Extract offset and aligned address for stores
+// assign store_offset = alu_result[1:0];
 assign store_addr = {alu_result[31:2], 2'b00};
 
-// Generate store data and mask
-always_comb begin
-    store_mask = 4'b0000;
-    store_data = rs2_val;
-    final_store_data = dmem[store_addr];
+// // Generate store data and mask
+// always_comb begin
+//     store_mask = 4'b0000;
+//     store_data = rs2_val;
+//     final_store_data = dmem[store_addr];
 
-    case (inst_fields.funct3[1:0])
-        2'b00: begin // Store Byte (sb)
-            case (store_offset)
-                2'b00: begin 
-                    store_mask = 4'b0001;
-                    final_store_data = {dmem[store_addr][31:8], rs2_val[7:0]};
-                end
-                2'b01: begin
-                    store_mask = 4'b0010;
-                    final_store_data = {dmem[store_addr][31:16], rs2_val[7:0], dmem[store_addr][7:0]};
-                end
-                2'b10: begin
-                    store_mask = 4'b0100;
-                    final_store_data = {dmem[store_addr][31:24], rs2_val[7:0], dmem[store_addr][15:0]};
-                end
-                2'b11: begin
-                    store_mask = 4'b1000;
-                    final_store_data = {rs2_val[7:0], dmem[store_addr][23:0]};
-                end
-            endcase
-        end
+//     case (inst_fields.funct3[1:0])
+//         2'b00: begin // Store Byte (sb)
+//             case (store_offset)
+//                 2'b00: begin 
+//                     store_mask = 4'b0001;
+//                     final_store_data = {dmem[store_addr][31:8], rs2_val[7:0]};
+//                 end
+//                 2'b01: begin
+//                     store_mask = 4'b0010;
+//                     final_store_data = {dmem[store_addr][31:16], rs2_val[7:0], dmem[store_addr][7:0]};
+//                 end
+//                 2'b10: begin
+//                     store_mask = 4'b0100;
+//                     final_store_data = {dmem[store_addr][31:24], rs2_val[7:0], dmem[store_addr][15:0]};
+//                 end
+//                 2'b11: begin
+//                     store_mask = 4'b1000;
+//                     final_store_data = {rs2_val[7:0], dmem[store_addr][23:0]};
+//                 end
+//             endcase
+//         end
 
-        2'b01: begin // Store Halfword (sh)
-            case (store_offset[1])
-                1'b0: begin
-                    store_mask = 4'b0011;
-                    final_store_data = {dmem[store_addr][31:16], rs2_val[15:0]};
-                end
-                1'b1: begin
-                    store_mask = 4'b1100;
-                    final_store_data = {rs2_val[15:0], dmem[store_addr][15:0]};
-                end
-            endcase
-        end
+//         2'b01: begin // Store Halfword (sh)
+//             case (store_offset[1])
+//                 1'b0: begin
+//                     store_mask = 4'b0011;
+//                     final_store_data = {dmem[store_addr][31:16], rs2_val[15:0]};
+//                 end
+//                 1'b1: begin
+//                     store_mask = 4'b1100;
+//                     final_store_data = {rs2_val[15:0], dmem[store_addr][15:0]};
+//                 end
+//             endcase
+//         end
 
-        2'b10: begin // Store Word (sw)
-            store_mask = 4'b1111;
-            final_store_data = rs2_val;
-        end
+//         2'b10: begin // Store Word (sw)
+//             store_mask = 4'b1111;
+//             final_store_data = rs2_val;
+//         end
 
-        default: begin
-            store_mask = 4'b0000;
-            final_store_data = dmem[store_addr];
-        end
-    endcase
-end
+//         default: begin
+//             store_mask = 4'b0000;
+//             final_store_data = dmem[store_addr];
+//         end
+//     endcase
+// end
+memory_access_unit mem (
+    .clk(clk),
+    .rst(rst),
+    .mem_read(mem_read),
+    .mem_write(mem_write),
+    .funct3(inst_fields.funct3),
+    .addr_in(alu_result),
+    .write_data(rs2_val),
+    .read_data(load_result),
+    .dmem_rdata(dmem[alu_result&32'hFFFFFFFC]),
+    .dmem_wdata(final_store_data),
+    .dmem_we(memory_store_enable)
+) ;
+
 
 // Write to memory
 always_ff @(posedge clk) begin
     if (!rst && mem_write) begin
-        if (store_mask[0]) dmem[store_addr][7:0] <= final_store_data[7:0];
-        if (store_mask[1]) dmem[store_addr][15:8] <= final_store_data[15:8];
-        if (store_mask[2]) dmem[store_addr][23:16] <= final_store_data[23:16];
-        if (store_mask[3]) dmem[store_addr][31:24] <= final_store_data[31:24];
+        if (memory_store_enable[0]) dmem[store_addr][7:0] <= final_store_data[7:0];
+        if (memory_store_enable[1]) dmem[store_addr][15:8] <= final_store_data[15:8];
+        if (memory_store_enable[2]) dmem[store_addr][23:16] <= final_store_data[23:16];
+        if (memory_store_enable[3]) dmem[store_addr][31:24] <= final_store_data[31:24];
     end
 end
 
