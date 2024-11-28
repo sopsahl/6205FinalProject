@@ -886,8 +886,8 @@ async def test_ALU_operations(dut):
     await ClockCycles(dut.clk,1)
     dut.rst.value = 0
     # await test_jump_and_link(dut)
-    
-    await ClockCycles(dut.clk,20)
+    await test_store_half(dut)
+    # await ClockCycles(dut.clk,20)
     # await test_load(dut)
     # await test_store(dut)
     # await test_branch(dut)
@@ -917,7 +917,7 @@ def ALU_runner():
     sim = os.getenv("SIM", "icarus")
     proj_path = Path(__file__).resolve().parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
-    sources = [proj_path / "hdl" / "riscv_processor.sv"]
+    sources = [proj_path / "hdl" / "working_riscv_processor.sv"]
     sources += [proj_path / "hdl" / "project_helpers.sv"]
     sources+= [proj_path / "hdl" / "control_unit.sv"]
     sources += [proj_path / "hdl" / "ALU.sv"]
@@ -933,7 +933,7 @@ def ALU_runner():
     runner = get_runner(sim)
     runner.build(
         sources=sources,
-        hdl_toplevel="riscv_processor",
+        hdl_toplevel="working_riscv_processor",
         always=True,
         build_args=build_test_args,
         parameters=parameters,
@@ -942,7 +942,7 @@ def ALU_runner():
     )
     run_test_args = []
     runner.test(
-        hdl_toplevel="riscv_processor",
+        hdl_toplevel="working_riscv_processor",
         test_module="test_riscv_processor_2",
         test_args=run_test_args,
         waves=True

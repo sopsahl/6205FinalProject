@@ -1,4 +1,4 @@
-module riscv_processor_working (
+module working_riscv_processor (
     input  logic        clk,
     input  logic        rst,
   

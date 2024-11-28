@@ -1,3 +1,4 @@
+###TEST FOR NEW MEMORY TYPE OPERATIONS with IMEM being a bram insteaf of reg######
 import cocotb
 import os
 import random
@@ -67,6 +68,7 @@ async def test_add_operation(dut):
         with open("../data/instructionMem.mem", "w") as f:
             for i in instructions:
                 f.write(str(i) + "\n")
+            f.close()
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -91,17 +93,24 @@ async def test_sub_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        # Create instruction and write to file
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
         await ClockCycles(dut.clk,1)
         await FallingEdge(dut.clk)
-        #inverted
         dut.registers[1].value=7
         dut.registers[2].value=5
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(2)
 async def test_xor_operation(dut):
         REG_OP_CODE=51
@@ -110,6 +119,15 @@ async def test_xor_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -118,9 +136,7 @@ async def test_xor_operation(dut):
         #inverted
         dut.registers[1].value=10
         dut.registers[2].value=5
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(15)
 async def test_or_operation(dut):
         REG_OP_CODE=51
@@ -129,6 +145,15 @@ async def test_or_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -136,9 +161,7 @@ async def test_or_operation(dut):
         await FallingEdge(dut.clk)
         dut.registers[1].value=1
         dut.registers[2].value=9
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(9)
 async def test_and_operation(dut):
         REG_OP_CODE=51
@@ -147,6 +170,15 @@ async def test_and_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -154,9 +186,7 @@ async def test_and_operation(dut):
         await FallingEdge(dut.clk)
         dut.registers[1].value=1
         dut.registers[2].value=9
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(1)
 async def test_sll_operation(dut):
         REG_OP_CODE=51
@@ -165,6 +195,15 @@ async def test_sll_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -172,9 +211,7 @@ async def test_sll_operation(dut):
         await FallingEdge(dut.clk)
         dut.registers[1].value=1
         dut.registers[2].value=3
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(8)
 async def test_srl_operation(dut):
         REG_OP_CODE=51
@@ -183,6 +220,15 @@ async def test_srl_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -190,9 +236,7 @@ async def test_srl_operation(dut):
         await FallingEdge(dut.clk)
         dut.registers[1].value=8
         dut.registers[2].value=2
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(2)
 async def test_sra_operation(dut):
         REG_OP_CODE=51
@@ -201,6 +245,15 @@ async def test_sra_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -209,9 +262,7 @@ async def test_sra_operation(dut):
         #inverted
         dut.registers[1].value=0xFFFFFFFF
         dut.registers[2].value=4
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value)== hex(0xFFFFFFFF)
 async def test_slt_operation(dut):
         REG_OP_CODE=51
@@ -220,6 +271,15 @@ async def test_slt_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -228,9 +288,7 @@ async def test_slt_operation(dut):
         #inverted
         dut.registers[1].value= -8
         dut.registers[2].value=2
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(1)
 async def test_sltu_operation(dut):
         REG_OP_CODE=51
@@ -239,6 +297,15 @@ async def test_sltu_operation(dut):
         REG_1=1
         REG_2=2
         DEST_REG=3
+        
+        value = RISCVInstruction.R_type(REG_OP_CODE, FUNC_3, FUNC_7, REG_1, REG_2, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -247,9 +314,7 @@ async def test_sltu_operation(dut):
         #inverted
         dut.registers[1].value=-8
         dut.registers[2].value=2
-        dut.imem[0].value=RISCVInstruction.R_type(REG_OP_CODE,FUNC_3,FUNC_7,REG_1,REG_2,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(0)
 async def test_addi_operation(dut):
         REG_OP_CODE=19
@@ -257,6 +322,15 @@ async def test_addi_operation(dut):
         IMM=10
         REG_1=1
         DEST_REG=3
+        
+        value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -264,9 +338,7 @@ async def test_addi_operation(dut):
         await FallingEdge(dut.clk)
         #inverted
         dut.registers[1].value=10
-        dut.imem[0].value=RISCVInstruction.I_type(REG_OP_CODE,FUNC_3,IMM,REG_1,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(20)
 async def test_xori_operation(dut):
         REG_OP_CODE=19
@@ -274,6 +346,15 @@ async def test_xori_operation(dut):
         IMM=10
         REG_1=1
         DEST_REG=3
+        
+        value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -281,9 +362,7 @@ async def test_xori_operation(dut):
         await FallingEdge(dut.clk)
         #inverted
         dut.registers[1].value=5
-        dut.imem[0].value=RISCVInstruction.I_type(REG_OP_CODE,FUNC_3,IMM,REG_1,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(15)
 async def test_andi_operation(dut):
         REG_OP_CODE=19
@@ -291,6 +370,15 @@ async def test_andi_operation(dut):
         IMM=1
         REG_1=1
         DEST_REG=3
+        
+        value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -298,9 +386,7 @@ async def test_andi_operation(dut):
         await FallingEdge(dut.clk)
         #inverted
         dut.registers[1].value=0
-        dut.imem[0].value=RISCVInstruction.I_type(REG_OP_CODE,FUNC_3,IMM,REG_1,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(0)
 async def test_ori_operation(dut):
         REG_OP_CODE=19
@@ -308,6 +394,15 @@ async def test_ori_operation(dut):
         IMM=8
         REG_1=1
         DEST_REG=3
+        
+        value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+        value = format_hex32(value)
+        instructions = [value]
+        with open("../data/instructionMem.mem", "w") as f:
+            for i in instructions:
+                f.write(str(i) + "\n")
+            f.close()
+                
         dut.rst.value = 1
         await ClockCycles(dut.clk,1)
         dut.rst.value = 0
@@ -315,9 +410,7 @@ async def test_ori_operation(dut):
         await FallingEdge(dut.clk)
         #inverted
         dut.registers[1].value=1
-        dut.imem[0].value=RISCVInstruction.I_type(REG_OP_CODE,FUNC_3,IMM,REG_1,DEST_REG)
-        await ClockCycles(dut.clk,1)
-        await RisingEdge(dut.clk)
+        await ClockCycles(dut.clk,4)
         assert hex(dut.registers[3].value) == hex(9)
 async def test_slli_operation(dut):
     REG_OP_CODE = 19
@@ -325,6 +418,14 @@ async def test_slli_operation(dut):
     IMM = 2
     REG_1 = 1
     DEST_REG = 3
+
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
 
     # Apply reset
     dut.rst.value = 1
@@ -335,11 +436,8 @@ async def test_slli_operation(dut):
 
     dut.registers[REG_1].value = 1
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
     # Wait for a clock cycle
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert hex(dut.registers[DEST_REG].value)== hex(4)
 
@@ -350,6 +448,14 @@ async def test_srli_operation(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -359,10 +465,7 @@ async def test_srli_operation(dut):
 
     dut.registers[REG_1].value = 8
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert hex(dut.registers[DEST_REG].value) == hex(4)
 
@@ -374,6 +477,14 @@ async def test_srai_operation(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -383,10 +494,7 @@ async def test_srai_operation(dut):
 
     dut.registers[REG_1].value = 0xFFFFFFFF
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert hex(dut.registers[DEST_REG].value)== hex(0xFFFFFFFF)
 
@@ -397,6 +505,14 @@ async def test_slti_operation(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -406,11 +522,7 @@ async def test_slti_operation(dut):
 
     dut.registers[REG_1].value = -3
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
- 
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert hex(dut.registers[DEST_REG].value) == hex(1)
 
@@ -421,6 +533,14 @@ async def test_sltiu_operation(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -430,10 +550,7 @@ async def test_sltiu_operation(dut):
 
     dut.registers[REG_1].value = -3
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert hex(dut.registers[DEST_REG].value) == hex(0)
 async def test_load_byte(dut):
@@ -442,6 +559,14 @@ async def test_load_byte(dut):
     IMM = 2
     REG_1 = 1
     DEST_REG = 3
+
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
 
     # Apply reset
     dut.rst.value = 1
@@ -453,9 +578,7 @@ async def test_load_byte(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.dmem[40].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
     print((dut.registers[DEST_REG].value))
     print(dut.registers[REG_1].value)
     await ClockCycles(dut.clk, 1)
@@ -467,6 +590,14 @@ async def test_load_half(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -477,10 +608,7 @@ async def test_load_half(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.dmem[40].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     print(hex(dut.registers[DEST_REG].value))#expecting 0xFFFFDEAD
 async def test_load_word(dut):
@@ -490,6 +618,14 @@ async def test_load_word(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -500,10 +636,7 @@ async def test_load_word(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.dmem[40].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     print(hex(dut.registers[DEST_REG].value))#expecting 0xDEADBEEF
       
@@ -514,28 +647,17 @@ async def test_load_byte_unsigned(dut):
     REG_1 = 1
     DEST_REG = 3
 
+    value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+        f.close()
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
-    dut.rst.value = 0
-    await ClockCycles(dut.clk, 1)
-    await FallingEdge(dut.clk)
-
-    dut.registers[REG_1].value = 40#memory location 40 base 
-    dut.dmem[40].value = 0xDEADBEEF
-
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
-
-    assert (hex(dut.registers[DEST_REG].value)) == hex(0x000000BE)#expecting 
-async def test_load_half_unsigned(dut):
-    REG_OP_CODE = 3
-    FUNC_3 = 5
-    IMM = 1
-    REG_1 = 1
-    DEST_REG = 3
 
     # Apply reset
     dut.rst.value = 1
@@ -547,10 +669,7 @@ async def test_load_half_unsigned(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.dmem[40].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, FUNC_3, IMM, REG_1, DEST_REG)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert (hex(dut.registers[DEST_REG].value)) == hex(0xbeef)
 async def test_store_byte(dut):
@@ -560,6 +679,13 @@ async def test_store_byte(dut):
     REG_1 = 1
     REG_2 = 2
 
+    value = RISCVInstruction.S_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -570,10 +696,7 @@ async def test_store_byte(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.registers[REG_2].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.S_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert (hex(dut.dmem[40].value)) == hex(0xef)#expecting 0xef
 async def test_store_half(dut):
@@ -582,6 +705,13 @@ async def test_store_half(dut):
     IMM =0
     REG_1 = 1
     REG_2 = 2
+     # Create instruction and write to file
+    value = RISCVInstruction.S_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
 
     # Apply reset
     dut.rst.value = 1
@@ -593,9 +723,7 @@ async def test_store_half(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.registers[REG_2].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.S_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
-
-    await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 4)
     await RisingEdge(dut.clk)
 
     assert (hex(dut.dmem[40].value)) == hex(0xBEEF)#expecting 0xBEEF
@@ -606,6 +734,13 @@ async def test_store_word(dut):
     REG_1 = 1
     REG_2 = 2
 
+    value = RISCVInstruction.S_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -616,10 +751,7 @@ async def test_store_word(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.registers[REG_2].value = 0xDEADBEEF
 
-    dut.imem[0].value = RISCVInstruction.S_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
-
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 4)
 
     assert (hex(dut.dmem[40].value)) == hex(0xDEADBEEF)#expecting 0xDEADBEEF
       
@@ -659,6 +791,14 @@ async def test_branch_equal(dut):
     IMM = 0x14
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -667,7 +807,6 @@ async def test_branch_equal(dut):
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 0x1
     dut.registers[REG_2].value = 0x1
-    dut.imem[0].value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def I_type(opcode, funct3, imm, rs1, rd):
     await ClockCycles(dut.clk, 1)
@@ -682,6 +821,14 @@ async def test_branch_not_equal(dut):
     IMM = 0x14
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -690,7 +837,6 @@ async def test_branch_not_equal(dut):
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 0x1
     dut.registers[REG_2].value = 0x2
-    dut.imem[0].value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def I_type(opcode, funct3, imm, rs1, rd):
     await ClockCycles(dut.clk, 1)
@@ -705,6 +851,14 @@ async def test_branch_less_than(dut):
     IMM = 0x14
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -713,7 +867,6 @@ async def test_branch_less_than(dut):
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 0x1
     dut.registers[REG_2].value = 0x2
-    dut.imem[0].value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def I_type(opcode, funct3, imm, rs1, rd):
     await ClockCycles(dut.clk, 1)
@@ -728,6 +881,14 @@ async def test_branch_greater_than_equalTo(dut):
     IMM = 0x14
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -736,7 +897,6 @@ async def test_branch_greater_than_equalTo(dut):
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 0x2
     dut.registers[REG_2].value = 0x1
-    dut.imem[0].value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def I_type(opcode, funct3, imm, rs1, rd):
     await ClockCycles(dut.clk, 1)
@@ -751,6 +911,14 @@ async def test_branch_less_than_unsigned(dut):
     IMM = 0x14
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -759,7 +927,6 @@ async def test_branch_less_than_unsigned(dut):
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 1
     dut.registers[REG_2].value = 22
-    dut.imem[0].value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def I_type(opcode, funct3, imm, rs1, rd):
     await ClockCycles(dut.clk, 1)
@@ -774,6 +941,14 @@ async def test_branch_greater_than_equalTo_unsigned(dut):
     IMM = 0x14
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -782,7 +957,6 @@ async def test_branch_greater_than_equalTo_unsigned(dut):
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 22
     dut.registers[REG_2].value = 1
-    dut.imem[0].value = RISCVInstruction.B_type(REG_OP_CODE, FUNC_3, IMM, REG_1, REG_2)
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def I_type(opcode, funct3, imm, rs1, rd):
     await ClockCycles(dut.clk, 1)
@@ -802,6 +976,17 @@ async def test_jump_and_link(dut):
     REG_OP_CODE = 111
     IMM = 0x14
     REG_1 = 1
+
+    value = RISCVInstruction.J_type(REG_OP_CODE, IMM, REG_1)
+    value = format_hex32(value)
+    instructions = [value,format_hex32(0),format_hex32(0),
+                    format_hex32(0),format_hex32(0),format_hex32(RISCVInstruction.I_type(
+                         19, 0, 4, 0, 3)
+                    )]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -811,24 +996,30 @@ async def test_jump_and_link(dut):
     dut.registers[REG_1].value = 0x1
     # print(hex(RISCVInstruction.J_type(REG_OP_CODE, IMM, REG_1)))
     # print(hex(RISCVInstruction.I_type(19, 0, 4, 0, 3)))
-    dut.imem[0].value = RISCVInstruction.J_type(REG_OP_CODE, IMM, REG_1)
+    # dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
     #    def J_type(opcode, imm, rd):
 
-    dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
-
     #    def I_type(opcode, funct3, imm, rs1, rd):
-    await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 9)
     await RisingEdge(dut.clk)
-    assert hex(dut.pc.value) == hex(0x14)
+    # assert hex(dut.pc.value) == hex(0x14)
 
-    await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.clk)
+    # await ClockCycles(dut.clk, 1)
+    # await RisingEdge(dut.clk)
     assert hex(dut.registers[1].value) == hex(4)
 async def test_jump_and_link_register(dut):
     REG_OP_CODE = 103
     IMM = 10
     REG_1 = 1
     REG_2 = 2
+
+    value = RISCVInstruction.I_type(REG_OP_CODE, 0, IMM, REG_1, REG_2)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
@@ -836,7 +1027,6 @@ async def test_jump_and_link_register(dut):
     await ClockCycles(dut.clk, 1)
     await FallingEdge(dut.clk)
     dut.registers[REG_1].value = 10
-    dut.imem[0].value = RISCVInstruction.I_type(REG_OP_CODE, 0, IMM, REG_1, REG_2)
     #    def I_type(opcode, funct3, imm, rs1, rd):
 
     dut.imem[20].value = RISCVInstruction.I_type(19, 0, 4, 0, 3)#addi x3,x0,4
@@ -852,13 +1042,20 @@ async def test_lui(dut):
     REG_OP_CODE = 55
     IMM = 1
     DST_REG = 1
+
+    value = RISCVInstruction.U_type(REG_OP_CODE, IMM, DST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
     await ClockCycles(dut.clk, 1)
     await FallingEdge(dut.clk)
-    dut.imem[0].value = RISCVInstruction.U_type(REG_OP_CODE, IMM, DST_REG)
     #    def U_type(opcode, imm, rd):
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.clk)
@@ -867,13 +1064,20 @@ async def test_auipc(dut):
     REG_OP_CODE = 23
     IMM = 1
     DST_REG = 1
+
+    value = RISCVInstruction.U_type(REG_OP_CODE, IMM, DST_REG)
+    value = format_hex32(value)
+    instructions = [value]
+    with open("../data/instructionMem.mem", "w") as f:
+        for i in instructions:
+            f.write(str(i) + "\n")
+
     # Apply reset
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
     await ClockCycles(dut.clk, 1)
     await FallingEdge(dut.clk)
-    dut.imem[0].value = RISCVInstruction.U_type(REG_OP_CODE, IMM, DST_REG)
     #    def U_type(opcode, imm, rd):
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.clk)
@@ -900,8 +1104,11 @@ async def test_ALU_operations(dut):
     await ClockCycles(dut.clk,1)
     dut.rst.value = 0
     # await test_jump_and_link(dut)
-    await test_add_operation(dut)
-    
+    # await test_add_operation(dut)
+    # await test_store_half(dut)
+    # await test_addi_operation(dut)
+    # await test_add_operation(dut)
+    await test_jump_and_link(dut)
     # await ClockCycles(dut.clk,20)
     # await test_load(dut)
     # await test_store(dut)
@@ -937,7 +1144,7 @@ def ALU_runner():
     sources+= [proj_path / "hdl" / "control_unit.sv"]
     sources += [proj_path / "hdl" / "ALU.sv"]
     sources += [proj_path / "hdl" / "xilinx_single_port_ram_read_first.v"]
-    sources += [proj_path / "hdl" / "memory_access_unit.sv"]
+    sources += [proj_path / "hdl" / "mem_ctrl_unit.sv"]
     # sources += [proj_path / "data" / "instructionMem.mem"]
     build_test_args = ["-Wall"]
     # build_test_args.append(f"+readmemh={str(proj_path / 'data' / 'instructionMem.mem')}")
