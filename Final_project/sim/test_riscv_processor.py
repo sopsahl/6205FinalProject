@@ -110,7 +110,7 @@ async def test_sub_operation(dut):
         await FallingEdge(dut.clk)
         dut.registers[1].value=7
         dut.registers[2].value=5
-        await ClockCycles(dut.clk,4)
+        await ClockCycles(dut.clk,10)
         assert hex(dut.registers[3].value) == hex(2)
 async def test_xor_operation(dut):
         REG_OP_CODE=51
@@ -723,7 +723,7 @@ async def test_store_half(dut):
     dut.registers[REG_1].value = 40#memory location 40 base 
     dut.registers[REG_2].value = 0xDEADBEEF
 
-    await ClockCycles(dut.clk, 4)
+    await ClockCycles(dut.clk, 10)
     await RisingEdge(dut.clk)
 
     assert (hex(dut.dmem[40].value)) == hex(0xBEEF)#expecting 0xBEEF
@@ -1102,18 +1102,18 @@ async def test_add_sequence(dut):
 
     # Convert to hex format
     hex_instructions = [format_hex32(instr) for instr in instructions]
-
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
     await ClockCycles(dut.clk, 1)
 
-    await ClockCycles(dut.clk, 40)
+    await ClockCycles(dut.clk, 18)
 
     # Write to memory file
-    with open("../data/instructionMem.mem", "w") as f:
-        for instr in hex_instructions:
-            f.write(f"{instr}\n")
+   
 
 @cocotb.test()
 async def test_ALU_operations(dut):
@@ -1148,7 +1148,8 @@ async def test_ALU_operations(dut):
     # write me a command that adds 10 to register 0 and stores it in register 2
     # write me a command that adds 15 to register 0 and stores it in register 3
     #write me a command that addes register 2 and 3 and stores it in 4 
-    await test_add_sequence(dut)
+    # await test_add_sequence(dut) # this shiii works lol
+    # await test_sub_operation(dut)
      
                  
          

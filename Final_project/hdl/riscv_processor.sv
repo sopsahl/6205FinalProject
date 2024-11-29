@@ -150,7 +150,7 @@ logic stall_decode;
 
     // Fetch state machine
     logic data_ready;
-    assign instruction_done = fetch_state==FETCH_WAIT2;
+    assign instruction_done = m2w_reg.valid;
     always_ff @(posedge clk)begin 
         if(rst)begin 
             registers_initialized<=1'b0;
@@ -393,7 +393,7 @@ end
                 m2w_reg.jump       <= e2m_reg.jump;
                 m2w_reg.mem_read   <= e2m_reg.mem_read;
             end else begin
-                m2w_reg<='0;   
+                m2w_reg<=106'b0;   
             end
         end
     end
