@@ -1,0 +1,46 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
+| Date         : Fri Nov 29 00:45:21 2024
+| Host         : eecs-digital-14 running 64-bit Ubuntu 24.04.1 LTS
+| Command      : report_utilization -file obj/post_synth_util.rpt -hierarchical -hierarchical_depth 4
+| Design       : top_level
+| Device       : xc7s50csga324-1
+| Speed File   : -1
+| Design State : Synthesized
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
+|        Instance       |                       Module                      | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP Blocks |
++-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
+| top_level             |                                             (top) |        361 |        361 |       0 |    0 | 212 |     17 |      1 |          0 |
+|   (top_level)         |                                             (top) |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   bksp_b              |                                         debouncer |          8 |          8 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   blue_ser            |                                   tmds_serializer |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   draw_characters     |                                 character_sprites |        203 |        203 |       0 |    0 |  48 |     17 |      1 |          0 |
+|     (draw_characters) |                                 character_sprites |         22 |         22 |       0 |    0 |  48 |      0 |      0 |          0 |
+|     character_image   | xilinx_single_port_ram_read_first__parameterized0 |          4 |          4 |       0 |    0 |   0 |     16 |      0 |          0 |
+|     character_pallete | xilinx_single_port_ram_read_first__parameterized1 |        167 |        167 |       0 |    0 |   0 |      0 |      1 |          0 |
+|     terminal_grid     |                 xilinx_single_port_ram_read_first |         10 |         10 |       0 |    0 |   0 |      1 |      0 |          0 |
+|   green_ser           |                                 tmds_serializer_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   mhdmicw             |                                 hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+|   mvg                 |                                     video_sig_gen |         75 |         75 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   red_ser             |                                 tmds_serializer_1 |          1 |          1 |       0 |    0 |   1 |      0 |      0 |          0 |
+|   terminal            |                               terminal_controller |         51 |         51 |       0 |    0 |  37 |      0 |      0 |          0 |
+|   tmds_blue           |                                      tmds_encoder |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_green          |                                    tmds_encoder_2 |          3 |          3 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_red            |                                    tmds_encoder_3 |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   x_b                 |                                       debouncer_4 |          8 |          8 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   y_b                 |                                       debouncer_5 |          8 |          8 |       0 |    0 |  21 |      0 |      0 |          0 |
++-----------------------+---------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
+
+
