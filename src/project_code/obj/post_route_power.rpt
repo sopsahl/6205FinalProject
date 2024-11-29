@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date             : Wed Nov 27 14:42:45 2024
-| Host             : eecs-digital-19 running 64-bit Ubuntu 24.04.1 LTS
+| Date             : Fri Nov 29 00:45:41 2024
+| Host             : eecs-digital-14 running 64-bit Ubuntu 24.04.1 LTS
 | Command          : report_power -file obj/post_route_power.rpt
 | Design           : top_level
 | Device           : xc7s50csga324-1
@@ -33,7 +33,7 @@ Table of Contents
 | Total On-Chip Power (W)  | 0.379        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.305        |
+| Dynamic (W)              | 0.306        |
 | Device Static (W)        | 0.073        |
 | Effective TJA (C/W)      | 4.9          |
 | Max Ambient (C)          | 83.1         |
@@ -53,16 +53,15 @@ Table of Contents
 | On-Chip        | Power (W) | Used     | Available | Utilization (%) |
 +----------------+-----------+----------+-----------+-----------------+
 | Clocks         |     0.004 |        6 |       --- |             --- |
-| Slice Logic    |     0.002 |      743 |       --- |             --- |
+| Slice Logic    |     0.002 |      746 |       --- |             --- |
 |   LUT as Logic |     0.002 |      346 |     32600 |            1.06 |
 |   CARRY4       |    <0.001 |       45 |      8150 |            0.55 |
 |   Register     |    <0.001 |      212 |     65200 |            0.33 |
-|   F7/F8 Muxes  |    <0.001 |        9 |     32600 |            0.03 |
-|   Others       |     0.000 |       34 |       --- |             --- |
-| Signals        |     0.003 |      639 |       --- |             --- |
+|   Others       |     0.000 |       38 |       --- |             --- |
+| Signals        |     0.003 |      659 |       --- |             --- |
 | Block RAM      |     0.027 |     17.5 |        75 |           23.33 |
 | MMCM           |     0.105 |        1 |         5 |           20.00 |
-| I/O            |     0.165 |       73 |       210 |           34.76 |
+| I/O            |     0.166 |       73 |       210 |           34.76 |
 | Static Power   |     0.073 |          |           |                 |
 | Total          |     0.379 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
@@ -144,8 +143,8 @@ Table of Contents
 +-----------------------+-----------+
 | Name                  | Power (W) |
 +-----------------------+-----------+
-| top_level             |     0.305 |
-|   com_sprite_m        |     0.031 |
+| top_level             |     0.306 |
+|   draw_characters     |     0.031 |
 |     character_image   |     0.024 |
 |     character_pallete |     0.004 |
 |     terminal_grid     |     0.002 |

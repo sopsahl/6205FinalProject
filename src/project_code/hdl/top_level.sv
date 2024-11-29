@@ -57,60 +57,10 @@ module top_level(
       .nf_out(new_frame),
       .fc_out(frame_count));
 
-  //x_com and y_com are the image sprite locations
-  logic terminal_grid_write_enable;
-  logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] terminal_grid_addr;
-  logic [7:0] terminal_grid_input;
-
-  logic [$clog2(SCREEN_WIDTH)-1:0] cursor_x;
-  logic [$clog2(SCREEN_HEIGHT)-1:0] cursor_y;
-  logic [1:0] x_btn;
-  logic [1:0] y_btn;
-  logic [1:0] bksp_btn;
-
-  //update center of mass x_com, y_com based on new_com signal
-  always_ff @(posedge clk_pixel) begin
-    if (sys_rst) begin
-      cursor_x <= 0;
-      cursor_y <= 0;
-      terminal_grid_write_enable <= 0;
-      terminal_grid_addr <= 0;
-      terminal_grid_input <= 0;
-    end else begin
-      terminal_grid_write_enable <= 0;
-      x_btn[1] <= x_btn[0];
-      y_btn[1] <= y_btn[0];
-      bksp_btn[1] <= bksp_btn[0];
-
-      if (bksp_btn[1] && !bksp_btn[0] && !(cursor_x == 0 && cursor_y == 0)) begin
-          terminal_grid_write_enable <= 1;
-          terminal_grid_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-          terminal_grid_input <= 0;
-
-        if (cursor_x == 0) begin
-          cursor_y <= cursor_y - 1;
-          cursor_x <= SCREEN_WIDTH - 1;
-        end else begin
-          cursor_x <= cursor_x - 1;
-        end
-      end else begin
-        if (x_btn[1] && !x_btn[0] && cursor_x < SCREEN_WIDTH) begin
-          terminal_grid_write_enable <= 1;
-          terminal_grid_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-          terminal_grid_input <= sw;
-          cursor_x <= cursor_x + 1;
-        end
-
-        if (y_btn[1] && !y_btn[0] && cursor_y < SCREEN_HEIGHT) begin
-          terminal_grid_write_enable <= 1;
-          terminal_grid_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-          terminal_grid_input <= sw;
-          cursor_x <= 0;
-          cursor_y <= cursor_y + 1;
-        end
-      end
-    end
-  end
+  // keeps track of button inputs
+  logic x_btn;
+  logic y_btn;
+  logic bksp_btn;
 
   debouncer #(
     .CLK_PERIOD_NS(10),
@@ -119,7 +69,7 @@ module top_level(
     .clk_in(clk_pixel),
     .rst_in(sys_rst),
     .dirty_in(btn[1]),
-    .clean_out(x_btn[0]));
+    .clean_out(x_btn));
 
   debouncer #(
     .CLK_PERIOD_NS(10),
@@ -128,7 +78,7 @@ module top_level(
     .clk_in(clk_pixel),
     .rst_in(sys_rst),
     .dirty_in(btn[2]),
-    .clean_out(y_btn[0]));
+    .clean_out(y_btn));
 
   debouncer #(
     .CLK_PERIOD_NS(10),
@@ -137,18 +87,38 @@ module top_level(
     .clk_in(clk_pixel),
     .rst_in(sys_rst),
     .dirty_in(btn[3]),
-    .clean_out(bksp_btn[0]));
+    .clean_out(bksp_btn));
+
+  // keeps track of what to input to the sprite drawer
+  logic terminal_grid_write_enable;
+  logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] terminal_grid_addr;
+  logic [7:0] terminal_grid_input;
+
+  terminal_controller #(
+    .SCREEN_WIDTH(SCREEN_WIDTH),
+    .SCREEN_HEIGHT(SCREEN_HEIGHT)
+  ) terminal (
+    .pixel_clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .x_btn(x_btn),
+    .y_btn(y_btn),
+    .bksp_btn(bksp_btn),
+    .character(sw),
+    .tg_we(terminal_grid_write_enable),
+    .tg_addr(terminal_grid_addr),
+    .tg_input(terminal_grid_input)
+  );
 
   //use this in the first part of checkoff 01:
   //instance of image sprite.
   logic [7:0] img_red, img_green, img_blue;
 
-  character_sprite #(
+  character_sprites #(
   .SIZE(16),
   .HEIGHT(512),
   .SCREEN_WIDTH(SCREEN_WIDTH),
   .SCREEN_HEIGHT(SCREEN_HEIGHT))
-  com_sprite_m (
+  draw_characters (
   .pixel_clk_in(clk_pixel),
   .rst_in(sys_rst),
   .tg_write_en(terminal_grid_write_enable),
