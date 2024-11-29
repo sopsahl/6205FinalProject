@@ -1,20 +1,23 @@
-"""
-Main SerialConn class in charge of managing serial port connection and sending/receiving data from the FPGA
-    port: Serial Port to connect to
-    baud: baud rate to initialize
-    bitwidth: 
-"""
-
 import serial
 import time
+
 from .data import Data
 
+
+
 class Conn:
+    
+    """
+    Main Conn class in charge of managing serial port connection and sending/receiving data from the FPGA
+        port: Serial Port to connect to
+        baud: baud rate to initialize
+    """
+
     def __init__(self, port, baud):
 
         self.conn = serial.Serial() # Initialize the Serial port without opening it
         self.conn.baudrate = baud
-        self.conn.port = port # OPen the specific port
+        self.conn.port = port # Specify a port
 
     def connect(self, fx):
 
