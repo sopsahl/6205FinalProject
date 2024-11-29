@@ -23,7 +23,70 @@ module riscv_processor (
         logic [4:0] rs2;
         logic [6:0] funct7;
     } InstFields;
+    typedef struct packed {
+    logic [31:0] pc;
+    logic [31:0] instruction;
+    logic        valid;
+    } f2d_type;
 
+typedef struct packed {
+    logic [31:0] pc;
+    logic [31:0] rs1_val;
+    logic [31:0] rs2_val;
+    logic [31:0] imm;
+    logic [4:0]  rd;
+    logic [4:0]  rs1;
+    logic [4:0]  rs2;
+    logic [2:0]  funct3;
+    logic        reg_write;
+    logic        mem_to_reg;
+    logic        mem_read;
+    logic        mem_write;
+    logic        alu_src;
+    logic        branch;
+    logic        jump;
+    logic [3:0]  alu_ctrl;
+    logic        valid;
+} d2e_type;
+
+typedef struct packed {
+    logic [31:0] pc;
+    logic [31:0] alu_result;
+    logic [31:0] rs2_val;
+    logic [4:0]  rd;
+    logic   [2:0] funct3;
+    logic        reg_write;
+    logic        mem_to_reg;
+    logic        mem_read;
+    logic        mem_write;
+    logic        valid;
+    logic jump;//for dest pc purposes, I know I should have handled that earlier lol
+} e2m_type;
+
+  typedef struct packed {
+        logic [31:0] pc;
+        logic [31:0] alu_result;
+        logic [31:0] mem_data;
+        logic [4:0]  rd;
+        logic        reg_write;
+        logic        mem_to_reg;
+        logic       mem_read;
+        logic        valid;
+        logic jump;
+    } m2w_type;
+
+
+d2e_type d2e_reg;
+f2d_type f2d_reg;
+e2m_type e2m_reg;
+m2w_type m2w_reg;
+
+
+// writeback_type writeback_reg;
+
+logic flush_pipeline;
+logic stall_fetch;
+logic stall_decode;
     
     InstFields inst_fields;
     logic [31:0] instruction;
@@ -49,8 +112,8 @@ module riscv_processor (
     logic [31:0] douta;
     typedef enum logic [1:0] {
       FETCH_REQUEST,
-      FETCH_WAIT,
-      FETCH_AVAILABLE
+      FETCH_WAIT1,
+      FETCH_WAIT2
     } fetch_state_e;
     fetch_state_e fetch_state;
 // fetch_state_t fetch_state;
@@ -70,13 +133,29 @@ module riscv_processor (
     .regcea(1'b1),   // Output register enable
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
   );
+//     //CHECK FOR HAZARDS
+//     always_comb begin
+//     stall_pipeline = 1'b0;
+    
+//     // RAW Hazard detection
+//     if (decode_reg.mem_read && 
+//         ((decode_reg.rd == inst_fields.rs1 && inst_fields.rs1 != 0) || 
+//          (decode_reg.rd == inst_fields.rs2 && inst_fields.rs2 != 0))) begin
+//         // stall_pipeline = 1'b1;
+//         stall_fetch = 1'b1;
+//         stall_decode = 1'b1;
+//     end
+// end
+
+
     // Fetch state machine
     logic data_ready;
-    assign instruction_done = fetch_state==FETCH_AVAILABLE;
+    assign instruction_done = fetch_state==FETCH_WAIT2;
     always_ff @(posedge clk)begin 
         if(rst)begin 
             registers_initialized<=1'b0;
             pc<=32'b0;
+
         end else if (!registers_initialized) begin
             for (int i = 0; i < 32; i++) begin
                 registers[i] <= 32'b0;
@@ -92,22 +171,25 @@ module riscv_processor (
         else begin 
             case(fetch_state)
                 FETCH_REQUEST:begin
-                    fetch_state<=FETCH_WAIT;
+                    fetch_state<=FETCH_WAIT1;
                 end
-                FETCH_WAIT:begin
-                    fetch_state<=FETCH_AVAILABLE;
+                FETCH_WAIT1:begin
+                    fetch_state<=FETCH_WAIT2;
                 end
-                FETCH_AVAILABLE:begin
-                    fetch_state<=FETCH_REQUEST;
-                    if(jump && alu_src)//jalr
-                        pc <= alu_result;
-                    else if (jump )//jal
-                        pc <= pc + imm;
-                    else if (branch && branch_taken)
-                        pc <= pc + imm;
+                FETCH_WAIT2:begin
+                    //SHOULD BE DONE IN SYNC WITH LAST WB STAGE 
+                    // fetch_state<=FETCH_REQUEST;
+                    // if(jump && alu_src)//jalr
+                    //     pc <= alu_result;
+                    // else if (jump )//jal
+                    //     pc <= pc + imm;
+                    // else if (branch && branch_taken)
+                    //     pc <= pc + imm;
             
-                    else
-                        pc <= pc + 4;  // Increment by 1 instead of 4 for debugging
+                    // else
+                    //     pc <= pc + 4;  // Increment by 1 instead of 4 for debugging
+                    fetch_state<=FETCH_REQUEST;
+                    pc<=next_pc;// That way we have already determined what next pc is
                 end
                 
             endcase
@@ -115,40 +197,57 @@ module riscv_processor (
         end
 
     end
-
-    assign instruction = fetch_state==FETCH_AVAILABLE?douta:32'b0;
-    
-    // Instruction decode
+    // Next PC Logic;; this is supposed to happen in execute stage, also probably always going to work THIS IS DIETERMINED IN EXECUTE
+    logic [31:0] next_pc;
     always_comb begin
-        inst_fields.opcode = instruction[6:0];
-        inst_fields.rd     = instruction[11:7];
-        inst_fields.funct3 = instruction[14:12];
-        inst_fields.rs1    = instruction[19:15];
-        inst_fields.rs2    = instruction[24:20];
-        inst_fields.funct7 = instruction[31:25];
+        if (jump && alu_src)         // JALR
+            next_pc = alu_result;
+        else if (jump)               // JAL
+            next_pc = d2e_reg.pc + d2e_reg.imm;
+        else if (branch && branch_taken)
+            next_pc = d2e_reg.pc + d2e_reg.imm;
+        else
+            next_pc = d2e_reg.pc + 4;
     end
 
-    logic lui_enable;
-    // Immediate generation
-    logic [6:0] opcode; 
-    assign opcode=inst_fields.opcode;
-    
-    always_comb begin 
-        imm = generate_imm(instruction,inst_fields.opcode);
+    //FETCH 
 
+    always_ff @(posedge clk) begin
+        if (!rst) begin
+            //FETCH wait 2 is when it's availble
+            if (fetch_state == FETCH_WAIT2) begin
+                f2d_reg.instruction  <= douta;
+                f2d_reg.pc <= pc;
+                f2d_reg.valid <= 1'b1;
+            end
+        end
     end
 
-    // Register read
-    assign rs1_val = registers[inst_fields.rs1];
-    assign rs2_val = (inst_fields.opcode == 7'b0010011) ? imm :registers[inst_fields.rs2];
+    //DECODE SETUP
 
-   
-    control_unit ctrl(
+    always_comb begin
+        if (f2d_reg.valid) begin
+            inst_fields.opcode = f2d_reg.instruction[6:0];
+            inst_fields.rd = f2d_reg.instruction[11:7];
+            inst_fields.funct3 = f2d_reg.instruction[14:12];
+            inst_fields.rs1 = f2d_reg.instruction[19:15];
+            inst_fields.rs2 = f2d_reg.instruction[24:20];
+            inst_fields.funct7 = f2d_reg.instruction[31:25];
+            instruction = f2d_reg.instruction;
+            imm = generate_imm(instruction,inst_fields.opcode);
+
+            rs1_val = registers[inst_fields.rs1];
+            rs2_val = registers[inst_fields.rs2];
+
+        end
+    end 
+
+         control_unit ctrl(
         .opcode(inst_fields.opcode),
         .funct3(inst_fields.funct3),
         .funct7(inst_fields.funct7),
-        .reg_write(reg_write),
         .imm(imm),
+        .reg_write(reg_write),
         .mem_to_reg(mem_to_reg),
         .mem_read(mem_read),
         .mem_write(mem_write),
@@ -157,17 +256,89 @@ module riscv_processor (
         .jump(jump),
         .alu_ctrl(alu_ctrl)
     );
+    //DECODE TRANSITION
 
+    always_ff@(posedge clk) begin 
+        if(rst) begin 
+            d2e_reg<='0;
+        end
+        else begin 
+            if(f2d_reg.valid)begin 
+                d2e_reg.pc<=f2d_reg.pc;
+                d2e_reg.rs1_val<=rs1_val;
+                d2e_reg.rs2_val<=rs2_val;
+                d2e_reg.imm<=imm;
+                d2e_reg.rd<=inst_fields.rd;
+                d2e_reg.rs1<=inst_fields.rs1;
+                d2e_reg.rs2<=inst_fields.rs2;
+                d2e_reg.funct3<=inst_fields.funct3;
+                d2e_reg.reg_write<=reg_write;
+                d2e_reg.mem_to_reg<=mem_to_reg;
+                d2e_reg.mem_read<=mem_read;
+                d2e_reg.mem_write<=mem_write;
+                d2e_reg.alu_src<=alu_src;
+                d2e_reg.branch<=branch;
+                d2e_reg.jump<=jump;
+                d2e_reg.alu_ctrl<=alu_ctrl;
+                d2e_reg.valid<=1'b1;
+            end
+            else begin  
+                d2e_reg<='0;
+            end
+
+        end
+
+    end
+
+    logic branch_taken;
+
+    //EXECUTE
+     // Execute Stage
     ALU alu(
-        .rs1_val(rs1_val),
-        .rs2_val(rs2_val),
-        .imm(imm),
-        .pc(pc),
-        .alu_ctrl(alu_ctrl),
-        .alu_src(alu_src),
+        .rs1_val   (d2e_reg.rs1_val),
+        .rs2_val   (d2e_reg.rs2_val),
+        .imm       (d2e_reg.imm),
+        .pc        (d2e_reg.pc),
+        .alu_ctrl  (d2e_reg.alu_ctrl),
+        .alu_src   (d2e_reg.alu_src),
         .alu_result(alu_result)
     );
 
+    branch_unit bu(
+        .branch      (d2e_reg.branch),
+        .funct3      (d2e_reg.funct3),
+        .rs1_val     (d2e_reg.rs1_val),
+        .rs2_val     (d2e_reg.rs2_val),
+        .branch_taken(branch_taken)
+    );
+
+    // Execute to Memory Register
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            e2m_reg <= '0;
+        end else begin
+            if (d2e_reg.valid) begin
+                e2m_reg.pc         <= d2e_reg.pc;
+                e2m_reg.alu_result <= alu_result;
+                e2m_reg.rs2_val    <= d2e_reg.rs2_val;
+                e2m_reg.rd         <= d2e_reg.rd;
+                e2m_reg.funct3     <= d2e_reg.funct3;
+                e2m_reg.reg_write  <= d2e_reg.reg_write;
+                e2m_reg.mem_to_reg <= d2e_reg.mem_to_reg;
+                e2m_reg.mem_read   <= d2e_reg.mem_read;
+                e2m_reg.mem_write  <= d2e_reg.mem_write;
+                e2m_reg.valid      <= d2e_reg.valid;
+                e2m_reg.jump       <= d2e_reg.jump;
+            end else begin
+                e2m_reg<='0;
+            end
+        end
+    end
+
+
+
+  //MEM
+    //MEMORY STAGE STUFF 
     logic [3:0] memory_store_enable;
     logic [31:0] final_store_data;
 
@@ -178,8 +349,8 @@ module riscv_processor (
 
 
     // Extract byte offset and aligned address
-    assign byte_offset = alu_result[1:0];
-    assign aligned_addr = {alu_result[31:2], 2'b00};
+    assign byte_offset = e2m_reg.alu_result[1:0];
+    assign aligned_addr = {e2m_reg.alu_result[31:2], 2'b00};
         //mem_rdata is aligned_addr 
 
     // Load operation implementation
@@ -188,52 +359,66 @@ module riscv_processor (
     Mem_ctrl_unit mem_ctrl_unit(
         .clk(clk),
         .rst(rst),
-        .funct3(inst_fields.funct3),
+        .funct3(e2m_reg.funct3),
         .byte_offset(byte_offset),
-        .rs2_val(rs2_val),
+        .rs2_val(e2m_reg.rs2_val),
         .mem_rdata(load_value),
         .read_result(load_result),
         .mem_wdata(final_store_data),
         .mem_be(memory_store_enable)
     );
 
-// Write to memory
+// MEM WRITE 
 always_ff @(posedge clk) begin
-    if (!rst && mem_write) begin
+    if (!rst && e2m_reg.mem_write && e2m_reg.valid) begin
         if (memory_store_enable[0]) dmem[aligned_addr][7:0] <= final_store_data[7:0];
         if (memory_store_enable[1]) dmem[aligned_addr][15:8] <= final_store_data[15:8];
         if (memory_store_enable[2]) dmem[aligned_addr][23:16] <= final_store_data[23:16];
         if (memory_store_enable[3]) dmem[aligned_addr][31:24] <= final_store_data[31:24];
     end
 end
+    // Memory to Writeback Register
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            m2w_reg <= '0;
+        end else begin
+            if (e2m_reg.valid) begin
+                m2w_reg.pc         <= e2m_reg.pc;
+                m2w_reg.alu_result <= e2m_reg.alu_result;
+                m2w_reg.mem_data   <= load_result;
+                m2w_reg.rd         <= e2m_reg.rd;
+                m2w_reg.reg_write  <= e2m_reg.reg_write;
+                m2w_reg.mem_to_reg <= e2m_reg.mem_to_reg;
+                m2w_reg.valid      <= e2m_reg.valid;
+                m2w_reg.jump       <= e2m_reg.jump;
+                m2w_reg.mem_read   <= e2m_reg.mem_read;
+            end else begin
+                m2w_reg<='0;   
+            end
+        end
+    end
 
-
+    //WB
     logic [4:0] destination_register;
     // Register write
-    assign destination_register = inst_fields.rd;
+    assign destination_register = m2w_reg.rd;
+    logic reg_write_1;
+    assign reg_write_1 = m2w_reg.reg_write;   
     always_ff @(posedge clk) begin
-        if (!rst && reg_write && inst_fields.rd != 0) begin
-            if (mem_to_reg && !mem_read)
-                registers[inst_fields.rd] <= dmem[alu_result];
+        if (!rst && m2w_reg.reg_write && destination_register != 0) begin
+            if (mem_to_reg && !m2w_reg.mem_read)
+                registers[destination_register] <= dmem[m2w_reg.alu_result];
             else if (jump)
-                registers[inst_fields.rd] <= pc + 4;
-            else if(!rst && mem_read)//load 
-                registers[inst_fields.rd] <= load_result;
+                registers[destination_register] <= m2w_reg.pc + 4;
+            else if(!rst && m2w_reg.mem_read)//load 
+                registers[destination_register] <= load_result;
             else
-                registers[inst_fields.rd] <= alu_result;
+                registers[destination_register] <= m2w_reg.alu_result;
         end
     end
     // Branch unit
-logic branch_taken;
 
 
-branch_unit bu(
-    .branch(branch),
-    .funct3(inst_fields.funct3),
-    .rs1_val(rs1_val),
-    .rs2_val(rs2_val),
-    .branch_taken(branch_taken)
-);
 
 
 endmodule

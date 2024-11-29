@@ -186,7 +186,7 @@ async def test_and_operation(dut):
         await FallingEdge(dut.clk)
         dut.registers[1].value=1
         dut.registers[2].value=9
-        await ClockCycles(dut.clk,4)
+        await ClockCycles(dut.clk,10)
         assert hex(dut.registers[3].value) == hex(1)
 async def test_sll_operation(dut):
         REG_OP_CODE=51
@@ -982,7 +982,7 @@ async def test_jump_and_link(dut):
 
     value = RISCVInstruction.J_type(REG_OP_CODE, IMM, REG_1)
     value = format_hex32(value)
-    instructions = [value,format_hex32(0),format_hex32(0),
+    instructions = [value,format_hex32(10201001),format_hex32(0),
                     format_hex32(0),format_hex32(0),format_hex32(RISCVInstruction.I_type(
                          19, 0, 4, 0, 3)
                     )]
@@ -1003,7 +1003,7 @@ async def test_jump_and_link(dut):
     #    def J_type(opcode, imm, rd):
 
     #    def I_type(opcode, funct3, imm, rs1, rd):
-    await ClockCycles(dut.clk, 9)
+    await ClockCycles(dut.clk, 35)
     await RisingEdge(dut.clk)
     # assert hex(dut.pc.value) == hex(0x14)
 
@@ -1088,6 +1088,33 @@ async def test_auipc(dut):
 async def test_u_type(dut):
     await test_lui(dut)
     await test_auipc(dut)
+async def test_add_sequence(dut):
+    instructions = [
+        # addi x1, x0, 5    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=5
+        RISCVInstruction.I_type(19, 0, 5, 0, 1),  
+        
+        # addi x2, x0, 10   # opcode=0010011 (ADDI), rd=2, rs1=0, imm=10
+        RISCVInstruction.I_type(19, 0, 10, 0, 2),
+        
+        # add x3, x1, x2    # opcode=0110011 (ADD), rd=3, rs1=1, rs2=2
+        RISCVInstruction.R_type(51, 0, 0, 1, 2, 3)
+    ]
+
+    # Convert to hex format
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    await ClockCycles(dut.clk, 1)
+
+    await ClockCycles(dut.clk, 40)
+
+    # Write to memory file
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+
 @cocotb.test()
 async def test_ALU_operations(dut):
     """Test ALU operations"""
@@ -1109,9 +1136,10 @@ async def test_ALU_operations(dut):
     # await test_jump_and_link(dut)
     # await test_add_operation(dut)
     # await test_store_half(dut)
-    # await test_addi_operation(dut)
+    # await test_and_operation(dut)
     # await test_add_operation(dut)
     # await test_jump_and_link(dut)
+    # await test_addi_operation(dut)
     # await test_branch_less_than_unsigned(dut)
     # await ClockCycles(dut.clk,20)
     # await test_load(dut)
@@ -1120,6 +1148,7 @@ async def test_ALU_operations(dut):
     # write me a command that adds 10 to register 0 and stores it in register 2
     # write me a command that adds 15 to register 0 and stores it in register 3
     #write me a command that addes register 2 and 3 and stores it in 4 
+    await test_add_sequence(dut)
      
                  
          
