@@ -28,6 +28,10 @@ module riscv_processor (
     logic [31:0] instruction;
     logic        valid;
     } f2d_type;
+logic [31:0] f2d_inst;
+logic [31:0] d2e_inst;
+logic [31:0] e2m_inst;
+logic [31:0] m2w_inst;
 
 typedef struct packed {
     logic [31:0] pc;
@@ -80,6 +84,14 @@ d2e_type d2e_reg;
 f2d_type f2d_reg;
 e2m_type e2m_reg;
 m2w_type m2w_reg;
+logic [31:0] fetch_1_pc;
+logic fetch_1_valid;
+
+logic [31:0] fetch_2_pc;
+logic fetch_2_valid;
+
+logic [31:0] fetch_3_pc;
+logic fetch_3_valid; 
 
 
 // writeback_type writeback_reg;
@@ -110,12 +122,13 @@ logic stall_decode;
     logic [31:0] alu_result;
     logic [3:0] alu_ctrl;
     logic [31:0] douta;
-    typedef enum logic [1:0] {
-      FETCH_REQUEST,
-      FETCH_WAIT1,
-      FETCH_WAIT2
-    } fetch_state_e;
-    fetch_state_e fetch_state;
+    logic [1:0] reset_delay;
+    // typedef enum logic [1:0] {
+    //   FETCH_1,
+    //   FETCH_2,
+    //   FETCH_3
+    // } fetch_state_e;
+    // fetch_state_e fetch_state;
 // fetch_state_t fetch_state;
     // Initialize registers at start
    xilinx_single_port_ram_read_first #(
@@ -124,11 +137,11 @@ logic stall_decode;
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
     .INIT_FILE("/Users/ziyadhassan/6205/6205FinalProject/Final_project/data/instructionMem.mem")          // Specify name/location of RAM initialization file if using one (leave blank if not)
    ) imem (
-    .addra(pc>>2),     // Address bus, width determined from RAM_DEPTH
+    .addra(pc>>2),//what if we fetched next_pc     // Address bus, width determined from RAM_DEPTH
     .dina(),       // RAM input data, width determined from RAM_WIDTH
     .clka(clk),       // Clock
     .wea(1'b0),         // Write enable
-    .ena(fetch_state==FETCH_REQUEST),         // RAM Enable, for additional power savings, disable port when not in use
+    .ena(1'b1),         // RAM Enable, for additional power savings, disable port when not in use
     .rsta(1'b0),       // Output reset (does not affect memory contents)
     .regcea(1'b1),   // Output register enable
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
@@ -145,9 +158,38 @@ logic stall_decode;
 //         stall_fetch = 1'b1;
 //         stall_decode = 1'b1;
 //     end
-// end
+        // en
+    logic annul;
+    assign fetch_1_pc = pc; 
+    assign fetch_1_valid = rst? 0: 1'b1;
+    // always_ff@(posedge clk)begin 
+    //     if(rst)begin 
+    //         reset_delay<=2'b2;
+    //     end 
+    //     else begin 
+    //         if(reset_delay!=2'b0)begin 
+    //             reset_delay<=reset_delay-1;
+    //         end
+    //     end
+    // end
+//SETTING FETCH STAGES TRANSITIOn
+    always_ff@(posedge clk)begin 
+        if(rst)begin 
+           fetch_2_pc<=32'b0;
+              fetch_2_valid<=0;
+                fetch_3_pc<=32'b0;
+                fetch_3_valid<=0;
 
+        end
+        else begin 
+            fetch_2_pc<=fetch_1_pc;
+            fetch_2_valid<=annul ? 0 : fetch_1_valid;
 
+            fetch_3_pc<=fetch_2_pc;
+            fetch_3_valid<=annul? 0 : fetch_2_valid;
+        end
+        
+    end
     // Fetch state machine
     logic data_ready;
     assign instruction_done = m2w_reg.valid;
@@ -165,61 +207,44 @@ logic stall_decode;
                 dmem[i]<=32'b0;
             end
             registers_initialized <= 1'b1;
-            fetch_state<=FETCH_REQUEST;
 
         end
         else begin 
-            case(fetch_state)
-                FETCH_REQUEST:begin
-                    fetch_state<=FETCH_WAIT1;
-                end
-                FETCH_WAIT1:begin
-                    fetch_state<=FETCH_WAIT2;
-                end
-                FETCH_WAIT2:begin
-                    //SHOULD BE DONE IN SYNC WITH LAST WB STAGE 
-                    // fetch_state<=FETCH_REQUEST;
-                    // if(jump && alu_src)//jalr
-                    //     pc <= alu_result;
-                    // else if (jump )//jal
-                    //     pc <= pc + imm;
-                    // else if (branch && branch_taken)
-                    //     pc <= pc + imm;
-            
-                    // else
-                    //     pc <= pc + 4;  // Increment by 1 instead of 4 for debugging
-                    fetch_state<=FETCH_REQUEST;
-                    pc<=next_pc;// That way we have already determined what next pc is
-                end
-                
-            endcase
-        
+         pc <=next_pc;
         end
 
     end
-    // Next PC Logic;; this is supposed to happen in execute stage, also probably always going to work THIS IS DIETERMINED IN EXECUTE
+    // Next PC Logic SHOULD BE DETERMINED IN EXECUTE 
     logic [31:0] next_pc;
     always_comb begin
-        if (jump && alu_src)         // JALR
+        annul= 1'b1;
+        if (d2e_reg.jump && d2e_reg.alu_src)         // JALR
             next_pc = alu_result;
-        else if (jump)               // JAL
+        else if (d2e_reg.jump)               // JAL
             next_pc = d2e_reg.pc + d2e_reg.imm;
-        else if (branch && branch_taken)
+        else if (d2e_reg.branch && branch_taken)
             next_pc = d2e_reg.pc + d2e_reg.imm;
-        else
-            next_pc = d2e_reg.pc + 4;
+        else begin 
+            next_pc = pc + 4;
+            annul= 1'b0;
+        end 
     end
 
-    //FETCH 
-
+    //FETCH SETUP + FETCH STATE
     always_ff @(posedge clk) begin
-        if (!rst) begin
+        if (!rst ) begin
             //FETCH wait 2 is when it's availble
-            if (fetch_state == FETCH_WAIT2) begin
+            if (fetch_3_valid && !annul ) begin
                 f2d_reg.instruction  <= douta;
-                f2d_reg.pc <= pc;
+                f2d_reg.pc <= fetch_3_pc;
                 f2d_reg.valid <= 1'b1;
+                f2d_inst<=douta;
             end
+            else begin 
+                f2d_reg <= '0;
+                f2d_inst<=32'b0;
+
+            end 
         end
     end
 
@@ -241,7 +266,7 @@ logic stall_decode;
 
         end
     end 
-
+        //prob can't have this in decode do it in execute
          control_unit ctrl(
         .opcode(inst_fields.opcode),
         .funct3(inst_fields.funct3),
@@ -261,9 +286,10 @@ logic stall_decode;
     always_ff@(posedge clk) begin 
         if(rst) begin 
             d2e_reg<='0;
+            d2e_inst<=32'b0;
         end
         else begin 
-            if(f2d_reg.valid)begin 
+            if(f2d_reg.valid && !annul)begin 
                 d2e_reg.pc<=f2d_reg.pc;
                 d2e_reg.rs1_val<=rs1_val;
                 d2e_reg.rs2_val<=rs2_val;
@@ -281,6 +307,7 @@ logic stall_decode;
                 d2e_reg.jump<=jump;
                 d2e_reg.alu_ctrl<=alu_ctrl;
                 d2e_reg.valid<=1'b1;
+                d2e_inst<=f2d_inst;
             end
             else begin  
                 d2e_reg<='0;
@@ -316,9 +343,10 @@ logic stall_decode;
     always_ff @(posedge clk) begin
         if (rst) begin
             e2m_reg <= '0;
+            e2m_inst<=32'b0;
         end else begin
-            if (d2e_reg.valid) begin
-                e2m_reg.pc         <= d2e_reg.pc;
+            if (d2e_reg.valid ) begin
+                e2m_reg.pc <= d2e_reg.pc;
                 e2m_reg.alu_result <= alu_result;
                 e2m_reg.rs2_val    <= d2e_reg.rs2_val;
                 e2m_reg.rd         <= d2e_reg.rd;
@@ -329,6 +357,7 @@ logic stall_decode;
                 e2m_reg.mem_write  <= d2e_reg.mem_write;
                 e2m_reg.valid      <= d2e_reg.valid;
                 e2m_reg.jump       <= d2e_reg.jump;
+                e2m_inst<=d2e_inst;
             end else begin
                 e2m_reg<='0;
             end
@@ -392,6 +421,7 @@ end
                 m2w_reg.valid      <= e2m_reg.valid;
                 m2w_reg.jump       <= e2m_reg.jump;
                 m2w_reg.mem_read   <= e2m_reg.mem_read;
+                m2w_inst<=e2m_inst;
             end else begin
                 m2w_reg<=106'b0;   
             end

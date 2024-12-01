@@ -1113,6 +1113,7 @@ async def test_add_sequence(dut):
     await ClockCycles(dut.clk, 18)
 
     # Write to memory file
+
    
 
 @cocotb.test()
@@ -1139,6 +1140,7 @@ async def test_ALU_operations(dut):
     # await test_and_operation(dut)
     # await test_add_operation(dut)
     # await test_jump_and_link(dut)
+    await test_add_sequence(dut) 
     # await test_addi_operation(dut)
     # await test_branch_less_than_unsigned(dut)
     # await ClockCycles(dut.clk,20)
@@ -1150,6 +1152,7 @@ async def test_ALU_operations(dut):
     #write me a command that addes register 2 and 3 and stores it in 4 
     # await test_add_sequence(dut) # this shiii works lol
     # await test_sub_operation(dut)
+    
      
                  
          
