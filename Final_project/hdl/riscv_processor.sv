@@ -1,9 +1,11 @@
 module riscv_processor (
     input  logic        clk,
     input  logic        rst,
+    input  logic [31:0] ending_pc,
   
     output logic [31:0] pc_out,
     output logic  instruction_done
+    
 );
     // Program Counter
     logic [31:0] pc;
@@ -192,7 +194,7 @@ logic stall_decode;
     end
     // Fetch state machine
     logic data_ready;
-    assign instruction_done = m2w_reg.valid;
+    assign instruction_done = m2w_reg.pc == ending_pc;
     always_ff @(posedge clk)begin 
         if(rst)begin 
             registers_initialized<=1'b0;
@@ -204,7 +206,7 @@ logic stall_decode;
             end
             for(int i=0;i<1024;i++)begin
                 // imem[i]<=32'b0;
-                dmem[i]<=32'b0;
+                dmem[i]<=0'b0;
             end
             registers_initialized <= 1'b1;
 
@@ -241,7 +243,7 @@ logic stall_decode;
                 f2d_inst<=douta;
             end
             else begin 
-                f2d_reg <= '0;
+                f2d_reg <= 65'b0;
                 f2d_inst<=32'b0;
 
             end 
@@ -249,7 +251,13 @@ logic stall_decode;
     end
 
     //DECODE SETUP
+    logic [31:0] rs1_debug;
+    logic [31:0] rs2_debug;
+    logic [31:0] rd_debug;
 
+    assign rs1_debug = rs1_val;
+    assign rs2_debug = rs2_val;
+    assign rd_debug = rd_val;
     always_comb begin
         if (f2d_reg.valid) begin
             inst_fields.opcode = f2d_reg.instruction[6:0];
@@ -285,7 +293,7 @@ logic stall_decode;
 
     always_ff@(posedge clk) begin 
         if(rst) begin 
-            d2e_reg<='0;
+            d2e_reg<=157'b0;
             d2e_inst<=32'b0;
         end
         else begin 
@@ -342,7 +350,7 @@ logic stall_decode;
     // Execute to Memory Register
     always_ff @(posedge clk) begin
         if (rst) begin
-            e2m_reg <= '0;
+            e2m_reg <= 110'b0;
             e2m_inst<=32'b0;
         end else begin
             if (d2e_reg.valid ) begin
@@ -409,7 +417,7 @@ end
     // Memory to Writeback Register
     always_ff @(posedge clk) begin
         if (rst) begin
-            m2w_reg <= '0;
+            m2w_reg <= 106'b0;
         end else begin
             if (e2m_reg.valid) begin
                 m2w_reg.pc         <= e2m_reg.pc;
@@ -427,13 +435,16 @@ end
             end
         end
     end
-
     //WB
     logic [4:0] destination_register;
     // Register write
     assign destination_register = m2w_reg.rd;
     logic reg_write_1;
     assign reg_write_1 = m2w_reg.reg_write;   
+    logic mem_read_1;
+    assign mem_read_1 = m2w_reg.mem_read;
+    logic [31:0] load_data_ending;
+    assign load_data_ending = m2w_reg.mem_data;
     always_ff @(posedge clk) begin
         if (!rst && m2w_reg.reg_write && destination_register != 0) begin
             if (mem_to_reg && !m2w_reg.mem_read)
@@ -441,7 +452,7 @@ end
             else if (jump)
                 registers[destination_register] <= m2w_reg.pc + 4;
             else if(!rst && m2w_reg.mem_read)//load 
-                registers[destination_register] <= load_result;
+                registers[destination_register] <= m2w_reg.mem_data;
             else
                 registers[destination_register] <= m2w_reg.alu_result;
         end

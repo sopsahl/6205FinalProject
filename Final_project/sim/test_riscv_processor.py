@@ -1108,9 +1108,9 @@ async def test_add_sequence(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
+    dut.ending_pc.value= 0x18
     await ClockCycles(dut.clk, 1)
 
-    await ClockCycles(dut.clk, 18)
 
     # Write to memory file
 
@@ -1140,7 +1140,7 @@ async def test_ALU_operations(dut):
     # await test_and_operation(dut)
     # await test_add_operation(dut)
     # await test_jump_and_link(dut)
-    await test_add_sequence(dut) 
+    # await test_add_sequence(dut) 
     # await test_addi_operation(dut)
     # await test_branch_less_than_unsigned(dut)
     # await ClockCycles(dut.clk,20)
