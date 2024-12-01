@@ -886,8 +886,8 @@ async def test_ALU_operations(dut):
     await ClockCycles(dut.clk,1)
     dut.rst.value = 0
 
-    await test_load_byte(dut)
     # await test_jump_and_link(dut)
+    await test_store_word(dut)  
     # await test_store_half(dut)
     # await ClockCycles(dut.clk,20)
     # await test_load(dut)

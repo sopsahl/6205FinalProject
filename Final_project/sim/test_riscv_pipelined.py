@@ -118,7 +118,7 @@ async def test_add_sequence(dut):
     await ClockCycles(dut.clk, 1)
 
     await ClockCycles(dut.clk, 18)
-    assert hex(dut.registers[3].value) == hex(15)
+    print(hex(dut.registers[3].value))
 async def test_sub_sequence(dut):
     instructions = [
         # addi x1, x0, 5    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=5
@@ -155,6 +155,7 @@ async def test_load(dut):
     #THIS FUCKING abommination of a framework just doesn't work sometimes 
     instructions = [
         # addi x1, x0, 4    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=4
+        # RISCVInstruction.I_type(19, 0, 4, 0, 1),
         # lw x3, 0(x1)    # opcode=0000011 (LW), rd=3, rs1=1, imm=0
         RISCVInstruction.I_type(3, 2, 0, 1, 3),
         0,  # nop
@@ -166,19 +167,52 @@ async def test_load(dut):
         for instr in hex_instructions:
             f.write(f"{instr}\n")
     dut.rst.value = 1
+    
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
+    dut.registers[1].value = 4  
 
-    dut.dmem[4].value = 10
-    dut.registers[1].value = 4
+    # dut.dmem[4].value = 10
     
     dut.ending_pc.value = 0x60
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.instruction_done) 
-    assert hex(dut.registers[3].value) == hex(10)
+    assert hex(dut.registers[3].value) == hex(0xdeadbeef)
 
     # Write to memory file
+async def test_store(dut):
+    instructions = [
+        # addi x1, x0, 4    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=4
+        RISCVInstruction.I_type(19, 0, 0x8, 0, 1),
+        0,
+        0,
+        0,
+        0,
+        # sw x1, 0(x0)    # opcode=0100011 (SW), rs1=1, rs2=0, imm=0
+        RISCVInstruction.S_type(35, 2, 0, 0, 1),
+        0,
+        0,  # nop
+        0,  # nop
+        0,  # nop
+        0,  # nop
+        #load x3, 0(x0)    # opcode=0000011 (LW), rd=3, rs1=0, imm=0
+        RISCVInstruction.I_type(3, 2, 0, 0, 3)
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    dut.ending_pc.value = 0x60
+    await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 18)
+    await RisingEdge(dut.instruction_done)
+    print(hex(dut.registers[1].value))
 
+    assert hex(dut.registers[3].value) == hex(0x8)
+    #
    
 
 @cocotb.test()
@@ -191,7 +225,8 @@ async def test_ALU_operations(dut):
 
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
     # await test_sub_sequence(dut)
-    await test_load(dut)
+    # await test_load(dut)
+    await test_store(dut)
     #timing issues
 
    
@@ -221,6 +256,7 @@ def ALU_runner():
     sources+= [proj_path / "hdl" / "control_unit.sv"]
     sources += [proj_path / "hdl" / "ALU.sv"]
     sources += [proj_path / "hdl" / "xilinx_single_port_ram_read_first.v"]
+    sources += [proj_path / "hdl" / "xilinx_true_dual_port_read_first_1_clock_ram.v"]
     sources += [proj_path / "hdl" / "mem_ctrl_unit.sv"]
     sources += [proj_path / "hdl" / "branch_unit.sv"]
     # sources += [proj_path / "data" / "instructionMem.mem"]

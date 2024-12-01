@@ -11,11 +11,13 @@ module riscv_processor (
     logic [31:0] pc;
     assign pc_out = pc;
 
-    logic [31:0] dmem [1023:0];  // Data memory
+    // logic [31:0] dmem [1023:0];  // Data memory
 
     logic [31:0] registers [31:0];
     logic registers_initialized;
-    
+        logic dmem_read;
+    logic [31:0] aligned_addr;
+    logic [31:0] load_value;
     // Instruction Fields
     typedef struct packed {
         logic [6:0] opcode;
@@ -33,7 +35,8 @@ module riscv_processor (
 logic [31:0] f2d_inst;
 logic [31:0] d2e_inst;
 logic [31:0] e2m_inst;
-logic [31:0] m2w_inst;
+logic [31:0] mem1_mem2_inst;
+logic [31:0] mem2_wb_inst;
 
 typedef struct packed {
     logic [31:0] pc;
@@ -77,15 +80,21 @@ typedef struct packed {
         logic        reg_write;
         logic        mem_to_reg;
         logic       mem_read;
+        logic      mem_write;
         logic        valid;
         logic jump;
+        logic [2:0] funct3;
+        logic [31:0] rs2_val;
     } m2w_type;
 
 
 d2e_type d2e_reg;
 f2d_type f2d_reg;
-e2m_type e2m_reg;
-m2w_type m2w_reg;
+e2m_type e2m_reg;//request memory 
+m2w_type mem1_mem2_reg;//wait one cycle 
+m2w_type mem2_wb_reg;//write back
+
+
 logic [31:0] fetch_1_pc;
 logic fetch_1_valid;
 
@@ -148,6 +157,32 @@ logic stall_decode;
     .regcea(1'b1),   // Output register enable
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
   );
+
+  xilinx_true_dual_port_read_first_1_clock_ram #(
+    .RAM_WIDTH(32),
+    .RAM_DEPTH(1024),
+    .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+    .INIT_FILE("/Users/ziyadhassan/6205/6205FinalProject/Final_project/data/dataMem.mem")
+) dmem (
+    // Port A - Read port
+    .clka(clk),
+    .ena(dmem_read),
+    .wea(1'b0),
+    .addra(aligned_addr>>2),
+    .dina(32'b0),
+    .douta(load_value),//should be the load value from 2 cycles later 
+    .rsta(rst),
+    .regcea(1'b1),
+    
+    // Port B - Write port
+    .enb(mem2_wb_reg.mem_write && mem2_wb_reg.valid),//last stage
+    .web(1'b1),
+    .addrb(mem2_wb_reg.alu_result>>2),
+    .dinb(data_to_write),
+    .doutb(),
+    .rstb(rst),
+    .regceb(1'b1)
+);
 //     //CHECK FOR HAZARDS
 //     always_comb begin
 //     stall_pipeline = 1'b0;
@@ -194,7 +229,7 @@ logic stall_decode;
     end
     // Fetch state machine
     logic data_ready;
-    assign instruction_done = m2w_reg.pc == ending_pc;
+    assign instruction_done = mem2_wb_reg.pc == ending_pc;
     always_ff @(posedge clk)begin 
         if(rst)begin 
             registers_initialized<=1'b0;
@@ -206,7 +241,7 @@ logic stall_decode;
             end
             for(int i=0;i<1024;i++)begin
                 // imem[i]<=32'b0;
-                dmem[i]<=0'b0;
+                // dmem[i]<=0'b0;
             end
             registers_initialized <= 1'b1;
 
@@ -274,7 +309,7 @@ logic stall_decode;
 
         end
     end 
-        //prob can't have this in decode do it in execute
+        //decode 
          control_unit ctrl(
         .opcode(inst_fields.opcode),
         .funct3(inst_fields.funct3),
@@ -374,31 +409,70 @@ logic stall_decode;
 
 
 
-  //MEM
+    
+    //Memory Request
+
+    assign aligned_addr = {e2m_reg.alu_result[31:2], 2'b00};
+    assign dmem_read = e2m_reg.mem_read||e2m_reg.mem_write;//since we need the write data for partial stores 
+
+    //transitions 
+        // Memory to Writeback Register
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            mem1_mem2_reg <= 106'b0;
+        end else begin
+            if (e2m_reg.valid) begin
+                mem1_mem2_reg.pc         <= e2m_reg.pc;
+                mem1_mem2_reg.alu_result <= e2m_reg.alu_result;
+                mem1_mem2_reg.mem_data   <= load_result;
+                mem1_mem2_reg.rd         <= e2m_reg.rd;
+                mem1_mem2_reg.reg_write  <= e2m_reg.reg_write;
+                mem1_mem2_reg.mem_to_reg <= e2m_reg.mem_to_reg;
+                mem1_mem2_reg.valid      <= e2m_reg.valid;
+                mem1_mem2_reg.jump       <= e2m_reg.jump;
+                mem1_mem2_reg.mem_read   <= e2m_reg.mem_read;
+                mem1_mem2_reg.mem_write  <= e2m_reg.mem_write;
+                mem1_mem2_reg.funct3     <= e2m_reg.funct3;
+                mem1_mem2_reg.rs2_val    <= e2m_reg.rs2_val;
+                // m2w_inst<=e2m_inst;
+                mem1_mem2_inst<=e2m_inst;
+
+            end else begin
+                mem1_mem2_reg<=106'b0;   
+            end
+        end
+    end
+    always_ff@(posedge clk )begin 
+        if(!rst)begin  mem2_wb_reg<=mem1_mem2_reg;
+            mem2_wb_inst<=mem1_mem2_inst;
+        end
+        else begin 
+            mem2_wb_reg<=106'b0;
+        end
+
+    end
     //MEMORY STAGE STUFF 
     logic [3:0] memory_store_enable;
     logic [31:0] final_store_data;
 
     logic [31:0] load_result;
     logic [1:0] byte_offset;
-    logic [31:0] aligned_addr;
-    logic is_unsigned;
+//     logic is_unsigned;
 
 
-    // Extract byte offset and aligned address
-    assign byte_offset = e2m_reg.alu_result[1:0];
-    assign aligned_addr = {e2m_reg.alu_result[31:2], 2'b00};
-        //mem_rdata is aligned_addr 
+//     // Extract byte offset and aligned address
+    assign byte_offset = mem2_wb_reg.alu_result[1:0];
+//     assign aligned_addr = {e2m_reg.alu_result[31:2], 2'b00};
+//         //mem_rdata is aligned_addr 
 
-    // Load operation implementation
-    logic [31:0] load_value;
-    assign load_value = dmem[aligned_addr];
+//     // Load operation implementation
+    // logic [31:0] load_value;
     Mem_ctrl_unit mem_ctrl_unit(
         .clk(clk),
         .rst(rst),
-        .funct3(e2m_reg.funct3),
+        .funct3(mem2_wb_reg.funct3),
         .byte_offset(byte_offset),
-        .rs2_val(e2m_reg.rs2_val),
+        .rs2_val(mem2_wb_reg.rs2_val),
         .mem_rdata(load_value),
         .read_result(load_result),
         .mem_wdata(final_store_data),
@@ -406,55 +480,39 @@ logic stall_decode;
     );
 
 // MEM WRITE 
-always_ff @(posedge clk) begin
-    if (!rst && e2m_reg.mem_write && e2m_reg.valid) begin
-        if (memory_store_enable[0]) dmem[aligned_addr][7:0] <= final_store_data[7:0];
-        if (memory_store_enable[1]) dmem[aligned_addr][15:8] <= final_store_data[15:8];
-        if (memory_store_enable[2]) dmem[aligned_addr][23:16] <= final_store_data[23:16];
-        if (memory_store_enable[3]) dmem[aligned_addr][31:24] <= final_store_data[31:24];
+logic [31:0] data_to_write;
+
+always_comb begin
+    if (!rst && mem2_wb_reg.mem_write && mem2_wb_reg.valid) begin
+        data_to_write[7:0] =  memory_store_enable[0]? final_store_data[7:0]:load_value[7:0];
+        data_to_write[15:8] = memory_store_enable[1]? final_store_data[15:8]:load_value[15:8];
+        data_to_write[23:16] = memory_store_enable[2]? final_store_data[23:16]:load_value[23:16];
+        data_to_write[31:24] = memory_store_enable[3]? final_store_data[31:24]:load_value[31:24];
+
     end
 end
-    // Memory to Writeback Register
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            m2w_reg <= 106'b0;
-        end else begin
-            if (e2m_reg.valid) begin
-                m2w_reg.pc         <= e2m_reg.pc;
-                m2w_reg.alu_result <= e2m_reg.alu_result;
-                m2w_reg.mem_data   <= load_result;
-                m2w_reg.rd         <= e2m_reg.rd;
-                m2w_reg.reg_write  <= e2m_reg.reg_write;
-                m2w_reg.mem_to_reg <= e2m_reg.mem_to_reg;
-                m2w_reg.valid      <= e2m_reg.valid;
-                m2w_reg.jump       <= e2m_reg.jump;
-                m2w_reg.mem_read   <= e2m_reg.mem_read;
-                m2w_inst<=e2m_inst;
-            end else begin
-                m2w_reg<=106'b0;   
-            end
-        end
-    end
+
     //WB
     logic [4:0] destination_register;
     // Register write
-    assign destination_register = m2w_reg.rd;
+    assign destination_register = mem2_wb_reg.rd;
     logic reg_write_1;
-    assign reg_write_1 = m2w_reg.reg_write;   
+    assign reg_write_1 = mem2_wb_reg.reg_write;   
     logic mem_read_1;
-    assign mem_read_1 = m2w_reg.mem_read;
+    assign mem_read_1 = mem2_wb_reg.mem_read;
     logic [31:0] load_data_ending;
-    assign load_data_ending = m2w_reg.mem_data;
+    assign load_data_ending = mem2_wb_reg.mem_data;
     always_ff @(posedge clk) begin
-        if (!rst && m2w_reg.reg_write && destination_register != 0) begin
-            if (mem_to_reg && !m2w_reg.mem_read)
-                registers[destination_register] <= dmem[m2w_reg.alu_result];
-            else if (jump)
-                registers[destination_register] <= m2w_reg.pc + 4;
-            else if(!rst && m2w_reg.mem_read)//load 
-                registers[destination_register] <= m2w_reg.mem_data;
+        if (!rst && mem2_wb_reg.reg_write && destination_register != 0) begin
+            if (mem_to_reg && !mem2_wb_reg.mem_read)
+            //difference between load value and load result is that one goes through filtering for lb and lbu and lh etc
+                registers[destination_register] <= load_value;
+            else if (mem2_wb_reg.jump) // JALR
+                registers[destination_register] <= mem2_wb_reg.pc + 4;
+            else if(!rst && mem2_wb_reg.mem_read)//load 
+                registers[destination_register] <= load_result;
             else
-                registers[destination_register] <= m2w_reg.alu_result;
+                registers[destination_register] <= mem2_wb_reg.alu_result;
         end
     end
     // Branch unit
