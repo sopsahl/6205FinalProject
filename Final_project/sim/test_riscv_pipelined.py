@@ -212,7 +212,69 @@ async def test_store(dut):
     print(hex(dut.registers[1].value))
 
     assert hex(dut.registers[3].value) == hex(0x8)
-    #
+    #works 
+async def test_RAW_hazard(dut):
+    instructions = [
+        # addi x1, x0, 4    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=4
+        RISCVInstruction.I_type(19, 0, 4, 0, 1),
+        # addi x2, x0, 10   # opcode=0010011 (ADDI), rd=2, rs1=0, imm=10
+        RISCVInstruction.I_type(19, 0, 10, 0, 2),
+        # add x3, x1, x2    # opcode=0110011 (ADD), rd=3, rs1=1, rs2=2 should be 14
+        RISCVInstruction.R_type(51, 0, 0, 1, 2, 3),
+        # sub x4, x3, x1    # opcode=0110011 (SUB), rd=4, rs1=3, rs2=1  should be 10
+        RISCVInstruction.R_type(51, 0, 32, 3, 1, 4)
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    dut.ending_pc.value = 0x14
+    # await ClockCycles(dut.clk, 20)
+    await RisingEdge(dut.instruction_done)
+    assert hex(dut.registers[4].value) == hex(10)
+    assert(hex(dut.registers[3].value) == hex(14))
+    #works
+async def test_load_use_hazard(dut):
+    instructions = [
+        RISCVInstruction.I_type(3, 2, 4, 0, 1),     # lw x1, 4(x0)
+        0,
+        0,
+        RISCVInstruction.R_type(51, 0, 0, 1, 2, 3)  # add x3, x1, x2  # Use after load
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    dut.ending_pc.value = 0x8
+    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.instruction_done)
+    print(hex(dut.registers[3].value))
+
+
+async def test_memory_hazard(dut):
+    instructions = [
+        RISCVInstruction.S_type(35, 2, 0, 0, 1),    # sw x1, 0(x0)
+        RISCVInstruction.I_type(3, 2, 0, 0, 2)      # lw x2, 0(x0)    # Load after store
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    dut.registers[1].value = 0xbeefeeef
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    dut.ending_pc.value = 0x8
+    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.instruction_done)
+    assert hex(dut.registers[2].value) == hex(0xbeefeeef)
+
    
 
 @cocotb.test()
@@ -226,7 +288,10 @@ async def test_ALU_operations(dut):
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
     # await test_sub_sequence(dut)
     # await test_load(dut)
-    await test_store(dut)
+    # await test_store(dut)
+    # await test_RAW_hazard (dut)
+    # await test_load_use_hazard(dut)
+    await test_memory_hazard(dut)
     #timing issues
 
    

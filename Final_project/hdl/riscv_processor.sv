@@ -69,6 +69,7 @@ typedef struct packed {
     logic        mem_read;
     logic        mem_write;
     logic        valid;
+    logic branch;
     logic jump;//for dest pc purposes, I know I should have handled that earlier lol
 } e2m_type;
 
@@ -85,6 +86,7 @@ typedef struct packed {
         logic jump;
         logic [2:0] funct3;
         logic [31:0] rs2_val;
+        logic branch;
     } m2w_type;
 
 
@@ -106,6 +108,7 @@ logic fetch_3_valid;
 
 
 // writeback_type writeback_reg;
+logic [31:0] data_to_write;
 
 logic flush_pipeline;
 logic stall_fetch;
@@ -152,7 +155,7 @@ logic stall_decode;
     .dina(),       // RAM input data, width determined from RAM_WIDTH
     .clka(clk),       // Clock
     .wea(1'b0),         // Write enable
-    .ena(1'b1),         // RAM Enable, for additional power savings, disable port when not in use
+    .ena(!stall_decode),         // RAM Enable, for additional power savings, disable port when not in use
     .rsta(1'b0),       // Output reset (does not affect memory contents)
     .regcea(1'b1),   // Output register enable
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
@@ -219,11 +222,20 @@ logic stall_decode;
 
         end
         else begin 
+            if(stall_decode)begin 
+
+                //keep everything the same
+                fetch_2_valid<=0;
+                fetch_3_valid<=0;
+
+            end 
+            else begin 
             fetch_2_pc<=fetch_1_pc;
             fetch_2_valid<=annul ? 0 : fetch_1_valid;
 
             fetch_3_pc<=fetch_2_pc;
             fetch_3_valid<=annul? 0 : fetch_2_valid;
+            end 
         end
         
     end
@@ -262,16 +274,21 @@ logic stall_decode;
         else if (d2e_reg.branch && branch_taken)
             next_pc = d2e_reg.pc + d2e_reg.imm;
         else begin 
-            next_pc = pc + 4;
+            next_pc = stall_decode?fetch_3_pc: pc + 4;
             annul= 1'b0;
         end 
+    
     end
 
     //FETCH SETUP + FETCH STATE
     always_ff @(posedge clk) begin
         if (!rst ) begin
             //FETCH wait 2 is when it's availble
-            if (fetch_3_valid && !annul ) begin
+            if(stall_decode)begin
+                //hold value
+                
+            end 
+            else if (fetch_3_valid && !annul ) begin
                 f2d_reg.instruction  <= douta;
                 f2d_reg.pc <= fetch_3_pc;
                 f2d_reg.valid <= 1'b1;
@@ -332,7 +349,11 @@ logic stall_decode;
             d2e_inst<=32'b0;
         end
         else begin 
-            if(f2d_reg.valid && !annul)begin 
+            if(stall_decode)begin 
+                //do nothing
+                d2e_reg<=158'b0;
+            end
+            else if(f2d_reg.valid && !annul)begin 
                 d2e_reg.pc<=f2d_reg.pc;
                 d2e_reg.rs1_val<=rs1_val;
                 d2e_reg.rs2_val<=rs2_val;
@@ -352,6 +373,8 @@ logic stall_decode;
                 d2e_reg.valid<=1'b1;
                 d2e_inst<=f2d_inst;
             end
+         
+            
             else begin  
                 d2e_reg<='0;
             end
@@ -400,6 +423,7 @@ logic stall_decode;
                 e2m_reg.mem_write  <= d2e_reg.mem_write;
                 e2m_reg.valid      <= d2e_reg.valid;
                 e2m_reg.jump       <= d2e_reg.jump;
+                e2m_reg.branch     <= d2e_reg.branch;
                 e2m_inst<=d2e_inst;
             end else begin
                 e2m_reg<='0;
@@ -434,6 +458,7 @@ logic stall_decode;
                 mem1_mem2_reg.mem_write  <= e2m_reg.mem_write;
                 mem1_mem2_reg.funct3     <= e2m_reg.funct3;
                 mem1_mem2_reg.rs2_val    <= e2m_reg.rs2_val;
+                mem1_mem2_reg.branch     <= e2m_reg.branch;
                 // m2w_inst<=e2m_inst;
                 mem1_mem2_inst<=e2m_inst;
 
@@ -443,7 +468,8 @@ logic stall_decode;
         end
     end
     always_ff@(posedge clk )begin 
-        if(!rst)begin  mem2_wb_reg<=mem1_mem2_reg;
+        if(!rst)begin  
+            mem2_wb_reg<=mem1_mem2_reg;
             mem2_wb_inst<=mem1_mem2_inst;
         end
         else begin 
@@ -480,7 +506,6 @@ logic stall_decode;
     );
 
 // MEM WRITE 
-logic [31:0] data_to_write;
 
 always_comb begin
     if (!rst && mem2_wb_reg.mem_write && mem2_wb_reg.valid) begin
@@ -491,6 +516,9 @@ always_comb begin
 
     end
 end
+
+
+
 
     //WB
     logic [4:0] destination_register;
@@ -511,10 +539,33 @@ end
                 registers[destination_register] <= mem2_wb_reg.pc + 4;
             else if(!rst && mem2_wb_reg.mem_read)//load 
                 registers[destination_register] <= load_result;
-            else
+            else if(!mem2_wb_reg.branch)
                 registers[destination_register] <= mem2_wb_reg.alu_result;
+
+            else begin 
+
+                //nothing
+            end 
         end
     end
+    //HAZARD DETECTION if any of the decode rs1 or rs2 are the same as ANY downstrem rd then stall 
+    // logic stall_decode;
+    logic exec_hazard;
+    logic mem_hazard;
+    logic mem2_hazard;
+    logic wb_hazard;
+    always_comb begin 
+        // stall_decode = 0;
+        exec_hazard = (inst_fields.rs1 == d2e_reg.rd || inst_fields.rs2 == d2e_reg.rd) && d2e_reg.valid && !annul && d2e_reg.rd!=0;
+        mem_hazard = ((inst_fields.rs1 == e2m_reg.rd || inst_fields.rs2 == e2m_reg.rd) && e2m_reg.valid && e2m_reg.rd!=0);
+        mem2_hazard = ((inst_fields.rs1 == mem1_mem2_reg.rd || inst_fields.rs2 == mem1_mem2_reg.rd) && mem1_mem2_reg.valid && mem1_mem2_reg.rd!=0);
+        wb_hazard = ((inst_fields.rs1 == mem2_wb_reg.rd || inst_fields.rs2 == mem2_wb_reg.rd) && mem2_wb_reg.valid && mem2_wb_reg.rd!=0);
+        stall_decode = exec_hazard || mem_hazard || mem2_hazard || wb_hazard;
+        // stall_decode = 0;
+
+        
+        end
+    //  assign stall_decode= 0;
     // Branch unit
 
 
