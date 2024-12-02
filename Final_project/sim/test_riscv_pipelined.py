@@ -259,6 +259,7 @@ async def test_load_use_hazard(dut):
 
 async def test_memory_hazard(dut):
     instructions = [
+        RISCVInstruction.I_type(19, 0, 100, 0, 1),
         RISCVInstruction.S_type(35, 2, 0, 0, 1),    # sw x1, 0(x0)
         RISCVInstruction.I_type(3, 2, 0, 0, 2)      # lw x2, 0(x0)    # Load after store
     ]
@@ -271,9 +272,9 @@ async def test_memory_hazard(dut):
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
     dut.ending_pc.value = 0x8
-    await ClockCycles(dut.clk, 1)
+    # await ClockCycles(dut.clk, 14)
     await RisingEdge(dut.instruction_done)
-    assert hex(dut.registers[2].value) == hex(0xbeefeeef)
+    assert hex(dut.registers[2].value) == hex(100)
 
    
 

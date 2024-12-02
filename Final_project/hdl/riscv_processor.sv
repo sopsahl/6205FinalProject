@@ -113,6 +113,7 @@ logic [31:0] data_to_write;
 logic flush_pipeline;
 logic stall_fetch;
 logic stall_decode;
+logic memory_hazard;
     
     InstFields inst_fields;
     logic [31:0] instruction;
@@ -169,7 +170,7 @@ logic stall_decode;
 ) dmem (
     // Port A - Read port
     .clka(clk),
-    .ena(dmem_read),
+    .ena(dmem_read && !memory_hazard),
     .wea(1'b0),
     .addra(aligned_addr>>2),
     .dina(32'b0),
@@ -241,7 +242,8 @@ logic stall_decode;
     end
     // Fetch state machine
     logic data_ready;
-    assign instruction_done = mem2_wb_reg.pc == ending_pc;
+    logic [31:0] last_done_pc;
+    assign instruction_done = last_done_pc == ending_pc;
     always_ff @(posedge clk)begin 
         if(rst)begin 
             registers_initialized<=1'b0;
@@ -410,7 +412,11 @@ logic stall_decode;
         if (rst) begin
             e2m_reg <= 110'b0;
             e2m_inst<=32'b0;
-        end else begin
+        end 
+        else if (memory_hazard) begin
+            //do nothing  keep this memory the same
+        end
+        else begin
             if (d2e_reg.valid ) begin
                 e2m_reg.pc <= d2e_reg.pc;
                 e2m_reg.alu_result <= alu_result;
@@ -442,8 +448,9 @@ logic stall_decode;
     //transitions 
         // Memory to Writeback Register
     always_ff @(posedge clk) begin
-        if (rst) begin
+        if (rst || memory_hazard) begin
             mem1_mem2_reg <= 106'b0;
+
         end else begin
             if (e2m_reg.valid) begin
                 mem1_mem2_reg.pc         <= e2m_reg.pc;
@@ -476,7 +483,19 @@ logic stall_decode;
             mem2_wb_reg<=106'b0;
         end
 
-    end
+    end 
+    logic mem1_mem_hazard;
+    logic mem2_mem_hazard;
+
+    always_comb begin 
+        //its a store if mem_write is 1 abd load if mem_read us 1
+        //check if we're writing to the same place we're reading from 
+        mem1_mem_hazard = e2m_reg.mem_read && mem1_mem2_reg.mem_write && (aligned_addr == (mem1_mem2_reg.alu_result & 32'hFFFFFFFC));
+        mem2_mem_hazard = e2m_reg.mem_read && mem2_wb_reg.mem_write && (aligned_addr == (mem2_wb_reg.alu_result & 32'hFFFFFFFC));
+        memory_hazard = mem1_mem_hazard || mem2_mem_hazard;
+
+
+    end 
     //MEMORY STAGE STUFF 
     logic [3:0] memory_store_enable;
     logic [31:0] final_store_data;
@@ -519,7 +538,6 @@ end
 
 
 
-
     //WB
     logic [4:0] destination_register;
     // Register write
@@ -530,6 +548,7 @@ end
     assign mem_read_1 = mem2_wb_reg.mem_read;
     logic [31:0] load_data_ending;
     assign load_data_ending = mem2_wb_reg.mem_data;
+
     always_ff @(posedge clk) begin
         if (!rst && mem2_wb_reg.reg_write && destination_register != 0) begin
             if (mem_to_reg && !mem2_wb_reg.mem_read)
@@ -546,6 +565,11 @@ end
 
                 //nothing
             end 
+        end
+    end
+    always_ff@(posedge clk)begin 
+        if(!rst && mem2_wb_reg.valid)begin 
+            last_done_pc<=mem2_wb_reg.pc;
         end
     end
     //HAZARD DETECTION if any of the decode rs1 or rs2 are the same as ANY downstrem rd then stall 
