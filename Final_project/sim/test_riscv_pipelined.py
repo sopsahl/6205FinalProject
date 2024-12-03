@@ -276,7 +276,27 @@ async def test_memory_hazard(dut):
     await RisingEdge(dut.instruction_done)
     assert hex(dut.registers[2].value) == hex(100)
 
-   
+async def test_mixed_hazards(dut):
+    instructions = [
+        RISCVInstruction.I_type(19, 0, 100, 0, 1),  # addi x1, x0, 100
+        RISCVInstruction.I_type(19, 0, 200, 0, 2),  # addi x2, x0, 200
+        RISCVInstruction.S_type(35, 2, 0, 0, 1),    # sw x1, 0(x0) #RAW 
+        RISCVInstruction.I_type(3, 2, 0, 0, 3),      # lw x3, 0(x0)    # Load after store
+        RISCVInstruction.R_type(51, 0, 0, 1, 2, 4)   # add x4, x1, x2  # Use after load
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    dut.registers[1].value = 0xbeefeeef
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    dut.ending_pc.value = 0x14
+    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.instruction_done)
+    assert hex(dut.registers[3].value) == hex(100)
+    assert hex(dut.registers[4].value) == hex(300)
 
 @cocotb.test()
 async def test_ALU_operations(dut):
@@ -292,7 +312,8 @@ async def test_ALU_operations(dut):
     # await test_store(dut)
     # await test_RAW_hazard (dut)
     # await test_load_use_hazard(dut)
-    await test_memory_hazard(dut)
+    # await test_memory_hazard(dut)
+    await test_mixed_hazards(dut)
     #timing issues
 
    
