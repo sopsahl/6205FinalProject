@@ -89,6 +89,25 @@ module top_level(
     .dirty_in(btn[3]),
     .clean_out(bksp_btn));
 
+  logic buffer_x;
+  logic buffer_y;
+  logic buffer_bksp;
+  logic [15:0] buffer_char;
+  logic is_instr_complete;
+  logic [31:0][4:0] curr_instr;
+
+  input_buffer keyboard_input (
+    .clk_in(clk_pixel), // TODO: fix clock differences
+    .rst_in(sys_rst),
+    .data_in(0), // TODO: input keyboard
+    .key_pressed(buffer_x),
+    .enter_pressed(buffer_y),
+    .bksp_pressed(buffer_bksp),
+    .character(buffer_char),
+    .is_instr_complete(is_instr_complete),
+    .curr_instr(curr_instr)
+  );
+
   // keeps track of what to input to the sprite drawer
   logic terminal_grid_write_enable;
   logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] terminal_grid_addr;
@@ -100,9 +119,9 @@ module top_level(
   ) terminal (
     .pixel_clk_in(clk_pixel),
     .rst_in(sys_rst),
-    .x_btn(x_btn),
-    .y_btn(y_btn),
-    .bksp_btn(bksp_btn),
+    .x_btn(x_btn || buffer_x),
+    .y_btn(y_btn || buffer_y),
+    .bksp_btn(bksp_btn || buffer_bksp),
     .character(sw),
     .tg_we(terminal_grid_write_enable),
     .tg_addr(terminal_grid_addr),

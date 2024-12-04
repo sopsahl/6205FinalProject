@@ -25,6 +25,7 @@ module character_sprites #(
   logic [$clog2(SIZE*HEIGHT)-1:0] image_addr;
   logic [12:0] rw_addr;
   logic [7:0] tg_output;
+  logic [7:0] ascii2char;
   logic [$clog2(SCREEN_WIDTH)-1:0] x_pos;
   logic [$clog2(SCREEN_WIDTH)-1:0] x_np;
   logic [$clog2(SCREEN_HEIGHT)-1:0] y_pos;
@@ -33,6 +34,44 @@ module character_sprites #(
   logic [1:0][9:0] v;
 //        terminal_grid[y*76+x] <= 0;
 
+  always_comb begin
+    case (tg_output)
+      32: ascii2char = 0;
+      97: ascii2char = 1;
+      98: ascii2char = 2;
+      99: ascii2char = 3;
+      100: ascii2char = 4;
+      101: ascii2char = 5;
+      102: ascii2char = 6;
+      103: ascii2char = 7;
+      104: ascii2char = 8;
+      105: ascii2char = 9;
+      106: ascii2char = 10;
+      107: ascii2char = 11;
+      108: ascii2char = 12;
+      109: ascii2char = 13;
+      110: ascii2char = 14;
+      111: ascii2char = 15;
+      112: ascii2char = 16;
+      113: ascii2char = 17;
+      114: ascii2char = 18;
+      115: ascii2char = 19;
+      116: ascii2char = 20;
+      117: ascii2char = 21;
+      118: ascii2char = 22;
+      119: ascii2char = 23;
+      120: ascii2char = 24;
+      121: ascii2char = 25;
+      122: ascii2char = 26;
+      60: ascii2char = 27;
+      62: ascii2char = 28;
+      40: ascii2char = 29;
+      41: ascii2char = 30;
+      61: ascii2char = 31;
+      default: ascii2char = 0;
+    endcase
+  end
+
   assign x_pos = (h[1]>>4) < SCREEN_WIDTH ? (h[1]>>4) : SCREEN_WIDTH - 1;
   assign y_pos = (v[1]>>4) < SCREEN_HEIGHT ? (v[1]>>4) : SCREEN_HEIGHT - 1;
 
@@ -40,7 +79,7 @@ module character_sprites #(
   assign y_np = (vcount_in>>4) < SCREEN_HEIGHT ? (vcount_in>>4) : SCREEN_HEIGHT - 1;
 
   assign rw_addr = tg_write_en ? tg_addr : y_np * SCREEN_WIDTH + x_np;
-  assign image_addr = (h[1] - 16*x_pos) + ((v[1] - 16*y_pos) * SIZE) + (tg_output*SIZE*SIZE);
+  assign image_addr = (h[1] - 16*x_pos) + ((v[1] - 16*y_pos) * SIZE) + (ascii2char*SIZE*SIZE);
 
   logic [5:0] in_sprite;
   logic [23:0] output_colors;
@@ -72,7 +111,7 @@ module character_sprites #(
   assign green_out =  in_sprite[5] ? output_colors[15:8] : 0;
   assign blue_out =   in_sprite[5] ? output_colors[7:0] : 0;
 
-  //  Xilinx Single Port Read First RAM (pallete)
+  //  Xilinx Single Port Read First RAM (terminal grid)
   xilinx_single_port_ram_read_first #(
     .RAM_WIDTH(8),                       // Specify RAM data width (should be 6 for 26 char but said 8 for ease)
     .RAM_DEPTH(SCREEN_WIDTH*SCREEN_HEIGHT),                     // Specify RAM depth (number of entries)

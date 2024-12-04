@@ -3,22 +3,22 @@
 # SW Build 5076996 on Wed May 22 18:36:09 MDT 2024
 # IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
 # SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
-# Start of session at: Fri Nov 29 00:44:31 2024
-# Process ID: 2642
-# Current directory: /home/fpga/worker_place/temp/temp/61c7875b0c6e46f1a5dcd32b547ccbe5
+# Start of session at: Wed Dec  4 05:20:53 2024
+# Process ID: 4179
+# Current directory: /home/fpga/worker_place/temp/temp/6444d321cabc42548deda0d984d4fdd9
 # Command line: vivado -mode batch -source build.tcl
-# Log file: /home/fpga/worker_place/temp/temp/61c7875b0c6e46f1a5dcd32b547ccbe5/vivado.log
-# Journal file: /home/fpga/worker_place/temp/temp/61c7875b0c6e46f1a5dcd32b547ccbe5/vivado.jou
-# Running On        :eecs-digital-14
+# Log file: /home/fpga/worker_place/temp/temp/6444d321cabc42548deda0d984d4fdd9/vivado.log
+# Journal file: /home/fpga/worker_place/temp/temp/6444d321cabc42548deda0d984d4fdd9/vivado.jou
+# Running On        :eecs-digital-02
 # Platform          :Ubuntu
 # Operating System  :Ubuntu 24.04.1 LTS
-# Processor Detail  :AMD Ryzen 7 5700U with Radeon Graphics
-# CPU Frequency     :400.000 MHz
-# CPU Physical cores:8
-# CPU Logical cores :16
-# Host memory       :13491 MB
-# Swap memory       :4294 MB
-# Total Virtual     :17786 MB
-# Available Virtual :16746 MB
+# Processor Detail  :13th Gen Intel(R) Core(TM) i7-13700
+# CPU Frequency     :3568.295 MHz
+# CPU Physical cores:16
+# CPU Logical cores :24
+# Host memory       :33324 MB
+# Swap memory       :8589 MB
+# Total Virtual     :41914 MB
+# Available Virtual :40780 MB
 #-----------------------------------------------------------
 source build.tcl

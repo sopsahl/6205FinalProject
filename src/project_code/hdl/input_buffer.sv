@@ -14,7 +14,9 @@ module input_buffer (
     output logic key_pressed,
     output logic enter_pressed,
     output logic bksp_pressed,
-    output logic [15:0] character
+    output logic [15:0] character,
+    output logic is_instr_complete,
+    output logic [31:0][4:0] curr_instr
   );
     enum {START, DATA, PARITY, STOP, SEND} state;
 
@@ -22,43 +24,44 @@ module input_buffer (
     logic [15:0] d2c;
     logic [2:0] data_counter;
     logic has_odd_parity;
+    logic [4:0] char_pos;
 
     assign has_odd_parity = ~(^{data, data_in});
 
     always_comb begin
         // converts data to sprite characters
-        // a = 1, b = 2, c = 3, etc...
+        // a = 1, b = 2, c = 3, etc... (uses ascii!!!)
         case(data)
-            'h15: d2c = 17;
-            'h1d: d2c = 23;
-            'h24: d2c = 5;
-            'h2d: d2c = 18;
-            'h2c: d2c = 20;
-            'h35: d2c = 25;
-            'h3c: d2c = 21;
-            'h43: d2c = 9;
-            'h44: d2c = 15;
-            'h4d: d2c = 16;
-            'h1c: d2c = 1;
-            'h1b: d2c = 19;
-            'h23: d2c = 4;
-            'h2b: d2c = 6;
-            'h34: d2c = 7;
-            'h33: d2c = 8;
-            'h3b: d2c = 10;
-            'h42: d2c = 11;
-            'h4b: d2c = 12;
-            'h1a: d2c = 26;
-            'h22: d2c = 24;
-            'h21: d2c = 3;
-            'h2a: d2c = 22;
-            'h32: d2c = 2;
-            'h31: d2c = 14;
-            'h3a: d2c = 13;
-            'h29: d2c = 0; // space
-            'h5a: d2c = 28; // enter
-            'h66: d2c = 27; // bksp
-            default: d2c = 0;
+            'h15: d2c = 113;
+            'h1d: d2c = 119;
+            'h24: d2c = 101;
+            'h2d: d2c = 114;
+            'h2c: d2c = 116;
+            'h35: d2c = 121;
+            'h3c: d2c = 117;
+            'h43: d2c = 105;
+            'h44: d2c = 111;
+            'h4d: d2c = 112;
+            'h1c: d2c = 97;
+            'h1b: d2c = 115;
+            'h23: d2c = 100;
+            'h2b: d2c = 102;
+            'h34: d2c = 103;
+            'h33: d2c = 104;
+            'h3b: d2c = 106;
+            'h42: d2c = 107;
+            'h4b: d2c = 108;
+            'h1a: d2c = 122;
+            'h22: d2c = 120;
+            'h21: d2c = 99;
+            'h2a: d2c = 118;
+            'h32: d2c = 98;
+            'h31: d2c = 110;
+            'h3a: d2c = 109;
+            'h29: d2c = 32; // space
+            'h5a: d2c = 60; // enter
+            'h66: d2c = 62; // bksp
+            default: d2c = 32;
         endcase
 
         // state outputs
@@ -69,16 +72,20 @@ module input_buffer (
                     key_pressed = 0;
                     bksp_pressed = 0;
                     character = 0;
+                    is_instr_complete = 1;
                 end else if (d2c == 27) begin // bksp
                     bksp_pressed = 1;
                     key_pressed = 0;
                     enter_pressed = 0;
                     character = 0;
+                    is_instr_complete = 0;
                 end else begin
                     key_pressed = 1;
                     character = d2c;
                     enter_pressed = 0;
                     bksp_pressed = 0;
+                    is_instr_complete = 0;
+                    curr_instr[char_pos] = d2c;
                 end
             end
             default: begin
@@ -86,6 +93,7 @@ module input_buffer (
                 enter_pressed = 0;
                 bksp_pressed = 0;
                 character = 0;
+                is_instr_complete = 0;
             end
         endcase
     end
@@ -96,6 +104,7 @@ module input_buffer (
             state <= START;
             data <= 0;
             data_counter <= 0;
+            char_pos <= 0;
         end else begin
             case(state)
                 START: begin
@@ -114,7 +123,17 @@ module input_buffer (
                 end
                 PARITY: state <= has_odd_parity ? STOP : START;
                 STOP: state <= data_in ? SEND : START;
-                SEND: state <= START;
+                SEND: begin
+                    state <= START;
+                    // manages the pointer for storing the instruction
+                    if (d2c == 28) begin
+                        char_pos <= 0;
+                    end else if (d2c == 27) begin
+                        char_pos <= char_pos - 1;
+                    end else begin
+                        char_pos <= char_pos + 1;
+                    end
+                end
                 default: state <= START;
             endcase
         end
