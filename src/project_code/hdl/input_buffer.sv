@@ -58,8 +58,20 @@ module input_buffer (
             'h32: d2c = 98;
             'h31: d2c = 110;
             'h3a: d2c = 109;
+            'h16: d2c = 49;
+            'h1e: d2c = 50;
+            'h26: d2c = 51;
+            'h25: d2c = 52;
+            'h2e: d2c = 53;
+            'h36: d2c = 54;
+            'h3d: d2c = 55;
+            'h3e: d2c = 56;
+            'h46: d2c = 57;
+            'h45: d2c = 48;
+            'h41: d2c = 44; // comma
+            'h49: d2c = 46; // period
             'h29: d2c = 32; // space
-            'h5a: d2c = 60; // enter
+            'h5a: d2c = 10; // enter
             'h66: d2c = 62; // bksp
             default: d2c = 32;
         endcase

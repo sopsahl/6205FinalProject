@@ -134,7 +134,7 @@ module top_level(
 
   character_sprites #(
   .SIZE(16),
-  .HEIGHT(512),
+  .HEIGHT(1024),
   .SCREEN_WIDTH(SCREEN_WIDTH),
   .SCREEN_HEIGHT(SCREEN_HEIGHT))
   draw_characters (

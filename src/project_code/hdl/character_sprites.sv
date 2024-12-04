@@ -8,7 +8,7 @@
 `endif  /* ! SYNTHESIS */
 
 module character_sprites #(
-  parameter SIZE=16, HEIGHT=512, SCREEN_WIDTH=76, SCREEN_HEIGHT=44) (
+  parameter SIZE=16, HEIGHT=1024, SCREEN_WIDTH=76, SCREEN_HEIGHT=44) (
   input wire pixel_clk_in,
   input wire rst_in,
   input wire [10:0] hcount_in,
@@ -68,6 +68,23 @@ module character_sprites #(
       40: ascii2char = 29;
       41: ascii2char = 30;
       61: ascii2char = 31;
+      44: ascii2char = 32;
+      46: ascii2char = 33;
+      35: ascii2char = 34;
+      49: ascii2char = 35;
+      50: ascii2char = 36;
+      51: ascii2char = 37;
+      52: ascii2char = 38;
+      53: ascii2char = 39;
+      54: ascii2char = 40;
+      55: ascii2char = 41;
+      56: ascii2char = 42;
+      57: ascii2char = 43;
+      48: ascii2char = 44;
+      124: ascii2char = 45;
+      38: ascii2char = 46;
+      33: ascii2char = 47;
+      10: ascii2char = 48;
       default: ascii2char = 0;
     endcase
   end

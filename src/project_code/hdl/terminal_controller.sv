@@ -61,6 +61,23 @@ module terminal_controller #(
             29: char2ascii = 40;
             30: char2ascii = 41;
             31: char2ascii = 61;
+            32: char2ascii = 44;
+            33: char2ascii = 46;
+            34: char2ascii = 35;
+            35: char2ascii = 49;
+            36: char2ascii = 50;
+            37: char2ascii = 51;
+            38: char2ascii = 52;
+            39: char2ascii = 53;
+            40: char2ascii = 54;
+            41: char2ascii = 55;
+            42: char2ascii = 56;
+            43: char2ascii = 57;
+            44: char2ascii = 48;
+            45: char2ascii = 124;
+            46: char2ascii = 38;
+            47: char2ascii = 33;
+            48: char2ascii = 10;            
             default: char2ascii = 32;
         endcase
     end
@@ -102,7 +119,7 @@ module terminal_controller #(
                 if (y_btn_prev && !y_btn && cursor_y < SCREEN_HEIGHT) begin
                     tg_we <= 1;
                     tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-                    tg_input <= 60;
+                    tg_input <= 10;
 
                     cursor_x <= 0;
                     cursor_y <= cursor_y + 1;
