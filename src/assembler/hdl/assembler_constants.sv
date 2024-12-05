@@ -84,10 +84,11 @@ package assembler_constants;
         parameter logic [2:0] F3_BGEU     = 3'b111;  // Branch Greater or Equal Unsigned
 
     // FUNCT7 values
-        parameter logic [6:0] F7_ADD      = 7'b0000000;  // ADD
+        parameter logic [6:0] F7_ADD      = 7'b0000000;  // ADD and Default
         parameter logic [6:0] F7_SUB      = 7'b0100000;  // SUB
         parameter logic [6:0] F7_SRL      = 7'b0000000;  // Shift Right Logical
         parameter logic [6:0] F7_SRA      = 7'b0100000;  // Shift Right Arithmetic
+        parameter logic [6:0] F7_IMM      = 7'b1111111;  // IMMEDIATE f7 used in AND
 
 
     function logic isNum(byte ascii_char);
@@ -105,7 +106,8 @@ package assembler_constants;
     function logic [31:0] create_inst(InstFields inst);
         case (inst.opcode) 
             OP_REG : return {inst.funct7, inst.rs2, inst.rs1, inst.funct3, inst.rd, inst.opcode};
-            OP_IMM, OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+            OP_IMM : return {inst.imm[11:5] && inst.funct7, inst.imm[4:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+            OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
             OP_STORE : return {inst.imm[11:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:0], inst.opcode};
             OP_BRANCH : return {inst.imm[12], inst.imm[10:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:1], inst.imm[11], inst.opcode};
             OP_LUI, OP_AUIPC : return {inst.imm[31:12], inst.rd, inst.opcode};

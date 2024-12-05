@@ -22,6 +22,7 @@ module immediate_interpreter (
 
     typedef enum {
         IDLE, 
+        FIRST_NUM,
         BUSY,
         RETURN,
         ERROR
@@ -31,25 +32,30 @@ module immediate_interpreter (
     assign done_flag = (state == RETURN);
     assign busy_flag = (state != IDLE);
 
+    logic isValid;
+    assign isValid = isAlpha(incoming_ascii) || isNum(incoming_ascii);
+
+    logic [3:0] hex;
+    assign hex = ascii_to_hex(incoming_ascii);
+
     always_ff @(posedge clk_in) begin
         
         if (valid_data && !rst_in) begin
             
             case (state) 
-                IDLE: if (incoming_ascii == "'") state <= BUSY;
-                BUSY: begin
-                    if (isAlpha(incoming_ascii) || isNum(incoming_ascii)) immediate <= ((immediate << 4) || ascii_to_hex(incoming_ascii));
-                    else state <= (incoming_ascii == "'") ? RETURN : ERROR;
-                end RETURN: begin
-                    state <= IDLE;
-                    immediate <= 0;
-                end
+                IDLE: if (incoming_ascii == "x" || incoming_ascii == "X") state <= FIRST_NUM;
+                FIRST_NUM: begin
+                    if (isValid) begin
+                        state <= BUSY;
+                        immediate <= {28{hex[3]}, hex}; // Extend the MSB
+                    end else state <= IDLE;
+                end BUSY: begin
+                    if (isValid) immediate <= ((immediate << 4) || hex);
+                    else state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
+                end RETURN: state <= IDLE;
             endcase
 
-        end else begin
-            state <= IDLE;
-            immediate <= 0;
-        end
+        end else state <= IDLE;
     end
 
 endmodule // immediate_interpreter
