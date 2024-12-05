@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-// instruction_interpreter: takes the instruction (e.g. and, xor, ...)
+// instruction_interpreter: gets the instruction (e.g. and, xor, ...)
+// Calculates the corresponding opcode, funct7, funct3
 // Up to 5 characters
-// Calculates the corresponding instruction
-
+// done_flag high one cycle after delimiter (" " or ",")
 
 import assembler_constants::*;
 

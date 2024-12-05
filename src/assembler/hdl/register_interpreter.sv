@@ -2,8 +2,8 @@
 `default_nettype none
 
 // register_interpreter: takes the register number (00 - 31) 
-//  and calculates the register number (5 bits)
-//  Get output on next cycle after delimiter
+// and calculates the register number (5 bits)
+// done_flag high same cycle as delimiter (" " or ",")
 
 import assembler_constants::*;
 
@@ -39,18 +39,11 @@ module register_interpreter (
                 case (state) 
                     IDLE: if (incoming_ascii == "r" || incoming_ascii == "R") state <= FIRST_DIGIT;
                     FIRST_DIGIT: begin
-                        if (incoming_ascii >= "0" && incoming_ascii <= "3") begin
-                            register <= (incoming_ascii[1:0] << 1) + (incoming_ascii[1:0] << 3); // 10x
-                            state <= SECOND_DIGIT;
-                        end else state <= ERROR;
+                        register <= (incoming_ascii[1:0] << 1) + (incoming_ascii[1:0] << 3); // 10x
+                        state <= (incoming_ascii >= "0" && incoming_ascii <= "3") ? SECOND_DIGIT : ERROR;
                     end SECOND_DIGIT: begin
-                        if (incoming_ascii >= "0" && incoming_ascii <= "9") begin
-                            if (register >= 30 && incoming_ascii[3:0] >= 2) state <= ERROR; // out of bounds
-                            else begin
-                                state <= RETURN;
-                                register <= register + incoming_ascii[3:0]; 
-                            end
-                        end else state <= ERROR;
+                        register <= register + incoming_ascii[3:0]; 
+                        state <= ((incoming_ascii >= "0" && incoming_ascii <= "9") && !(register >= 30 && incoming_ascii[3:0] >= 2)) ? RETURN : ERROR;
                     end RETURN: state <= (incoming_ascii == " " || incoming_ascii == ",") ? IDLE : ERROR;
                 endcase
             end

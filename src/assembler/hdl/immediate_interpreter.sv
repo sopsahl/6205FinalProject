@@ -2,9 +2,9 @@
 `default_nettype none
 
 // immediate_interpreter: takes the immediate value (0 - FF_FF_FF_FF)
-// Up to 4 bytes of data (8 characters)
-// Calculates the immediate output 
-// Takes until the end of the 
+// and converts to a hex immediate value
+// Suppots up to 4 bytes of data (8 characters)
+// done_flag is high 1 cycle after the delimiter (" " or ",")
 
 import assembler_constants::*;
 
@@ -18,6 +18,7 @@ module immediate_interpreter (
     output logic done_flag,
     output logic busy_flag,
 
+    input wire isUtype,
     output logic [31:0] immediate
 );
 
@@ -36,8 +37,8 @@ module immediate_interpreter (
     logic isValid;
     assign isValid = isAlpha(incoming_ascii) || isNum(incoming_ascii);
 
-    logic [3:0] hex;
-    assign hex = ascii_to_hex(incoming_ascii);
+    logic [3:0] hex_value;
+    assign hex_value = ascii_to_hex(incoming_ascii);
 
     always_ff @(posedge clk_in) begin
         
@@ -46,16 +47,14 @@ module immediate_interpreter (
                 case (state) 
                     IDLE: if (incoming_ascii == "x" || incoming_ascii == "X") state <= FIRST_NUM;
                     FIRST_NUM: begin
-                        if (isValid) begin
-                            state <= BUSY;
-                            immediate <= {28{hex[3]}, hex}; // Extend the MSB
-                        end else state <= IDLE;
+                        immediate <= (isUtype) ? {28'b0, hex_value} : {28{hex_value[3]}, hex_value}; // Extend the MSB
+                        state <= (isValid) ? BUSY : IDLE;
                     end BUSY: begin
-                        if (isValid) immediate <= ((immediate << 4) || hex);
+                        if (isValid) immediate <= ((immediate << 4) | hex_value);
                         else state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
                     end RETURN: state <= IDLE;
                 endcase
-            end
+            end else state <= (state == RETURN) ? IDLE : state; // Allows for single high pulse of done_flag
         end else state <= IDLE;
     end
 
