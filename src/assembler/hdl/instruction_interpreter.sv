@@ -13,6 +13,7 @@ module instruction_interpreter (
     input wire clk_in,
     input wire rst_in,
     input wire valid_data,
+    input wire new_character,
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
@@ -65,17 +66,17 @@ module instruction_interpreter (
     always_ff @(posedge clk_in) begin
         
         if (valid_data && !rst_in) begin
-            
-            case (state) 
-                IDLE: if (ascii_in_range) begin
-                    state <= ACCUMULATING;
-                    compressed_buffer <= {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED__, compressed_ascii};
-                end BUSY: begin
-                    if (ascii_in_range) compressed_buffer <= {compressed_buffer[3:0], compressed_ascii}; 
-                    else state <= ((incoming_ascii == " " || incoming_ascii == ",") && isInst) ? RETURN : ERROR;
-                end RETURN : state <= IDLE;
-            endcase
-
+            if (new_character) begin
+                case (state) 
+                    IDLE: if (ascii_in_range) begin
+                        state <= ACCUMULATING;
+                        compressed_buffer <= {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED__, compressed_ascii};
+                    end BUSY: begin
+                        if (ascii_in_range) compressed_buffer <= {compressed_buffer[3:0], compressed_ascii}; 
+                        else state <= ((incoming_ascii == " " || incoming_ascii == ",") && isInst) ? RETURN : ERROR;
+                    end RETURN : state <= IDLE;
+                endcase
+            end
         end else state <= IDLE;
     end
 

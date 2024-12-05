@@ -12,8 +12,9 @@ module instruction_by_line #(
     input wire new_character,
     input wire [7:0] incoming_character, // Each new character    
     output logic [31:0] instruction,
-    output logic ready_flag, // Instruction is Ready
-    output logic error_flag // Error encountered
+    output logic done_flag, // Instruction is Ready
+    output logic error_flag, // Error encountered
+    output logic busy_flag
 );
 
     assign ready_flag = (state == DONE);
@@ -27,12 +28,19 @@ module instruction_by_line #(
     typedef enum {
         IDLE,
         READ_INST,
-        READ_REG,
+        READ_RD,
+        READ_RS1,
+        READ_RS2,
         READ_IMM,
         READ_LABEL,
         ERROR,
         DONE
-    } state_t;
+    } state_t state;
+
+    
+    assign error_flag = (state == ERROR);
+    assign done_flag = (state == DONE);
+    assign busy_flag = (state != IDLE);
 
     // typedef enum {
     //     IDLE,

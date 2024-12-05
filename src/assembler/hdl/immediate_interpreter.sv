@@ -12,6 +12,7 @@ module immediate_interpreter (
     input wire clk_in,
     input wire rst_in,
     input wire valid_data,
+    input wire new_character,
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
@@ -41,20 +42,20 @@ module immediate_interpreter (
     always_ff @(posedge clk_in) begin
         
         if (valid_data && !rst_in) begin
-            
-            case (state) 
-                IDLE: if (incoming_ascii == "x" || incoming_ascii == "X") state <= FIRST_NUM;
-                FIRST_NUM: begin
-                    if (isValid) begin
-                        state <= BUSY;
-                        immediate <= {28{hex[3]}, hex}; // Extend the MSB
-                    end else state <= IDLE;
-                end BUSY: begin
-                    if (isValid) immediate <= ((immediate << 4) || hex);
-                    else state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
-                end RETURN: state <= IDLE;
-            endcase
-
+            if (new_character) begin
+                case (state) 
+                    IDLE: if (incoming_ascii == "x" || incoming_ascii == "X") state <= FIRST_NUM;
+                    FIRST_NUM: begin
+                        if (isValid) begin
+                            state <= BUSY;
+                            immediate <= {28{hex[3]}, hex}; // Extend the MSB
+                        end else state <= IDLE;
+                    end BUSY: begin
+                        if (isValid) immediate <= ((immediate << 4) || hex);
+                        else state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
+                    end RETURN: state <= IDLE;
+                endcase
+            end
         end else state <= IDLE;
     end
 
