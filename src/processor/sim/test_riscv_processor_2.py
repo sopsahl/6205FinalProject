@@ -583,7 +583,7 @@ async def test_store_half(dut):
 
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.clk)
-
+    await ClockCycles(dut.clk, 8)
     assert (hex(dut.dmem[40].value)) == hex(0xBEEF)#expecting 0xBEEF
 async def test_store_word(dut):
     REG_OP_CODE = 35
@@ -885,8 +885,10 @@ async def test_ALU_operations(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk,1)
     dut.rst.value = 0
+
     # await test_jump_and_link(dut)
-    await test_store_half(dut)
+    await test_store_word(dut)  
+    # await test_store_half(dut)
     # await ClockCycles(dut.clk,20)
     # await test_load(dut)
     # await test_store(dut)
