@@ -12,13 +12,34 @@ package assembler_constants;
         bit [6:0] opcode;
         bit [2:0] funct3;
         bit [6:0] funct7;
-        bit [4:0] funct5;
         bit [4:0] rd;
         bit [4:0] rs1;
         bit [4:0] rs2;
         bit [31:0] imm;
     } InstFields;
 
+    // Compressed ASCII Values
+        parameter logic [4:0] COMPRESSED__ = 5'h00;
+        parameter logic [4:0] COMPRESSED_A = 5'h01;
+        parameter logic [4:0] COMPRESSED_B = 5'h02;
+        parameter logic [4:0] COMPRESSED_C = 5'h03;
+        parameter logic [4:0] COMPRESSED_D = 5'h04;
+        parameter logic [4:0] COMPRESSED_E = 5'h05;
+        parameter logic [4:0] COMPRESSED_G = 5'h06;
+        parameter logic [4:0] COMPRESSED_H = 5'h07;
+        parameter logic [4:0] COMPRESSED_I = 5'h08;
+        parameter logic [4:0] COMPRESSED_J = 5'h09;
+        parameter logic [4:0] COMPRESSED_L = 5'h0a;
+        parameter logic [4:0] COMPRESSED_N = 5'h0b;
+        parameter logic [4:0] COMPRESSED_O = 5'h0c;
+        parameter logic [4:0] COMPRESSED_P = 5'h0d;
+        parameter logic [4:0] COMPRESSED_Q = 5'h0e;
+        parameter logic [4:0] COMPRESSED_R = 5'h0f;
+        parameter logic [4:0] COMPRESSED_S = 5'h10;
+        parameter logic [4:0] COMPRESSED_T = 5'h11;
+        parameter logic [4:0] COMPRESSED_U = 5'h12;
+        parameter logic [4:0] COMPRESSED_W = 5'h13;
+        parameter logic [4:0] COMPRESSED_X = 5'h14;
     
     // OPCODEs
         parameter logic [6:0] OP_REG      = 7'b0110011;  // R-type
@@ -67,6 +88,19 @@ package assembler_constants;
         parameter logic [6:0] F7_SUB      = 7'b0100000;  // SUB
         parameter logic [6:0] F7_SRL      = 7'b0000000;  // Shift Right Logical
         parameter logic [6:0] F7_SRA      = 7'b0100000;  // Shift Right Arithmetic
+
+
+    function logic isNum(byte ascii_char);
+        return (ascii_char >= "0" && ascii_char <= "9");
+    endfunction
+
+    function logic isAlpha(byte ascii_char);
+        return ((ascii_char >= "a" && ascii_char <= "f") || (ascii_char >= "A" && ascii_char <= "F"));
+    endfunction
+
+    function logic [3:0] ascii_to_hex(byte ascii_char);
+        return (isNum(ascii_char)) ? ascii_char[3:0] : (isAlpha(ascii_char)) ? ascii_char[3:0] + 4'h9 : 4'h0;
+    endfunction
 
     function logic [31:0] create_inst(InstFields inst);
         case (inst.opcode) 

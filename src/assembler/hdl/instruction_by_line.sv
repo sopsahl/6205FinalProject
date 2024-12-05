@@ -19,7 +19,7 @@ module instruction_by_line #(
     assign ready_flag = (state == DONE);
     assign error_flag = (
         !rst_in 
-        || new_character 
+        // || new_character 
         || (new_line && !ready_flag)
         );
 

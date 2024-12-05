@@ -5,10 +5,12 @@
 //  and calculates the register number (5 bits)
 //  Takes 2 cycles pipelined
 
+import assembler_constants::*;
+
 module register_interpreter (
     input wire clk_in,
     input wire rst_in,
-    input wire trigger_in,
+    input wire valid_in,
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
@@ -54,7 +56,7 @@ module register_interpreter (
                             register <= register + incoming_ascii[3:0]; 
                         end
                     end else state <= ERROR;
-                end RETURN: state <= IDLE;
+                end RETURN: state <= (incoming_ascii == " " || incoming_ascii == ",") ? IDLE : ERROR;
             endcase
         end
     end
