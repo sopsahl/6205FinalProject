@@ -4,10 +4,10 @@ module riscv_processor (
     input  logic [31:0] ending_pc,
   
     output logic [31:0] pc_out,
-    output logic  instruction_done,
-    output logic write_enable, 
-    output logic [31:0] w_data,
-    output logic [31:0] w_addr
+    output logic  instruction_done
+    // output logic write_enable, 
+    // output logic [31:0] w_data,
+    // output logic [31:0] w_addr
     
 );
     // Program Counter
@@ -118,8 +118,6 @@ logic[31:0] mem1_mem2_pc;
 // writeback_type writeback_reg;
 logic [31:0] data_to_write;
 
-logic flush_pipeline;
-logic stall_fetch;
 logic stall_decode;
 logic memory_hazard;
     
@@ -189,29 +187,9 @@ logic memory_hazard;
     .rstb(rst),
     .regceb(1'b1)
 );
-assign write_enable = mem2_wb_reg.mem_write && mem2_wb_reg.valid;
-assign w_data = data_to_write;
-assign w_addr = mem2_wb_reg.alu_result>>2;
-logic [31:0] x_17;
-logic [31:0] x_12,x_13,x_14,x_15,x_16,x_31;
-assign x_17= registers[17];
-assign x_12= registers[12];
-assign x_13= registers[13];
-assign x_14= registers[14];
-assign x_15= registers[15];
-assign x_16= registers[16];
-assign x_31= registers[31];
-logic [31:0] x_5,x_6,x_7,x_8,x_9,x_10,x_11;
-assign x_5= registers[5];
-assign x_6= registers[6];
-assign x_7= registers[7];
-assign x_8= registers[8];
-assign x_9= registers[9];
-assign x_10= registers[10];
-assign x_11= registers[11];
-logic [31:0] x_18;
-assign x_18= registers[18];
-
+// assign write_enable = mem2_wb_reg.mem_write && mem2_wb_reg.valid;
+// assign w_data = data_to_write;
+// assign w_addr = mem2_wb_reg.alu_result>>2;
 
 
 
@@ -249,9 +227,8 @@ assign x_18= registers[18];
         
     end
     // Fetch state machine
-    logic [31:0] x3;
-    assign x3 = registers[3];
-    logic data_ready;
+    // logic [31:0] x3;
+    // assign x3 = registers[3];
     logic [31:0] last_done_pc;
     assign instruction_done = last_done_pc == ending_pc;
     always_ff @(posedge clk)begin 
@@ -260,9 +237,9 @@ assign x_18= registers[18];
             pc<=32'b0;
 
         end else if (!registers_initialized) begin
-            for (int i = 0; i < 32; i++) begin
-                registers[i] <= 32'b0;
-            end
+            // for (int i = 0; i < 32; i++) begin
+            //     registers[i] <= 32'b0;
+            // end
             
             registers_initialized <= 1'b1;
 
@@ -272,17 +249,17 @@ assign x_18= registers[18];
         end
 
     end
-    logic[31:0] x_4;
-    assign x_4 = registers[4];
-    logic [31:0] x_1,x_2;
-    assign x_1 = registers[1];
-    assign x_2 = registers[2];
+    // logic[31:0] x_4;
+    // assign x_4 = registers[4];
+    // logic [31:0] x_1,x_2;
+    // assign x_1 = registers[1];
+    // assign x_2 = registers[2];
     // Next PC Logic SHOULD BE DETERMINED IN EXECUTE 
     logic branch_d2e;
     assign branch_d2e = d2e_reg.branch;
     logic [31:0] next_pc;
-    logic [31:0] d2e_imm;
-    assign d2e_imm = d2e_reg.imm;
+    // logic [31:0] d2e_imm;
+    // assign d2e_imm = d2e_reg.imm;
     always_comb begin
         annul= 1'b1;
         if (d2e_reg.jump && d2e_reg.alu_src)         // JALR
@@ -321,13 +298,13 @@ assign x_18= registers[18];
 end
 
     //DECODE SETUP
-    logic [31:0] rs1_debug;
-    logic [31:0] rs2_debug;
-    logic [31:0] rd_debug;
+    // logic [31:0] rs1_debug;
+    // logic [31:0] rs2_debug;
+    // logic [31:0] rd_debug;
 
-    assign rs1_debug = rs1_val;
-    assign rs2_debug = rs2_val;
-    assign rd_debug = rd_val;
+    // assign rs1_debug = rs1_val;
+    // assign rs2_debug = rs2_val;
+    // assign rd_debug = rd_val;
     always_comb begin
         if (f2d_reg.valid) begin
             inst_fields.opcode = f2d_reg.instruction[6:0];
@@ -570,16 +547,22 @@ end
     logic [4:0] destination_register;
     // Register write
     assign destination_register = mem2_wb_reg.rd;
-    logic reg_write_1;
-    assign reg_write_1 = mem2_wb_reg.reg_write;   
-    logic mem_read_1;
-    assign mem_read_1 = mem2_wb_reg.mem_read;
-    logic [31:0] load_data_ending;
-    assign load_data_ending = mem2_wb_reg.mem_data;
-    logic [31:0] wb_alu_result;
-    assign wb_alu_result = mem2_wb_reg.alu_result;
+    // logic reg_write_1;
+    // assign reg_write_1 = mem2_wb_reg.reg_write;   
+    // logic mem_read_1;
+    // assign mem_read_1 = mem2_wb_reg.mem_read;
+    // logic [31:0] load_data_ending;
+    // assign load_data_ending = mem2_wb_reg.mem_data;
+    // logic [31:0] wb_alu_result;
+    // assign wb_alu_result = mem2_wb_reg.alu_result;
     
     always_ff @(posedge clk) begin
+        if(!registers_initialized)begin
+            for(int i =0;i<32;i++)begin
+                registers[i]<=32'b0;
+            end
+        end
+        else
         if (!rst && mem2_wb_reg.reg_write && destination_register != 0) begin
             if (mem2_wb_reg.mem_to_reg && !mem2_wb_reg.mem_read)
             //difference between load value and load result is that one goes through filtering for lb and lbu and lh etc
