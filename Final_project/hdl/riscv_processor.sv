@@ -4,7 +4,10 @@ module riscv_processor (
     input  logic [31:0] ending_pc,
   
     output logic [31:0] pc_out,
-    output logic  instruction_done
+    output logic  instruction_done,
+    output logic write_enable, 
+    output logic [31:0] w_data,
+    output logic [31:0] w_addr
     
 );
     // Program Counter
@@ -15,7 +18,7 @@ module riscv_processor (
 
     logic [31:0] registers [31:0];
     logic registers_initialized;
-        logic dmem_read;
+    logic dmem_read;
     logic [31:0] aligned_addr;
     logic [31:0] load_value;
     // Instruction Fields
@@ -106,6 +109,11 @@ logic fetch_2_valid;
 logic [31:0] fetch_3_pc;
 logic fetch_3_valid; 
 
+logic[31:0] f2d_pc;
+
+logic[31:0] e2m_pc;
+logic[31:0] d2e_pc;
+logic[31:0] mem1_mem2_pc;
 
 // writeback_type writeback_reg;
 logic [31:0] data_to_write;
@@ -137,13 +145,7 @@ logic memory_hazard;
     logic [31:0] alu_result;
     logic [3:0] alu_ctrl;
     logic [31:0] douta;
-    logic [1:0] reset_delay;
-    // typedef enum logic [1:0] {
-    //   FETCH_1,
-    //   FETCH_2,
-    //   FETCH_3
-    // } fetch_state_e;
-    // fetch_state_e fetch_state;
+   
 // fetch_state_t fetch_state;
     // Initialize registers at start
    xilinx_single_port_ram_read_first #(
@@ -158,7 +160,7 @@ logic memory_hazard;
     .wea(1'b0),         // Write enable
     .ena(!stall_decode),         // RAM Enable, for additional power savings, disable port when not in use
     .rsta(1'b0),       // Output reset (does not affect memory contents)
-    .regcea(1'b1),   // Output register enable
+    .regcea(!stall_decode),   // Output register enable
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
   );
 
@@ -187,32 +189,38 @@ logic memory_hazard;
     .rstb(rst),
     .regceb(1'b1)
 );
+assign write_enable = mem2_wb_reg.mem_write && mem2_wb_reg.valid;
+assign w_data = data_to_write;
+assign w_addr = mem2_wb_reg.alu_result>>2;
+logic [31:0] x_17;
+logic [31:0] x_12,x_13,x_14,x_15,x_16,x_31;
+assign x_17= registers[17];
+assign x_12= registers[12];
+assign x_13= registers[13];
+assign x_14= registers[14];
+assign x_15= registers[15];
+assign x_16= registers[16];
+assign x_31= registers[31];
+logic [31:0] x_5,x_6,x_7,x_8,x_9,x_10,x_11;
+assign x_5= registers[5];
+assign x_6= registers[6];
+assign x_7= registers[7];
+assign x_8= registers[8];
+assign x_9= registers[9];
+assign x_10= registers[10];
+assign x_11= registers[11];
+logic [31:0] x_18;
+assign x_18= registers[18];
+
+
+
+
 //     //CHECK FOR HAZARDS
-//     always_comb begin
-//     stall_pipeline = 1'b0;
-    
-//     // RAW Hazard detection
-//     if (decode_reg.mem_read && 
-//         ((decode_reg.rd == inst_fields.rs1 && inst_fields.rs1 != 0) || 
-//          (decode_reg.rd == inst_fields.rs2 && inst_fields.rs2 != 0))) begin
-//         // stall_pipeline = 1'b1;
-//         stall_fetch = 1'b1;
-//         stall_decode = 1'b1;
-//     end
-        // en
+
     logic annul;
     assign fetch_1_pc = pc; 
     assign fetch_1_valid = rst? 0: 1'b1;
-    // always_ff@(posedge clk)begin 
-    //     if(rst)begin 
-    //         reset_delay<=2'b2;
-    //     end 
-    //     else begin 
-    //         if(reset_delay!=2'b0)begin 
-    //             reset_delay<=reset_delay-1;
-    //         end
-    //     end
-    // end
+
 //SETTING FETCH STAGES TRANSITIOn
     always_ff@(posedge clk)begin 
         if(rst)begin 
@@ -226,8 +234,8 @@ logic memory_hazard;
             if(stall_decode)begin 
 
                 //keep everything the same
-                fetch_2_valid<=0;
-                fetch_3_valid<=0;
+                // fetch_2_valid<=0;
+                // fetch_3_valid<=0;
 
             end 
             else begin 
@@ -241,6 +249,8 @@ logic memory_hazard;
         
     end
     // Fetch state machine
+    logic [31:0] x3;
+    assign x3 = registers[3];
     logic data_ready;
     logic [31:0] last_done_pc;
     assign instruction_done = last_done_pc == ending_pc;
@@ -253,10 +263,7 @@ logic memory_hazard;
             for (int i = 0; i < 32; i++) begin
                 registers[i] <= 32'b0;
             end
-            for(int i=0;i<1024;i++)begin
-                // imem[i]<=32'b0;
-                // dmem[i]<=0'b0;
-            end
+            
             registers_initialized <= 1'b1;
 
         end
@@ -265,44 +272,53 @@ logic memory_hazard;
         end
 
     end
+    logic[31:0] x_4;
+    assign x_4 = registers[4];
+    logic [31:0] x_1,x_2;
+    assign x_1 = registers[1];
+    assign x_2 = registers[2];
     // Next PC Logic SHOULD BE DETERMINED IN EXECUTE 
+    logic branch_d2e;
+    assign branch_d2e = d2e_reg.branch;
     logic [31:0] next_pc;
+    logic [31:0] d2e_imm;
+    assign d2e_imm = d2e_reg.imm;
     always_comb begin
         annul= 1'b1;
         if (d2e_reg.jump && d2e_reg.alu_src)         // JALR
             next_pc = alu_result;
         else if (d2e_reg.jump)               // JAL
-            next_pc = d2e_reg.pc + d2e_reg.imm;
+            next_pc = $signed(d2e_reg.pc) + $signed(d2e_reg.imm);
         else if (d2e_reg.branch && branch_taken)
-            next_pc = d2e_reg.pc + d2e_reg.imm;
+            next_pc = $signed(d2e_reg.pc) + $signed(d2e_reg.imm);
         else begin 
-            next_pc = stall_decode?fetch_3_pc: pc + 4;
+            next_pc = stall_decode?pc : pc + 4;
             annul= 1'b0;
         end 
     
     end
 
     //FETCH SETUP + FETCH STATE
-    always_ff @(posedge clk) begin
-        if (!rst ) begin
-            //FETCH wait 2 is when it's availble
-            if(stall_decode)begin
-                //hold value
-                
-            end 
-            else if (fetch_3_valid && !annul ) begin
-                f2d_reg.instruction  <= douta;
-                f2d_reg.pc <= fetch_3_pc;
-                f2d_reg.valid <= 1'b1;
-                f2d_inst<=douta;
-            end
-            else begin 
-                f2d_reg <= 65'b0;
-                f2d_inst<=32'b0;
-
-            end 
-        end
+   always_ff @(posedge clk) begin
+    if (rst) begin
+        f2d_reg  <= '0;
+        f2d_inst <= 32'b0;
+    end else if (stall_decode) begin
+        // Do nothing, hold current value of f2d_reg
+    end else if (annul) begin
+        // Flush the pipeline stage
+        f2d_reg  <= '0;
+        f2d_inst <= 32'b0;
+    end else if (fetch_3_valid) begin
+        f2d_reg.instruction <= douta;
+        f2d_reg.pc          <= fetch_3_pc;
+        f2d_reg.valid       <= 1'b1;
+        f2d_inst            <= douta;
+        f2d_pc              <= fetch_3_pc;
+    end else begin
+        // Hold f2d_reg (do nothing)
     end
+end
 
     //DECODE SETUP
     logic [31:0] rs1_debug;
@@ -351,9 +367,12 @@ logic memory_hazard;
             d2e_inst<=32'b0;
         end
         else begin 
-            if(stall_decode)begin 
+            if(stall_decode&&!memory_hazard)begin 
                 //do nothing
                 d2e_reg<=158'b0;
+            end
+            else if(memory_hazard)begin 
+            //do nothing
             end
             else if(f2d_reg.valid && !annul)begin 
                 d2e_reg.pc<=f2d_reg.pc;
@@ -374,11 +393,13 @@ logic memory_hazard;
                 d2e_reg.alu_ctrl<=alu_ctrl;
                 d2e_reg.valid<=1'b1;
                 d2e_inst<=f2d_inst;
+                d2e_pc<=f2d_pc;
             end
          
             
             else begin  
                 d2e_reg<='0;
+                d2e_inst<=32'b0;
             end
 
         end
@@ -406,6 +427,10 @@ logic memory_hazard;
         .rs2_val     (d2e_reg.rs2_val),
         .branch_taken(branch_taken)
     );
+    logic [31:0] rs1_d2e,rs2_d2e;
+    logic [31:0] rs1_e2m,rs2_e2m;
+    logic [31:0] rs1_m1,rs2_m1;
+    logic [31:0] rs1_wb,rs2_wb;
 
     // Execute to Memory Register
     always_ff @(posedge clk) begin
@@ -415,6 +440,7 @@ logic memory_hazard;
         end 
         else if (memory_hazard) begin
             //do nothing  keep this memory the same
+
         end
         else begin
             if (d2e_reg.valid ) begin
@@ -431,6 +457,7 @@ logic memory_hazard;
                 e2m_reg.jump       <= d2e_reg.jump;
                 e2m_reg.branch     <= d2e_reg.branch;
                 e2m_inst<=d2e_inst;
+                e2m_pc<=d2e_pc;
             end else begin
                 e2m_reg<='0;
             end
@@ -468,6 +495,7 @@ logic memory_hazard;
                 mem1_mem2_reg.branch     <= e2m_reg.branch;
                 // m2w_inst<=e2m_inst;
                 mem1_mem2_inst<=e2m_inst;
+                mem1_mem2_pc<=e2m_pc;
 
             end else begin
                 mem1_mem2_reg<=106'b0;   
@@ -509,7 +537,7 @@ logic memory_hazard;
     assign byte_offset = mem2_wb_reg.alu_result[1:0];
 //     assign aligned_addr = {e2m_reg.alu_result[31:2], 2'b00};
 //         //mem_rdata is aligned_addr 
-
+ 
 //     // Load operation implementation
     // logic [31:0] load_value;
     Mem_ctrl_unit mem_ctrl_unit(
@@ -548,10 +576,12 @@ end
     assign mem_read_1 = mem2_wb_reg.mem_read;
     logic [31:0] load_data_ending;
     assign load_data_ending = mem2_wb_reg.mem_data;
-
+    logic [31:0] wb_alu_result;
+    assign wb_alu_result = mem2_wb_reg.alu_result;
+    
     always_ff @(posedge clk) begin
         if (!rst && mem2_wb_reg.reg_write && destination_register != 0) begin
-            if (mem_to_reg && !mem2_wb_reg.mem_read)
+            if (mem2_wb_reg.mem_to_reg && !mem2_wb_reg.mem_read)
             //difference between load value and load result is that one goes through filtering for lb and lbu and lh etc
                 registers[destination_register] <= load_value;
             else if (mem2_wb_reg.jump) // JALR
@@ -572,6 +602,10 @@ end
             last_done_pc<=mem2_wb_reg.pc;
         end
     end
+    logic [31:0] current_wb_pc;
+    always_comb begin 
+        current_wb_pc = mem2_wb_reg.pc;
+    end
     //HAZARD DETECTION if any of the decode rs1 or rs2 are the same as ANY downstrem rd then stall 
     // logic stall_decode;
     logic exec_hazard;
@@ -587,7 +621,6 @@ end
         stall_decode = exec_hazard || mem_hazard || mem2_hazard || wb_hazard;
         // stall_decode = 0;
 
-        
         end
     //  assign stall_decode= 0;
     // Branch unit

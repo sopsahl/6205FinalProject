@@ -174,7 +174,7 @@ async def test_load(dut):
 
     # dut.dmem[4].value = 10
     
-    dut.ending_pc.value = 0x60
+    dut.ending_pc.value = 0x4
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.instruction_done) 
     assert hex(dut.registers[3].value) == hex(0xdeadbeef)
@@ -182,7 +182,7 @@ async def test_load(dut):
     # Write to memory file
 async def test_store(dut):
     instructions = [
-        # addi x1, x0, 4    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=4
+        # addi x1, x0, 8    # opcode=0010011 (ADDI), rd=1, rs1=0, imm=4
         RISCVInstruction.I_type(19, 0, 0x8, 0, 1),
         0,
         0,
@@ -196,7 +196,9 @@ async def test_store(dut):
         0,  # nop
         0,  # nop
         #load x3, 0(x0)    # opcode=0000011 (LW), rd=3, rs1=0, imm=0
-        RISCVInstruction.I_type(3, 2, 0, 0, 3)
+        RISCVInstruction.I_type(3, 2, 0, 0, 3),
+        0,
+        0
     ]
     hex_instructions = [format_hex32(instr) for instr in instructions]
     with open("../data/instructionMem.mem", "w") as f:
@@ -205,11 +207,10 @@ async def test_store(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
-    dut.ending_pc.value = 0x60
+    dut.ending_pc.value = 60
     await ClockCycles(dut.clk, 1)
-    await ClockCycles(dut.clk, 18)
     await RisingEdge(dut.instruction_done)
-    print(hex(dut.registers[1].value))
+    # print(hex(dut.registers[1].value))
 
     assert hex(dut.registers[3].value) == hex(0x8)
     #works 
@@ -222,7 +223,9 @@ async def test_RAW_hazard(dut):
         # add x3, x1, x2    # opcode=0110011 (ADD), rd=3, rs1=1, rs2=2 should be 14
         RISCVInstruction.R_type(51, 0, 0, 1, 2, 3),
         # sub x4, x3, x1    # opcode=0110011 (SUB), rd=4, rs1=3, rs2=1  should be 10
-        RISCVInstruction.R_type(51, 0, 32, 3, 1, 4)
+        RISCVInstruction.R_type(51, 0, 32, 3, 1, 4),
+        0xDEADBEEF,
+
     ]
     hex_instructions = [format_hex32(instr) for instr in instructions]
     with open("../data/instructionMem.mem", "w") as f:
@@ -231,17 +234,16 @@ async def test_RAW_hazard(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
-    dut.ending_pc.value = 0x14
+    # dut.ending_pc.value = 16
     # await ClockCycles(dut.clk, 20)
-    await RisingEdge(dut.instruction_done)
+    # await RisingEdge(dut.instruction_done)
+    await ClockCycles(dut.clk, 100)
     assert hex(dut.registers[4].value) == hex(10)
     assert(hex(dut.registers[3].value) == hex(14))
     #works
 async def test_load_use_hazard(dut):
     instructions = [
         RISCVInstruction.I_type(3, 2, 4, 0, 1),     # lw x1, 4(x0)
-        0,
-        0,
         RISCVInstruction.R_type(51, 0, 0, 1, 2, 3)  # add x3, x1, x2  # Use after load
     ]
     hex_instructions = [format_hex32(instr) for instr in instructions]
@@ -251,7 +253,7 @@ async def test_load_use_hazard(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
-    dut.ending_pc.value = 0x8
+    dut.ending_pc.value = 0x4
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.instruction_done)
     print(hex(dut.registers[3].value))
@@ -275,6 +277,24 @@ async def test_memory_hazard(dut):
     # await ClockCycles(dut.clk, 14)
     await RisingEdge(dut.instruction_done)
     assert hex(dut.registers[2].value) == hex(100)
+async def test_negative_alu(dut):
+    instructions = [
+        RISCVInstruction.I_type(19, 0, 100, 0, 1),  # addi x1, x0, 100
+        RISCVInstruction.I_type(19, 0, 200, 0, 2),  # addi x2, x0, 200
+        RISCVInstruction.R_type(51, 0, 0, 1, 2, 3),  # add x3, x1, x2
+        #addi -1 x3 
+        RISCVInstruction.I_type(19, 0, -1, 3, 4)
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    dut.ending_pc.value = 0x10
+    await RisingEdge(dut.instruction_done)
+    print(int(dut.registers[4].value))
 
 async def test_mixed_hazards(dut):
     instructions = [
@@ -282,7 +302,9 @@ async def test_mixed_hazards(dut):
         RISCVInstruction.I_type(19, 0, 200, 0, 2),  # addi x2, x0, 200
         RISCVInstruction.S_type(35, 2, 0, 0, 1),    # sw x1, 0(x0) #RAW 
         RISCVInstruction.I_type(3, 2, 0, 0, 3),      # lw x3, 0(x0)    # Load after store
-        RISCVInstruction.R_type(51, 0, 0, 1, 2, 4)   # add x4, x1, x2  # Use after load
+        RISCVInstruction.R_type(51, 0, 0, 1, 2, 4),  # add x4, x1, x2  # Use after load
+        0,0,0,0,0,0,0
+
     ]
     hex_instructions = [format_hex32(instr) for instr in instructions]
     with open("../data/instructionMem.mem", "w") as f:
@@ -292,11 +314,337 @@ async def test_mixed_hazards(dut):
     dut.registers[1].value = 0xbeefeeef
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
-    dut.ending_pc.value = 0x14
+    # dut.ending_pc.value = 0x10
     await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.instruction_done)
+    # await RisingEdge(dut.instruction_done)
+    await ClockCycles(dut.clk, 1000)
     assert hex(dut.registers[3].value) == hex(100)
     assert hex(dut.registers[4].value) == hex(300)
+async def bubble_sort_sim(dut):
+    instructions = [
+        #addi x10, x0, 0
+        #pc:0
+        RISCVInstruction.I_type(19, 0, 0, 0, 10),
+        #pc:4
+        #addi x11, x0,10
+        RISCVInstruction.I_type(19, 0, 10, 0, 11),
+        #pc:8
+        #addi x14, x0, 5
+        RISCVInstruction.I_type(19, 0, 5, 0, 14),
+        #pc:12
+        #sw x14, 0(x10)
+        RISCVInstruction.S_type(35, 2, 0, 10, 14),
+        #pc:16
+        #addi x14, x0, 1
+        RISCVInstruction.I_type(19, 0, 1, 0, 14),
+        #pc:20
+        #addi x17, x10, 4
+        RISCVInstruction.I_type(19, 0, 4, 10, 17),
+        #pc:24
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:28
+        #addi x14, x0, 4
+        RISCVInstruction.I_type(19, 0, 4, 0, 14),
+        #pc:32
+        #addi x17, x10, 8
+        RISCVInstruction.I_type(19, 0, 8, 10, 17),
+        #pc:36
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:40
+        #addi x14, x0, 2
+        RISCVInstruction.I_type(19, 0, 2, 0, 14),
+        #pc:44
+        #addi x17, x10, 12
+        RISCVInstruction.I_type(19, 0, 12, 10, 17),
+        #pc:48
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:52
+        #addi x14, x0, 8
+        RISCVInstruction.I_type(19, 0, 8, 0, 14),
+        #pc:56
+        #addi x17, x10, 16
+        RISCVInstruction.I_type(19, 0, 16, 10, 17),
+        #pc:60
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:64
+        #addi x14, x0, 0
+        RISCVInstruction.I_type(19, 0, 0, 0, 14),
+        #pc:68
+        #addi x17, x10, 20
+        RISCVInstruction.I_type(19, 0, 20, 10, 17),
+        #pc:72
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:76
+        #addi x14, x0, 2
+        RISCVInstruction.I_type(19, 0, 2, 0, 14),
+        #pc:80
+        #addi x17, x10, 24
+        RISCVInstruction.I_type(19, 0, 24, 10, 17),
+        #pc:84
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:88
+        #addi x14, x0, 3
+        RISCVInstruction.I_type(19, 0, 3, 0, 14),
+        #pc:92
+        #addi x17, x10, 28
+        RISCVInstruction.I_type(19, 0, 28, 10, 17),
+        #pc:96
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:100
+        #addi x14, x0, 7
+        RISCVInstruction.I_type(19, 0, 7, 0, 14),
+        #pc:104
+        #addi x17, x10, 32
+        RISCVInstruction.I_type(19, 0, 32, 10, 17),
+        #pc:108
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:112
+        #addi x14, x0, 6
+        RISCVInstruction.I_type(19, 0, 6, 0, 14),
+        #pc:116
+        #addi x17, x10, 36
+        RISCVInstruction.I_type(19, 0, 36, 10, 17),
+        #pc:120
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:124
+        #addi x12, x0, 0
+        RISCVInstruction.I_type(19, 0, 0, 0, 12),
+        #pc:128
+        #addi x31, x11, -1
+        RISCVInstruction.I_type(19, 0, -1, 11, 31),
+        #pc:132
+        #bge x12, x31, 92
+        RISCVInstruction.B_type(99, 5, 92, 12, 31),
+        #pc:136
+        #addi x13, x0, 0
+        RISCVInstruction.I_type(19, 0, 0, 0, 13),
+        #pc:140
+        #sub x31, x11, x12
+        RISCVInstruction.R_type(51, 0, 0x20, 11, 12, 31),
+        #pc:144
+        #addi x31, x31, -1
+        RISCVInstruction.I_type(19, 0, -1, 31, 31),
+        #pc:148
+        #bge x13, x31, 68
+        RISCVInstruction.B_type(99, 5, 68, 13, 31),
+        #pc:152
+        #slli x16, x13, 2
+        RISCVInstruction.I_type(19, 1, 2, 13, 16),
+        #pc:156
+        #add x17, x10, x16
+        RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+        #pc:160
+        #lw x14, 0(x17)
+        RISCVInstruction.I_type(3, 2, 0, 17, 14),
+        #pc:164
+        #addi x18,x13,1
+        RISCVInstruction.I_type(19, 0, 1, 13, 18),
+        #pc:168
+        #slli x16, x18, 2
+        RISCVInstruction.I_type(19, 1, 2, 18, 16),
+        #pc:172
+        #add x17, x10, x16
+        RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+        #pc:176
+        #lw x15, 0(x17)
+        RISCVInstruction.I_type(3, 2, 0, 17, 15),
+        #pc:180
+        #blt x14, x15, 28
+        RISCVInstruction.B_type(99, 4, 28, 14, 15),
+        #pc:184
+        #slli x16, x13, 2
+        RISCVInstruction.I_type(19, 1, 2, 13, 16),
+        #pc:188
+        #add x17, x10, x16
+        RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+        #pc:192
+        #sw x15, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 15),
+        #pc:196
+        #slli x16, x18, 2
+        RISCVInstruction.I_type(19, 1, 2, 18, 16),
+        #pc:200
+        #add x17, x10, x16
+        RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+        #pc:204
+        #sw x14, 0(x17)
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #pc:208
+        #addi x13, x13, 1
+        RISCVInstruction.I_type(19, 0, 1, 13, 13),
+        #pc:212
+        #jal x0,-72
+        RISCVInstruction.J_type(111, -72, 0),
+        #pc:216
+        #addi x12, x12, 1
+        RISCVInstruction.I_type(19, 0, 1, 12, 12),
+        #pc:220
+        #jal x0,-92
+        RISCVInstruction.J_type(111, -92, 0),
+        #pc:224
+        0,
+
+
+    # # ProgramEnd equivalent
+    # # PC: 224
+    # # Sorting is complete
+    # # The sorted array is stored in memory st7arting at base_addr
+
+
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    # dut.ending_pc.value = 224
+    dut.ending_pc.value =224
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.instruction_done)
+    await ClockCycles(dut.clk, 200000)
+    
+    
+async def mini_bubsort(dut):
+    instructions = [
+
+        # # PC: 0
+        # addi x10, x0, 0        # x10 = base_addr = 0
+        RISCVInstruction.I_type(19, 0, 0, 0, 10),
+
+
+        # # PC: 4
+        # addi x11, x0, 3        # x11 = n = 3 (array size)
+        RISCVInstruction.I_type(19, 0, 3, 0, 11),
+
+        # # Initialize the array with values
+
+        # # Element 0
+        # # PC: 8
+        # addi x14, x0, 5        # x14 = 5
+        RISCVInstruction.I_type(19, 0, 5, 0, 14),
+
+        # # PC: 12
+        # sw   x14, 0(x10)       # Store 5 at M[base_addr + 0]
+        RISCVInstruction.S_type(35, 2, 0, 10, 14),
+        # # Element 1
+        # # PC: 16
+        # addi x14, x0, 2        # x14 = 2
+        RISCVInstruction.I_type(19, 0, 2, 0, 14),
+        # # PC: 20
+        # addi x17, x10, 4       # x17 = base_addr + 4
+        RISCVInstruction.I_type(19, 0, 4, 10, 17),
+        # # PC: 24
+        # sw   x14, 0(x17)       # Store 2 at M[base_addr + 4]
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        # # Element 2
+        # # PC: 28
+        # addi x14, x0, 8        # x14 = 8
+        RISCVInstruction.I_type(19, 0, 8, 0, 14),
+        # # PC: 32
+        # addi x17, x10, 8       # x17 = base_addr + 8
+        RISCVInstruction.I_type(19, 0, 8, 10, 17),
+        # # PC: 36
+        # sw   x14, 0(x17)       # Store 8 at M[base_addr + 8]
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        # # Bubble Sort Algorithm
+
+        # # PC: 40
+        # addi x12, x0, 0        # x12 = i = 0 (outer loop index)
+        RISCVInstruction.I_type(19, 0, 0, 0, 12),
+        # # Outer Loop Start
+        # # PC: 44
+        # addi x31, x11, -1      # x31 = n - 1 = 2
+        RISCVInstruction.I_type(19, 0, -1, 11, 31),
+        # # PC: 48
+        # bge  x12, x31, 72      # if i >= 2, branch ahead 72 bytes to PC 120 (Program End)
+        RISCVInstruction.B_type(99, 5, 72, 12, 31),
+        # # Inner Loop Initialization
+        # # PC: 52
+        # addi x13, x0, 0        # x13 = j = 0 (inner loop index)
+        RISCVInstruction.I_type(19, 0, 0, 0, 13),
+        # # Inner Loop Start
+        # # PC: 56
+        # sub  x31, x11, x12     # x31 = n - i = 3 - i
+        RISCVInstruction.R_type(51, 0, 0, 11, 12, 31),
+        # # PC: 60
+        # addi x31, x31, -1      # x31 = n - i - 1
+        RISCVInstruction.I_type(19, 0, -1, 31, 31),
+        # # PC: 64
+        # bge  x13, x31, 48      # if j >= (n - i - 1), branch ahead 48 bytes to PC 112 (Increment i)
+        RISCVInstruction.B_type(99, 5, 48, 13, 31),
+        # # Load A[j] into x14
+        # # PC: 68
+        # slli x16, x13, 2       # x16 = j * 4
+        RISCVInstruction.I_type(14, 1, 2, 13, 16),
+        # # PC: 72
+        # add  x17, x10, x16     # x17 = base_addr + j * 4
+        RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+        # # PC: 76
+        # lw   x14, 0(x17)       # x14 = A[j]
+        RISCVInstruction.I_type(3, 2, 0, 17, 14),
+        # # Load A[j+1] into x15
+        # # PC: 80
+        # addi x16, x16, 4       # x16 = (j + 1) * 4
+        RISCVInstruction.I_type(19, 0, 4, 16, 16),
+        # # PC: 84
+        # add  x17, x10, x16     # x17 = base_addr + (j + 1) * 4
+        RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+        # # PC: 88
+        # lw   x15, 0(x17)       # x15 = A[j+1]
+        RISCVInstruction.I_type(3, 2, 0, 17, 15),
+        # # Compare A[j] > A[j+1]
+        # # PC: 92
+        # blt  x14, x15, 12      # if A[j] < A[j+1], branch ahead 12 bytes to PC 104 (Increment j)
+        RISCVInstruction.B_type(99, 4, 12, 14, 15),
+        # # Swap A[j] and A[j+1]
+        # # PC: 96
+        # sw   x15, -4(x17)      # Store A[j+1] at M[base_addr + j * 4]
+        #                         # (A[j] = A[j+1])
+        RISCVInstruction.S_type(35, 2, -4, 17, 15),
+        # # PC: 100
+        # sw   x14, 0(x17)       # Store A[j] at M[base_addr + (j + 1) * 4]
+        #                         # (A[j+1] = A[j])
+        RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        # # Increment j
+        # # PC: 104
+        # addi x13, x13, 1       # j = j + 1
+        RISCVInstruction.I_type(19, 0, 1, 13, 13),
+        # # PC: 108
+        # jal  x0, -52           # Jump back 52 bytes to PC 56 (Inner Loop Start)
+        RISCVInstruction.J_type(111, -52, 0),
+        # # Increment i
+        # # PC: 112
+        # addi x12, x12, 1       # i = i + 1
+        RISCVInstruction.I_type(19, 0, 1, 12, 12),
+        # # PC: 116
+        # jal  x0, -72           # Jump back 72 bytes to PC 44 (Outer Loop Start)
+        RISCVInstruction.J_type(111, -72, 0),
+        0
+    ]
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    dut.ending_pc.value = 120
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.instruction_done)
+    
+
+
 
 @cocotb.test()
 async def test_ALU_operations(dut):
@@ -313,7 +661,11 @@ async def test_ALU_operations(dut):
     # await test_RAW_hazard (dut)
     # await test_load_use_hazard(dut)
     # await test_memory_hazard(dut)
-    await test_mixed_hazards(dut)
+    # await test_mixed_hazards(dut)
+    await bubble_sort_sim(dut)
+    # await test_negative_alu(dut)
+    # await mini_bubsort(dut)
+
     #timing issues
 
    

@@ -29,6 +29,21 @@ module xilinx_true_dual_port_read_first_1_clock_ram #(
   output [RAM_WIDTH-1:0] douta,         // Port A RAM output data
   output [RAM_WIDTH-1:0] doutb          // Port B RAM output data
 );
+  reg [31:0] ram_1;
+  reg [31:0] ram_2;
+  reg [31:0] ram_3;
+  reg[31:0] ram_4,ram_5,ram_6,ram_7,ram_8,ram_9;
+  reg [31:0] ram_10;
+  assign ram_1 = BRAM[0];
+  assign ram_2 = BRAM[1];
+  assign ram_3 = BRAM[2];
+  assign ram_4 = BRAM[3];
+  assign ram_5 = BRAM[4];
+  assign ram_6 = BRAM[5];
+  assign ram_7 = BRAM[6];
+  assign ram_8 = BRAM[7];
+  assign ram_9 = BRAM[8];
+  assign ram_10 = BRAM[9];
 
   reg [RAM_WIDTH-1:0] BRAM [RAM_DEPTH-1:0];
   reg [RAM_WIDTH-1:0] ram_data_a = {RAM_WIDTH{1'b0}};
