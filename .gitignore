@@ -3,3 +3,4 @@ obj/*
 sim_build/
 *.out
 __pycache__/
+.vscode/
