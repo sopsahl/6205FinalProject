@@ -1,11 +1,12 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-import assembler_constants::*;
+import constants::*;
 
 module assembler #(
     parameter CHAR_PER_LINE = 64,
-    parameter NUMBER_LINES = 256
+    parameter NUMBER_LINES = 256,
+    parameter LABEL_SIZE = 6
     ) (     
     input wire clk_in,
     input wire rst_in,
@@ -21,6 +22,8 @@ module assembler #(
     output logic [31:0] instruction
 );  
 
+    assign error_flag = inst_error || imm_error || reg_error || label_error; 
+
     // *****************************************
     // State Logic for Instruction Mapping
 
@@ -34,8 +37,7 @@ module assembler #(
         READ_RS2,
         READ_IMM,
         READ_LABEL,
-        DONE,
-        ERROR
+        DONE
     } inst_state instruction_state;
 
     inst_state next_instruction_state;
@@ -58,15 +60,6 @@ module assembler #(
         endcase
     end
 
-    logic [$clog2(NUMBER_LINES) + 1 : 0] inst_pc;
-
-    pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
-        .clk_in(clk_in),
-        .rst_in((assembler_state != INSTRUCTION_MAPPING) || rst_in),
-        .evt_in(instruction_state == DONE),
-        .count_out(inst_pc)
-    );
-
     // *****************************************
     // *****************************************
     // Interpreter Modules
@@ -79,7 +72,6 @@ module assembler #(
 
     logic inst_error, reg_error, imm_error;
     logic inst_done, reg_done, imm_done;
-    logic inst_busy, reg_busy, imm_busy;
 
     instruction_interpreter get_inst (
         .clk_in(clk_in),
@@ -89,7 +81,6 @@ module assembler #(
         .incoming_ascii(incoming_character),
         .error_flag(inst_error),
         .done_flag(inst_done),
-        .busy_flag(inst_busy),
         .opcode(opcode_buffer),
         .funct7(funct7_buffer),
         .funct3(funct3_buffer)
@@ -103,7 +94,6 @@ module assembler #(
         .incoming_ascii(incoming_character),
         .error_flag(reg_error),
         .done_flag(reg_done),
-        .busy_flag(reg_flag),
         .register(reg_buffer)
     );
 
@@ -115,27 +105,66 @@ module assembler #(
         .incoming_ascii(incoming_character),
         .error_flag(imm_error),
         .done_flag(imm_done),
-        .busy_flag(imm_busy),
         .isUtype((inst.opcode == OP_AUIPC) || (inst.opcode == OP_LUI)),
         .immediate(immediate_buffer)
     );
 
-    logic inst_ready_buffer;
+    // *****************************************
+    // *****************************************
+    // Label Controller
+
+    logic [31:0] offset;
+    logic label_error, label_done;
+    
+    label_controller #(.NUMBER_LINES(NUMBER_LINES), .NUMBER_LETTERS(LABEL_SIZE)) label_controller (
+        .clk_in(clk_in),
+        .rst_in(rst_in),
+        .new_line(new_line),
+        .new_character(new_character),
+        .valid_data(instruction_state == READ_LABEL || assembler_state == PC_MAPPING),
+        .pc(pc),
+        .incoming_character(incoming_character),
+        .done_flag(label_done),
+        .error_flag(label_error),
+        .assembler_state(assembler_state),
+        .offset(offset)
+    );
 
     // *****************************************
     // *****************************************
-    // LABEL MAPPING
+    // PC logic
 
-    logic [NUMBER_LINES - 1 : 0] is_instruction;
+    logic [$clog2(NUMBER_LINES) + 1 : 0] label_pc;
+    logic [$clog2(NUMBER_LINES) + 1 : 0] inst_pc;
+    logic [$clog2(NUMBER_LINES) + 1 : 0] pc;
+
+    pc_mapping #(.NUMBER_LINES(NUMBER_LINES)) label_pc_counter (
+        .clk_in(clk_in),
+        .rst_in(assembler_state != PC_MAPPING || rst_in),
+        .new_line(new_line),
+        .new_character(new_character),
+        .incoming_ascii(incoming_character),
+        .pc(label_pc)
+    );
+
+    pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
+        .clk_in(clk_in),
+        .rst_in((assembler_state != INSTRUCTION_MAPPING) || rst_in),
+        .evt_in(instruction_state == DONE),
+        .count_out(inst_pc)
+    );
+
+    assign pc = (assembler_state == PC_MAPPING) ? label_pc : inst_pc;
 
     // *****************************************
     // *****************************************
     // INSTRUCTION_MAPPING STATE LOGIC
 
+    logic inst_ready_buffer;
+
     always_ff @(posedge clk_in) begin
         if (assembler_state == INSTRUCTION_MAPPING && !rst_in) begin
-            if (inst_error || imm_error || reg_error || label_error || ...) instruction_state <= ERROR;
-            else if (new_line) instruction_state <= READ_INST; // start reading
+            if (new_line) instruction_state <= READ_INST; // start reading
             else begin
                 case (instruction_state)
                     READ_INST : begin
@@ -166,17 +195,23 @@ module assembler #(
                         end
                     end READ_LABEL : begin
                         if (label_done) begin
-                            inst.imm <= label_buffer;
+                            inst.imm <= offset;
                             instruction_state <= next_instruction_state;
                         end
-                    end DONE : instruction_state <= IDLE;
+                    end DONE : begin 
+                        instruction_state <= IDLE;
+                        instruction <= create_inst(inst); // Create the instruction
+                    end
                 endcase
             end
         end else instruction_state <= IDLE; // Either Reset or different State
 
         // Buffers
         inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
+        done_flag <= instruction_state == DONE; // One cycle delay for the instruction load
     end
+
+    // *****************************************
 
 
 endmodule // assembler

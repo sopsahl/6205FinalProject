@@ -1,5 +1,5 @@
 
-package assembler_constants;
+package constants;
 
     // Instruction Fields
     typedef struct packed {
@@ -118,4 +118,4 @@ package assembler_constants;
     endfunction
 
 
-endpackage
+endpackage // constants

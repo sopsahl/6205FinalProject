@@ -6,7 +6,7 @@
 // Up to 5 characters
 // done_flag high one cycle after delimiter (" " or ",")
 
-import assembler_constants::*;
+import constants::*;
 
 module instruction_interpreter (
     input wire clk_in,
@@ -16,7 +16,6 @@ module instruction_interpreter (
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
-    output logic busy_flag,
 
     output logic [6:0] opcode,
     output logic [6:0] funct7,
@@ -58,7 +57,6 @@ module instruction_interpreter (
 
     assign error_flag = (state == ERROR);
     assign done_flag = (state == RETURN);
-    assign busy_flag = (state != IDLE);
 
     logic [4:0] [4:0] compressed_buffer;
 

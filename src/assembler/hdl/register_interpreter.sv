@@ -5,7 +5,7 @@
 // and calculates the register number (5 bits)
 // done_flag high same cycle as delimiter (" " or ",")
 
-import assembler_constants::*;
+import constants::*;
 
 module register_interpreter (
     input wire clk_in,
@@ -15,7 +15,6 @@ module register_interpreter (
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
-    output logic busy_flag,
 
     output logic [4:0] register
 );
@@ -30,7 +29,6 @@ module register_interpreter (
 
     assign error_flag = (state == ERROR);
     assign done_flag = (state == RETURN);
-    assign busy_flag = (state != IDLE);
 
     always_ff @(posedge clk_in) begin
 

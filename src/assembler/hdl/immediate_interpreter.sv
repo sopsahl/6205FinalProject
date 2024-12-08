@@ -6,7 +6,7 @@
 // Suppots up to 4 bytes of data (8 characters)
 // done_flag is high 1 cycle after the delimiter (" " or ",")
 
-import assembler_constants::*;
+import constants::*;
 
 module immediate_interpreter (
     input wire clk_in,
@@ -16,7 +16,6 @@ module immediate_interpreter (
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
-    output logic busy_flag,
 
     input wire isUtype,
     output logic [31:0] immediate
@@ -32,7 +31,6 @@ module immediate_interpreter (
 
     assign error_flag = (state == ERROR);
     assign done_flag = (state == RETURN);
-    assign busy_flag = (state != IDLE);
 
     logic isValid;
     assign isValid = isAlpha(incoming_ascii) || isNum(incoming_ascii);
@@ -52,7 +50,7 @@ module immediate_interpreter (
                     end BUSY: begin
                         if (isValid) immediate <= ((immediate << 4) | hex_value);
                         else state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
-                    end RETURN: state <= IDLE;
+                    end
                 endcase
             end else state <= (state == RETURN) ? IDLE : state; // Allows for single high pulse of done_flag
         end else state <= IDLE;
