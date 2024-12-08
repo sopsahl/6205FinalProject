@@ -95,19 +95,37 @@ module top_level(
   logic buffer_x;
   logic buffer_y;
   logic buffer_bksp;
-  logic [15:0] buffer_char;
+  logic [7:0] keyboard_char;
   logic is_instr_complete;
   logic [31:0][4:0] curr_instr;
 
-  input_buffer keyboard_input (
-    .clk_in(clk_pixel), // TODO: fix clock differences
-    .clk_two(dclk),
-    .rst_in(sys_rst),
-    .data_in(data), // TODO: input keyboard
-    .key_pressed(buffer_x),
+  // input_buffer keyboard_input (
+  //   .clk_in(clk_pixel), // TODO: fix clock differences
+  //   .clk_two(dclk),
+  //   .rst_in(sys_rst),
+  //   .data_in(data), // TODO: input keyboard
+  //   .key_pressed(buffer_x),
+  //   .enter_pressed(buffer_y),
+  //   .bksp_pressed(buffer_bksp),
+  //   .character(buffer_char)
+  // );
+
+  ps2_keyboard_interface(
+    .clk(clk_pixel), // FPGA clock
+    .rst(sys_rst), // Synchronous reset
+    .ps2_clk(dclk), // PS/2 clock from keyboard
+    .ps2_data(data), // PS/2 data from keyboard
+    .data_out(keyboard_char), // Decoded data output
+    .key_pressed(buffer_x), // Data valid signal
     .enter_pressed(buffer_y),
-    .bksp_pressed(buffer_bksp),
-    .character(buffer_char)
+    .bksp_pressed(buffer_bksp)
+  );
+
+  logic [15:0] buffer_char;
+
+  translate_keypress(
+    .keypress(keyboard_char),
+    .char(buffer_char)
   );
 
   // keeps track of what to input to the sprite drawer
@@ -126,7 +144,7 @@ module top_level(
     .x_btn(x_btn || buffer_x),
     .y_btn(y_btn || buffer_y),
     .bksp_btn(bksp_btn || buffer_bksp),
-    .character(sw),
+    .character({sw[15:12], buffer_char[11:0]}),
     .tg_we(terminal_grid_write_enable),
     .tg_addr(terminal_grid_addr),
     .tg_input(terminal_grid_input),
