@@ -1,11 +1,5 @@
 
 package assembler_constants;
-    
-    // Error Type
-    tyepdef struct packed {
-        bit [7:0] line;
-        bit error_flag;
-    } Error;
 
     // Instruction Fields
     typedef struct packed {
@@ -17,6 +11,13 @@ package assembler_constants;
         bit [4:0] rs2;
         bit [31:0] imm;
     } InstFields;
+
+    typedef enum {
+        IDLE,
+        PC_MAPPING,
+        INSTRUCTION_MAPPING,
+        ERROR
+    } assembler_state;
 
     // Compressed ASCII Values
         parameter logic [4:0] COMPRESSED__ = 5'h00;

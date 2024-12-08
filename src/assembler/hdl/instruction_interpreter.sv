@@ -8,7 +8,6 @@
 
 import assembler_constants::*;
 
-
 module instruction_interpreter (
     input wire clk_in,
     input wire rst_in,
@@ -36,13 +35,13 @@ module instruction_interpreter (
         .compressed_inst(compressed_inst),
         .data(data),
         .isInst(isInst)
-    );
+    ); 
 
     assign opcode = data[16:10];
     assign funct7 = data[9:3];
     assign funct3 = data[2:0];
 
-    compress_letters get_compression ( 
+    compress_letters _get_compression ( 
         .incoming_ascii(incoming_ascii),
         .compressed_ascii(compressed_ascii),
         .is_in_range(ascii_in_range)
