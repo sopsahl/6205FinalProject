@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Wed Dec  4 06:08:50 2024
-| Host         : eecs-digital-15 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Sat Dec  7 19:46:52 2024
+| Host         : eecs-digital-18 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_timing_summary -file obj/post_route_timing_summary.rpt
 | Design       : top_level
 | Device       : 7s50-csga324
@@ -53,7 +53,7 @@ Table of Contents
 2. checking constant_clock (0)
 3. checking pulse_width_clock (0)
 4. checking unconstrained_internal_endpoints (0)
-5. checking no_input_delay (20)
+5. checking no_input_delay (21)
 6. checking no_output_delay (3)
 7. checking multiple_clock (0)
 8. checking generated_clocks (0)
@@ -84,9 +84,9 @@ Table of Contents
  There are 0 pins that are not constrained for maximum delay due to constant clock.
 
 
-5. checking no_input_delay (20)
+5. checking no_input_delay (21)
 -------------------------------
- There are 20 input ports with no input delay specified. (HIGH)
+ There are 21 input ports with no input delay specified. (HIGH)
 
  There are 0 input ports with no input delay but user has a false path constraint.
 
@@ -138,7 +138,7 @@ Table of Contents
 
     WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
     -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
-      2.803        0.000                      0                  709        0.095        0.000                      0                  709        0.538        0.000                       0                   250  
+      2.826        0.000                      0                  717        0.133        0.000                      0                  717        0.538        0.000                       0                   256  
 
 
 All user specified timing constraints are met.
@@ -165,7 +165,7 @@ gclk                   {0.000 4.000}        10.000          100.000
 Clock                      WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
 -----                      -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
 gclk                                                                                                                                                                     2.000        0.000                       0                     1  
-  clk_pixel_clk_wiz_0        2.803        0.000                      0                  709        0.095        0.000                      0                  709        6.234        0.000                       0                   238  
+  clk_pixel_clk_wiz_0        2.826        0.000                      0                  717        0.133        0.000                      0                  717        6.234        0.000                       0                   244  
   clk_tmds_clk_wiz_0                                                                                                                                                     0.538        0.000                       0                     8  
   clkfbout_clk_wiz_0                                                                                                                                                    47.845        0.000                       0                     3  
 
@@ -223,28 +223,28 @@ High Pulse Width  Slow    MMCME2_ADV/CLKIN1  n/a            2.000         4.000 
 From Clock:  clk_pixel_clk_wiz_0
   To Clock:  clk_pixel_clk_wiz_0
 
-Setup :            0  Failing Endpoints,  Worst Slack        2.803ns,  Total Violation        0.000ns
-Hold  :            0  Failing Endpoints,  Worst Slack        0.095ns,  Total Violation        0.000ns
+Setup :            0  Failing Endpoints,  Worst Slack        2.826ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.133ns,  Total Violation        0.000ns
 PW    :            0  Failing Endpoints,  Worst Slack        6.234ns,  Total Violation        0.000ns
 ---------------------------------------------------------------------------------------------------
 
 
 Max Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             2.803ns  (required time - arrival time)
-  Source:                 draw_characters/terminal_grid/BRAM_reg/CLKARDCLK
-                            (rising edge-triggered cell RAMB36E1 clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
-  Destination:            draw_characters/character_image/BRAM_reg_1_7/ADDRARDADDR[13]
+Slack (MET) :             2.826ns  (required time - arrival time)
+  Source:                 draw_characters/v_reg[1][4]/C
+                            (rising edge-triggered cell FDRE clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
+  Destination:            draw_characters/character_image/BRAM_reg_1_6/ADDRARDADDR[13]
                             (rising edge-triggered cell RAMB36E1 clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
   Path Group:             clk_pixel_clk_wiz_0
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            13.468ns  (clk_pixel_clk_wiz_0 rise@13.468ns - clk_pixel_clk_wiz_0 rise@0.000ns)
-  Data Path Delay:        9.633ns  (logic 3.671ns (38.111%)  route 5.962ns (61.889%))
-  Logic Levels:           8  (CARRY4=5 LUT2=1 LUT5=1 LUT6=1)
-  Clock Path Skew:        -0.120ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    -1.537ns = ( 11.931 - 13.468 ) 
-    Source Clock Delay      (SCD):    -0.935ns
-    Clock Pessimism Removal (CPR):    0.482ns
+  Data Path Delay:        9.588ns  (logic 3.823ns (39.872%)  route 5.765ns (60.128%))
+  Logic Levels:           9  (CARRY4=6 LUT2=1 LUT5=2)
+  Clock Path Skew:        -0.142ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.539ns = ( 11.929 - 13.468 ) 
+    Source Clock Delay      (SCD):    -0.907ns
+    Clock Pessimism Removal (CPR):    0.490ns
   Clock Uncertainty:      0.168ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
     Discrete Jitter          (DJ):    0.329ns
@@ -262,34 +262,36 @@ Slack (MET) :             2.803ns  (required time - arrival time)
                                                      -6.965    -4.291 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, routed)           1.666    -2.625    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.096    -2.529 r  mhdmicw/clkout1_buf/O
-                         net (fo=237, routed)         1.594    -0.935    draw_characters/terminal_grid/clk_pixel
-    RAMB36_X0Y4          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg/CLKARDCLK
+                         net (fo=243, routed)         1.622    -0.907    draw_characters/clk_pixel
+    SLICE_X5Y29          FDRE                                         r  draw_characters/v_reg[1][4]/C
   -------------------------------------------------------------------    -------------------
-    RAMB36_X0Y4          RAMB36E1 (Prop_ramb36e1_CLKARDCLK_DOADO[0])
-                                                      0.882    -0.053 r  draw_characters/terminal_grid/BRAM_reg/DOADO[0]
-                         net (fo=12, routed)          1.331     1.278    draw_characters/terminal_grid/ram_data[0]
-    SLICE_X5Y21          LUT6 (Prop_lut6_I0_O)        0.124     1.402 r  draw_characters/terminal_grid/g1_b0/O
-                         net (fo=1, routed)           0.659     2.061    draw_characters/terminal_grid/g1_b0_n_0
-    SLICE_X4Y21          LUT5 (Prop_lut5_I2_O)        0.124     2.185 r  draw_characters/terminal_grid/image_addr_carry_i_3/O
-                         net (fo=1, routed)           0.000     2.185    draw_characters/terminal_grid_n_14
-    SLICE_X4Y21          CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.550     2.735 r  draw_characters/image_addr_carry/CO[3]
-                         net (fo=1, routed)           0.000     2.735    draw_characters/image_addr_carry_n_0
-    SLICE_X4Y22          CARRY4 (Prop_carry4_CI_O[0])
-                                                      0.222     2.957 r  draw_characters/image_addr_carry__0/O[0]
-                         net (fo=1, routed)           0.748     3.705    draw_characters/terminal_grid/BRAM_reg_1_7[3]
-    SLICE_X8Y16          CARRY4 (Prop_carry4_S[3]_CO[3])
-                                                      0.675     4.380 r  draw_characters/terminal_grid/i___5_carry__0_i_1/CO[3]
-                         net (fo=1, routed)           0.000     4.380    draw_characters/terminal_grid/i___5_carry__0_i_1_n_0
-    SLICE_X8Y17          CARRY4 (Prop_carry4_CI_O[0])
-                                                      0.219     4.599 r  draw_characters/terminal_grid/i___5_carry__1_i_5/O[0]
-                         net (fo=1, routed)           0.578     5.177    draw_characters/terminal_grid/PCOUT[12]
-    SLICE_X9Y17          LUT2 (Prop_lut2_I1_O)        0.295     5.472 r  draw_characters/terminal_grid/i___5_carry__1_i_3/O
-                         net (fo=1, routed)           0.000     5.472    draw_characters/terminal_grid_n_22
-    SLICE_X9Y17          CARRY4 (Prop_carry4_S[1]_O[2])
-                                                      0.580     6.052 r  draw_characters/image_addr_inferred__1/i___5_carry__1/O[2]
-                         net (fo=16, routed)          2.646     8.697    draw_characters/character_image/ADDRARDADDR[10]
-    RAMB36_X0Y11         RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_1_7/ADDRARDADDR[13]
+    SLICE_X5Y29          FDRE (Prop_fdre_C_Q)         0.456    -0.451 f  draw_characters/v_reg[1][4]/Q
+                         net (fo=7, routed)           0.984     0.533    draw_characters/v_reg[1]_3[4]
+    SLICE_X6Y26          LUT5 (Prop_lut5_I3_O)        0.124     0.657 r  draw_characters/image_addr2_carry_i_3/O
+                         net (fo=1, routed)           0.000     0.657    draw_characters/image_addr2_carry_i_3_n_0
+    SLICE_X6Y26          CARRY4 (Prop_carry4_S[1]_O[2])
+                                                      0.578     1.235 r  draw_characters/image_addr2_carry/O[2]
+                         net (fo=2, routed)           0.669     1.905    draw_characters/terminal_grid/image_addr_carry[1]
+    SLICE_X8Y26          LUT5 (Prop_lut5_I0_O)        0.301     2.206 r  draw_characters/terminal_grid/image_addr_carry_i_2/O
+                         net (fo=1, routed)           0.000     2.206    draw_characters/terminal_grid_n_13
+    SLICE_X8Y26          CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.380     2.586 r  draw_characters/image_addr_carry/CO[3]
+                         net (fo=1, routed)           0.000     2.586    draw_characters/image_addr_carry_n_0
+    SLICE_X8Y27          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219     2.805 r  draw_characters/image_addr_carry__0/O[0]
+                         net (fo=1, routed)           0.811     3.616    draw_characters/terminal_grid/BRAM_reg_1_7[3]
+    SLICE_X10Y22         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.671     4.287 r  draw_characters/terminal_grid/i___5_carry__0_i_1/CO[3]
+                         net (fo=1, routed)           0.000     4.287    draw_characters/terminal_grid/i___5_carry__0_i_1_n_0
+    SLICE_X10Y23         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219     4.506 r  draw_characters/terminal_grid/i___5_carry__1_i_5/O[0]
+                         net (fo=1, routed)           0.578     5.084    draw_characters/terminal_grid/PCOUT[12]
+    SLICE_X11Y23         LUT2 (Prop_lut2_I1_O)        0.295     5.379 r  draw_characters/terminal_grid/i___5_carry__1_i_3/O
+                         net (fo=1, routed)           0.000     5.379    draw_characters/terminal_grid_n_22
+    SLICE_X11Y23         CARRY4 (Prop_carry4_S[1]_O[2])
+                                                      0.580     5.959 r  draw_characters/image_addr_inferred__1/i___5_carry__1/O[2]
+                         net (fo=16, routed)          2.723     8.682    draw_characters/character_image/ADDRARDADDR[10]
+    RAMB36_X2Y4          RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_1_6/ADDRARDADDR[13]
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_pixel_clk_wiz_0 rise edge)
@@ -302,17 +304,17 @@ Slack (MET) :             2.803ns  (required time - arrival time)
                                                      -7.221     8.779 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, routed)           1.587    10.366    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    10.457 r  mhdmicw/clkout1_buf/O
-                         net (fo=237, routed)         1.474    11.931    draw_characters/character_image/clk_pixel
-    RAMB36_X0Y11         RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_1_7/CLKARDCLK
-                         clock pessimism              0.482    12.413    
-                         clock uncertainty           -0.168    12.245    
-    RAMB36_X0Y11         RAMB36E1 (Setup_ramb36e1_CLKARDCLK_ADDRARDADDR[13])
-                                                     -0.744    11.501    draw_characters/character_image/BRAM_reg_1_7
+                         net (fo=243, routed)         1.473    11.929    draw_characters/character_image/clk_pixel
+    RAMB36_X2Y4          RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_1_6/CLKARDCLK
+                         clock pessimism              0.490    12.420    
+                         clock uncertainty           -0.168    12.252    
+    RAMB36_X2Y4          RAMB36E1 (Setup_ramb36e1_CLKARDCLK_ADDRARDADDR[13])
+                                                     -0.744    11.508    draw_characters/character_image/BRAM_reg_1_6
   -------------------------------------------------------------------
-                         required time                         11.501    
-                         arrival time                          -8.697    
+                         required time                         11.508    
+                         arrival time                          -8.682    
   -------------------------------------------------------------------
-                         slack                                  2.803    
+                         slack                                  2.826    
 
 
 
@@ -320,19 +322,19 @@ Slack (MET) :             2.803ns  (required time - arrival time)
 
 Min Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             0.095ns  (arrival time - required time)
-  Source:                 terminal/tg_input_reg[4]/C
+Slack (MET) :             0.133ns  (arrival time - required time)
+  Source:                 terminal/tg_input_reg[3]/C
                             (rising edge-triggered cell FDRE clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
-  Destination:            draw_characters/terminal_grid/BRAM_reg/DIADI[4]
+  Destination:            draw_characters/terminal_grid/BRAM_reg/DIADI[3]
                             (rising edge-triggered cell RAMB36E1 clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
   Path Group:             clk_pixel_clk_wiz_0
   Path Type:              Hold (Min at Fast Process Corner)
   Requirement:            0.000ns  (clk_pixel_clk_wiz_0 rise@0.000ns - clk_pixel_clk_wiz_0 rise@0.000ns)
-  Data Path Delay:        0.304ns  (logic 0.141ns (46.394%)  route 0.163ns (53.606%))
+  Data Path Delay:        0.341ns  (logic 0.164ns (48.054%)  route 0.177ns (51.946%))
   Logic Levels:           0  
   Clock Path Skew:        0.053ns (DCD - SCD - CPR)
-    Destination Clock Delay (DCD):    -0.843ns
-    Source Clock Delay      (SCD):    -0.643ns
+    Destination Clock Delay (DCD):    -0.840ns
+    Source Clock Delay      (SCD):    -0.640ns
     Clock Pessimism Removal (CPR):    -0.254ns
 
     Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
@@ -347,12 +349,12 @@ Slack (MET) :             0.095ns  (arrival time - required time)
                                                      -2.362    -1.714 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, routed)           0.489    -1.225    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.026    -1.199 r  mhdmicw/clkout1_buf/O
-                         net (fo=237, routed)         0.556    -0.643    terminal/clk_pixel
-    SLICE_X9Y22          FDRE                                         r  terminal/tg_input_reg[4]/C
+                         net (fo=243, routed)         0.559    -0.640    terminal/clk_pixel
+    SLICE_X8Y31          FDRE                                         r  terminal/tg_input_reg[3]/C
   -------------------------------------------------------------------    -------------------
-    SLICE_X9Y22          FDRE (Prop_fdre_C_Q)         0.141    -0.502 r  terminal/tg_input_reg[4]/Q
-                         net (fo=1, routed)           0.163    -0.339    draw_characters/terminal_grid/DIADI[4]
-    RAMB36_X0Y4          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg/DIADI[4]
+    SLICE_X8Y31          FDRE (Prop_fdre_C_Q)         0.164    -0.476 r  terminal/tg_input_reg[3]/Q
+                         net (fo=2, routed)           0.177    -0.299    draw_characters/terminal_grid/DIADI[3]
+    RAMB36_X0Y5          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg/DIADI[3]
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_pixel_clk_wiz_0 rise edge)
@@ -365,16 +367,16 @@ Slack (MET) :             0.095ns  (arrival time - required time)
                                                      -3.145    -2.269 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, routed)           0.534    -1.735    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.029    -1.706 r  mhdmicw/clkout1_buf/O
-                         net (fo=237, routed)         0.863    -0.843    draw_characters/terminal_grid/clk_pixel
-    RAMB36_X0Y4          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg/CLKARDCLK
-                         clock pessimism              0.254    -0.590    
-    RAMB36_X0Y4          RAMB36E1 (Hold_ramb36e1_CLKARDCLK_DIADI[4])
-                                                      0.155    -0.435    draw_characters/terminal_grid/BRAM_reg
+                         net (fo=243, routed)         0.866    -0.840    draw_characters/terminal_grid/clk_pixel
+    RAMB36_X0Y5          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg/CLKARDCLK
+                         clock pessimism              0.254    -0.587    
+    RAMB36_X0Y5          RAMB36E1 (Hold_ramb36e1_CLKARDCLK_DIADI[3])
+                                                      0.155    -0.432    draw_characters/terminal_grid/BRAM_reg
   -------------------------------------------------------------------
-                         required time                          0.435    
-                         arrival time                          -0.339    
+                         required time                          0.432    
+                         arrival time                          -0.299    
   -------------------------------------------------------------------
-                         slack                                  0.095    
+                         slack                                  0.133    
 
 
 
@@ -388,10 +390,10 @@ Period(ns):         13.468
 Sources:            { mhdmicw/mmcm_adv_inst/CLKOUT0 }
 
 Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
-Min Period        n/a     RAMB18E1/CLKARDCLK  n/a            2.944         13.468      10.524     RAMB18_X0Y6      draw_characters/character_pallete/BRAM_reg/CLKARDCLK
+Min Period        n/a     RAMB18E1/CLKARDCLK  n/a            2.944         13.468      10.524     RAMB18_X0Y8      draw_characters/character_pallete/BRAM_reg/CLKARDCLK
 Max Period        n/a     MMCME2_ADV/CLKOUT0  n/a            213.360       13.468      199.892    MMCME2_ADV_X0Y0  mhdmicw/mmcm_adv_inst/CLKOUT0
-Low Pulse Width   Slow    FDRE/C              n/a            0.500         6.734       6.234      SLICE_X12Y23     bksp_b/clean_out_reg/C
-High Pulse Width  Slow    FDRE/C              n/a            0.500         6.734       6.234      SLICE_X12Y23     bksp_b/clean_out_reg/C
+Low Pulse Width   Slow    FDRE/C              n/a            0.500         6.734       6.234      SLICE_X12Y27     bksp_b/clean_out_reg/C
+High Pulse Width  Slow    FDRE/C              n/a            0.500         6.734       6.234      SLICE_X12Y27     bksp_b/clean_out_reg/C
 
 
 

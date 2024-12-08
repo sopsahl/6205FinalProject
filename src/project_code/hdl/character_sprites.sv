@@ -8,7 +8,7 @@
 `endif  /* ! SYNTHESIS */
 
 module character_sprites #(
-  parameter SIZE=16, HEIGHT=1024, SCREEN_WIDTH=76, SCREEN_HEIGHT=44) (
+  parameter SIZE=16, HEIGHT=1024, SCREEN_WIDTH=76, SCREEN_HEIGHT=42) (
   input wire pixel_clk_in,
   input wire rst_in,
   input wire [10:0] hcount_in,

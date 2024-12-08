@@ -15,7 +15,10 @@ module top_level(
   output logic [6:0] ss0_c,
   output logic [6:0] ss1_c,
   output logic [3:0] ss0_an,
-  output logic [3:0] ss1_an
+  output logic [3:0] ss1_an,
+
+  input wire data,
+  output logic dclk
   );
   localparam SCREEN_WIDTH = 76;
   localparam SCREEN_HEIGHT = 44;
@@ -98,14 +101,13 @@ module top_level(
 
   input_buffer keyboard_input (
     .clk_in(clk_pixel), // TODO: fix clock differences
+    .clk_two(dclk),
     .rst_in(sys_rst),
-    .data_in(0), // TODO: input keyboard
+    .data_in(data), // TODO: input keyboard
     .key_pressed(buffer_x),
     .enter_pressed(buffer_y),
     .bksp_pressed(buffer_bksp),
-    .character(buffer_char),
-    .is_instr_complete(is_instr_complete),
-    .curr_instr(curr_instr)
+    .character(buffer_char)
   );
 
   // keeps track of what to input to the sprite drawer
@@ -133,21 +135,22 @@ module top_level(
   logic [7:0] img_red, img_green, img_blue;
 
   character_sprites #(
-  .SIZE(16),
-  .HEIGHT(1024),
-  .SCREEN_WIDTH(SCREEN_WIDTH),
-  .SCREEN_HEIGHT(SCREEN_HEIGHT))
+    .SIZE(16),
+    .HEIGHT(1024),
+    .SCREEN_WIDTH(SCREEN_WIDTH),
+    .SCREEN_HEIGHT(SCREEN_HEIGHT))
   draw_characters (
-  .pixel_clk_in(clk_pixel),
-  .rst_in(sys_rst),
-  .tg_write_en(terminal_grid_write_enable),
-  .tg_addr(terminal_grid_addr),
-  .tg_input(terminal_grid_input),
-  .hcount_in(hcount),
-  .vcount_in(vcount), // what is this for? x_com>128 ? x_com-128 : 0
-  .red_out(img_red),
-  .green_out(img_green),
-  .blue_out(img_blue));
+    .pixel_clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .tg_write_en(terminal_grid_write_enable),
+    .tg_addr(terminal_grid_addr),
+    .tg_input(terminal_grid_input),
+    .hcount_in(hcount),
+    .vcount_in(vcount), // what is this for? x_com>128 ? x_com-128 : 0
+    .red_out(img_red),
+    .green_out(img_green),
+    .blue_out(img_blue)
+  );
 
   logic [7:0] red, green, blue;
 
@@ -155,6 +158,23 @@ module top_level(
   assign green = img_green;
   assign blue = img_blue;
 
+  logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] text_editor_addr;
+  logic [7:0] text_editor_output;
+
+  text_editor #(
+    .SIZE(16),
+    .HEIGHT(1024),
+    .SCREEN_WIDTH(SCREEN_WIDTH),
+    .SCREEN_HEIGHT(SCREEN_HEIGHT))
+  save_to_text_editor (
+    .pixel_clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .te_write_en(terminal_grid_write_enable),
+    .te_addr(terminal_grid_write_enable ? terminal_grid_addr : text_editor_addr),
+    .te_input(terminal_grid_write_enable ? terminal_grid_input : 0),
+    .te_output(text_editor_output)
+  );
+  
   logic [9:0] tmds_10b [0:2]; //output of each TMDS encoder!
   logic tmds_signal [2:0]; //output of each TMDS serializer!
 

@@ -26,6 +26,9 @@ module terminal_controller #(
     logic x_btn_prev;
     logic y_btn_prev;
     logic bksp_btn_prev;
+    logic [3:0] status_update;
+    logic [7:0][7:0] compiling_msg;
+    logic [7:0][7:0] idling_msg;
 
     always_comb begin
         case (character)
@@ -90,6 +93,25 @@ module terminal_controller #(
             x_btn_prev <= 0;
             y_btn_prev <= 0;
             bksp_btn_prev <= 0;
+            status_update <= 0;
+
+            compiling_msg[0] <= 32;
+            compiling_msg[1] <= 99;
+            compiling_msg[2] <= 111;
+            compiling_msg[3] <= 109;
+            compiling_msg[4] <= 112;
+            compiling_msg[5] <= 105;
+            compiling_msg[6] <= 108;
+            compiling_msg[7] <= 101;
+
+            idling_msg[0] <= 32;
+            idling_msg[1] <= 105;
+            idling_msg[2] <= 100;
+            idling_msg[3] <= 108;
+            idling_msg[4] <= 105;
+            idling_msg[5] <= 110;
+            idling_msg[6] <= 103;
+            idling_msg[7] <= 32;
         end else begin
             tg_we <= 0;
             x_btn_prev <= x_btn;
@@ -116,13 +138,34 @@ module terminal_controller #(
                     cursor_x <= cursor_x + 1;
                 end
 
-                if (y_btn_prev && !y_btn && cursor_y < SCREEN_HEIGHT) begin
-                    tg_we <= 1;
-                    tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-                    tg_input <= 10;
+                if (status_update != 0) begin
+                    if (status_update == 8) begin
+                        status_update <= 0;
+                    end else begin
+                        status_update <= status_update + 1;
+                        tg_we <= 1;
+                        tg_addr <= 42 * SCREEN_WIDTH + (status_update);
 
-                    cursor_x <= 0;
-                    cursor_y <= cursor_y + 1;
+                        if (character[15] == 1) begin
+                            tg_input <= compiling_msg[status_update];
+                        end else if (character[14] == 1) begin
+                            tg_input <= idling_msg[status_update];
+                        end
+                    end
+                end
+
+                if (y_btn_prev && !y_btn && cursor_y < SCREEN_HEIGHT) begin
+                    if ((character[15] == 1 || character[14] == 1) && status_update < 8) begin 
+                        status_update <= status_update + 1;
+                    end else begin
+                        tg_we <= 1;
+                        tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+                        tg_input <= 10;
+
+                        cursor_x <= 0;
+                        cursor_y <= cursor_y + 1;
+                        status_update <= 0;
+                    end
                 end
             end
         end

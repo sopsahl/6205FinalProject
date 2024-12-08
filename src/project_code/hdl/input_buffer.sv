@@ -9,15 +9,26 @@
 
 module input_buffer (
     input wire clk_in,
+    input wire clk_two,
     input wire rst_in,
     input wire data_in,
     output logic key_pressed,
     output logic enter_pressed,
     output logic bksp_pressed,
-    output logic [15:0] character,
-    output logic is_instr_complete,
-    output logic [31:0][4:0] curr_instr
+    output logic [15:0] character
   );
+    logic a;
+    always_ff @(posedge clk_in) begin
+        if (rst_in) begin
+            a <= 0;
+        end else begin
+            if (!data_in) begin
+                enter_pressed <= a;
+                a <= !a;
+            end
+        end
+    end
+  /*
     enum {START, DATA, PARITY, STOP, SEND} state;
 
     logic [6:0] data;
@@ -149,7 +160,7 @@ module input_buffer (
                 default: state <= START;
             endcase
         end
-    end
+    end*/
 endmodule
 
 `default_nettype none

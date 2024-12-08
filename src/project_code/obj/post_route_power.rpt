@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date             : Wed Dec  4 06:08:50 2024
-| Host             : eecs-digital-15 running 64-bit Ubuntu 24.04.1 LTS
+| Date             : Sat Dec  7 19:46:52 2024
+| Host             : eecs-digital-18 running 64-bit Ubuntu 24.04.1 LTS
 | Command          : report_power -file obj/post_route_power.rpt
 | Design           : top_level
 | Device           : xc7s50csga324-1
@@ -53,16 +53,16 @@ Table of Contents
 | On-Chip        | Power (W) | Used     | Available | Utilization (%) |
 +----------------+-----------+----------+-----------+-----------------+
 | Clocks         |     0.004 |        6 |       --- |             --- |
-| Slice Logic    |     0.002 |      764 |       --- |             --- |
-|   LUT as Logic |     0.002 |      352 |     32600 |            1.08 |
+| Slice Logic    |     0.002 |      812 |       --- |             --- |
+|   LUT as Logic |     0.002 |      397 |     32600 |            1.22 |
 |   CARRY4       |    <0.001 |       45 |      8150 |            0.55 |
-|   Register     |    <0.001 |      211 |     65200 |            0.32 |
-|   F7/F8 Muxes  |    <0.001 |        2 |     32600 |           <0.01 |
-|   Others       |     0.000 |       38 |       --- |             --- |
-| Signals        |     0.003 |      674 |       --- |             --- |
+|   Register     |    <0.001 |      217 |     65200 |            0.33 |
+|   F7/F8 Muxes  |    <0.001 |        1 |     32600 |           <0.01 |
+|   Others       |     0.000 |       39 |       --- |             --- |
+| Signals        |     0.003 |      718 |       --- |             --- |
 | Block RAM      |     0.027 |     17.5 |        75 |           23.33 |
 | MMCM           |     0.105 |        1 |         5 |           20.00 |
-| I/O            |     0.148 |       73 |       210 |           34.76 |
+| I/O            |     0.148 |       75 |       210 |           35.71 |
 | Static Power   |     0.073 |          |           |                 |
 | Total          |     0.362 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
@@ -74,7 +74,7 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.046 |       0.036 |      0.010 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.047 |       0.036 |      0.010 |       NA    | Unspecified | NA         |
 | Vccaux    |       1.800 |     0.071 |       0.059 |      0.013 |       NA    | Unspecified | NA         |
 | Vcco33    |       3.300 |     0.045 |       0.044 |      0.001 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
