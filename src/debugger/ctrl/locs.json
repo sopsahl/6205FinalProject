@@ -1,0 +1,28 @@
+{
+    "PROGMEM": {
+      "index": 0,
+      "width": 4,
+      "depths": [32, 64, 128]
+    },
+    "DATAMEM": {
+      "index": 1,
+      "width": 4,
+      "depths": [32, 64, 128]
+    },
+    "REG": {
+      "index": 2,
+      "width": 4,
+      "depths": [8, 16]
+    },
+    "TERMBUFF": {
+      "index": 3,
+      "width": 1,
+      "depths": [256, 512]
+    },
+    "CODEBUFF": {
+      "index": 4,
+      "width": 1,
+      "depths": [512, 1024]
+    }
+}
+  
