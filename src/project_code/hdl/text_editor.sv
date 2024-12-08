@@ -22,7 +22,7 @@ module text_editor #(
     .RAM_WIDTH(8),                       // Specify RAM data width (should be 6 for 26 char but said 8 for ease)
     .RAM_DEPTH(SCREEN_WIDTH*SCREEN_HEIGHT),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    .INIT_FILE(`FPATH(terminal_grid.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+    .INIT_FILE(`FPATH(text_editor.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
   ) text_editor_bram (
     .addra(te_addr),     // Address bus, width determined from RAM_DEPTH
     .dina(te_input),       // RAM input data, width determined from RAM_WIDTH

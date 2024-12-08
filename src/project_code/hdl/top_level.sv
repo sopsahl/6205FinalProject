@@ -21,7 +21,7 @@ module top_level(
   output logic dclk
   );
   localparam SCREEN_WIDTH = 76;
-  localparam SCREEN_HEIGHT = 44;
+  localparam SCREEN_HEIGHT = 256;
 
   assign led = sw;
   //shut up those rgb LEDs (active high):
@@ -114,6 +114,8 @@ module top_level(
   logic terminal_grid_write_enable;
   logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] terminal_grid_addr;
   logic [7:0] terminal_grid_input;
+  logic up;
+  logic down;
 
   terminal_controller #(
     .SCREEN_WIDTH(SCREEN_WIDTH),
@@ -127,7 +129,9 @@ module top_level(
     .character(sw),
     .tg_we(terminal_grid_write_enable),
     .tg_addr(terminal_grid_addr),
-    .tg_input(terminal_grid_input)
+    .tg_input(terminal_grid_input),
+    .scroll_up(up),
+    .scroll_down(down)
   );
 
   //use this in the first part of checkoff 01:
@@ -142,6 +146,8 @@ module top_level(
   draw_characters (
     .pixel_clk_in(clk_pixel),
     .rst_in(sys_rst),
+    .scroll_up(up),
+    .scroll_down(down),
     .tg_write_en(terminal_grid_write_enable),
     .tg_addr(terminal_grid_addr),
     .tg_input(terminal_grid_input),

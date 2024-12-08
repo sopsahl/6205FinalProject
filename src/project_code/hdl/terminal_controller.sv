@@ -17,7 +17,9 @@ module terminal_controller #(
   input wire [15:0] character,
   output logic tg_we,
   output logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] tg_addr,
-  output logic [7:0] tg_input
+  output logic [7:0] tg_input,
+  output logic scroll_up,
+  output logic scroll_down
   );
 
     logic [7:0] char2ascii;
@@ -31,7 +33,7 @@ module terminal_controller #(
     logic [7:0][7:0] idling_msg;
 
     always_comb begin
-        case (character)
+        case (character[5:0])
             0: char2ascii = 32;
             1: char2ascii = 97;
             2: char2ascii = 98;
@@ -117,6 +119,8 @@ module terminal_controller #(
             x_btn_prev <= x_btn;
             y_btn_prev <= y_btn;
             bksp_btn_prev <= bksp_btn;
+            scroll_up <= 0;
+            scroll_down <= 0;
 
             if (bksp_btn_prev && !bksp_btn && !(cursor_x == 0 && cursor_y == 0)) begin
                 tg_we <= 1;
@@ -153,18 +157,26 @@ module terminal_controller #(
                         end
                     end
                 end
-
-                if (y_btn_prev && !y_btn && cursor_y < SCREEN_HEIGHT) begin
-                    if ((character[15] == 1 || character[14] == 1) && status_update < 8) begin 
-                        status_update <= status_update + 1;
+                
+                if (y_btn_prev && !y_btn) begin
+                    if (character[13] == 1) begin
+                        scroll_up <= 1;
+                    end else if (character[12] == 1) begin
+                        scroll_down <= 1;
                     end else begin
-                        tg_we <= 1;
-                        tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-                        tg_input <= 10;
+                        if (cursor_y < SCREEN_HEIGHT) begin
+                            if ((character[15] == 1 || character[14] == 1) && status_update < 8) begin 
+                                status_update <= status_update + 1;
+                            end else begin
+                                tg_we <= 1;
+                                tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+                                tg_input <= 10;
 
-                        cursor_x <= 0;
-                        cursor_y <= cursor_y + 1;
-                        status_update <= 0;
+                                cursor_x <= 0;
+                                cursor_y <= cursor_y + 1;
+                                status_update <= 0;
+                            end
+                        end
                     end
                 end
             end

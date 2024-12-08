@@ -18,7 +18,7 @@ module input_buffer (
     output logic [15:0] character
   );
     logic a;
-    always_ff @(posedge clk_in) begin
+    always_ff @(posedge clk_in) begin // this should be taking data out of the fifo instead of directly checking data_in, which is the signals the keyboard is sending
         if (rst_in) begin
             a <= 0;
         end else begin

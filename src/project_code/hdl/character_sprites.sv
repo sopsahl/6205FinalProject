@@ -13,6 +13,8 @@ module character_sprites #(
   input wire rst_in,
   input wire [10:0] hcount_in,
   input wire [9:0] vcount_in,
+  input wire scroll_up,
+  input wire scroll_down,
   input wire tg_write_en,
   input wire [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] tg_addr,
   input wire [7:0] tg_input,
@@ -32,6 +34,7 @@ module character_sprites #(
   logic [$clog2(SCREEN_HEIGHT)-1:0] y_np;
   logic [1:0][10:0] h;
   logic [1:0][9:0] v;
+  logic [8:0] scroll_offset;
 //        terminal_grid[y*76+x] <= 0;
 
   always_comb begin
@@ -95,7 +98,7 @@ module character_sprites #(
   assign x_np = (hcount_in>>4) < SCREEN_WIDTH ? (hcount_in>>4) : SCREEN_WIDTH - 1;
   assign y_np = (vcount_in>>4) < SCREEN_HEIGHT ? (vcount_in>>4) : SCREEN_HEIGHT - 1;
 
-  assign rw_addr = tg_write_en ? tg_addr : y_np * SCREEN_WIDTH + x_np;
+  assign rw_addr = tg_write_en ? tg_addr : (y_np + scroll_offset) * SCREEN_WIDTH + x_np;
   assign image_addr = (h[1] - 16*x_pos) + ((v[1] - 16*y_pos) * SIZE) + (ascii2char*SIZE*SIZE);
 
   logic [5:0] in_sprite;
@@ -107,6 +110,7 @@ module character_sprites #(
       in_sprite <= 0;
       h <= 0;
       v <= 0;
+      scroll_offset <= 0;
     end else begin
       h[0] <= hcount_in;
       h[1] <= h[0];
@@ -120,6 +124,12 @@ module character_sprites #(
       in_sprite[3] <= in_sprite[2];
       in_sprite[4] <= in_sprite[3];
       in_sprite[5] <= in_sprite[4];
+
+      if (scroll_up == 1 && scroll_offset < 255) begin
+        scroll_offset <= scroll_offset + 1;
+      end else if (scroll_down == 1 && scroll_offset > 0) begin
+        scroll_offset <= scroll_offset - 1;
+      end
     end
   end
 
