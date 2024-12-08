@@ -18,7 +18,7 @@ module top_level(
   output logic [3:0] ss1_an,
 
   input wire data,
-  output logic dclk
+  input wire dclk
   );
   localparam SCREEN_WIDTH = 76;
   localparam SCREEN_HEIGHT = 256;
