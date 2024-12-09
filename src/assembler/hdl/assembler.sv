@@ -6,6 +6,7 @@ import constants::*;
 module assembler #(
     parameter CHAR_PER_LINE = 64,
     parameter NUMBER_LINES = 256,
+    parameter NUM_LABELS = 8,
     parameter LABEL_SIZE = 6
     ) (     
     input wire clk_in,
@@ -18,7 +19,7 @@ module assembler #(
     output logic done_flag, // Instruction is Ready
     output logic error_flag, // Error encountered
 
-    input assembler_state assembler_state, // Determines what we are doing at any given point
+    input assembler_state_t assembler_state, // Determines what we are doing at any given point
     output logic [31:0] instruction
 );  
 
@@ -38,8 +39,9 @@ module assembler #(
         READ_IMM,
         READ_LABEL,
         DONE
-    } inst_state instruction_state;
+    } inst_state;
 
+    inst_state instruction_state;
     inst_state next_instruction_state;
 
     always_comb begin
@@ -116,7 +118,7 @@ module assembler #(
     logic [31:0] offset;
     logic label_error, label_done;
     
-    label_controller #(.NUMBER_LINES(NUMBER_LINES), .NUMBER_LETTERS(LABEL_SIZE)) label_controller (
+    label_controller #(.NUMBER_LINES(NUMBER_LINES), .NUMBER_LETTERS(LABEL_SIZE), .NUM_LABELS(NUM_LABELS)) label_controller (
         .clk_in(clk_in),
         .rst_in(rst_in),
         .new_line(new_line),
@@ -215,5 +217,18 @@ module assembler #(
 
 
 endmodule // assembler
+
+function logic [31:0] create_inst(InstFields inst);
+    case (inst.opcode) 
+        OP_REG : return {inst.funct7, inst.rs2, inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_IMM : return {inst.imm[11:5] && inst.funct7, inst.imm[4:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_STORE : return {inst.imm[11:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:0], inst.opcode};
+        OP_BRANCH : return {inst.imm[12], inst.imm[10:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:1], inst.imm[11], inst.opcode};
+        OP_LUI, OP_AUIPC : return {inst.imm[31:12], inst.rd, inst.opcode};
+        OP_JAL : return {inst.imm[20], inst.imm[10:1], inst.imm[11], inst.imm[19:12], inst.rd, inst.opcode};
+        default: return 32'b0;
+    endcase
+endfunction
 
 `default_nettype wire

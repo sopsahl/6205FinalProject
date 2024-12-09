@@ -27,18 +27,20 @@ module instruction_interpreter (
 
     localparam REG_WIDTH = 17; // {opcode, funct7, funct3}
 
-    logic [REG_WIDTH - 1: 0] data;
+    logic [REG_WIDTH - 1: 0] _data;
     logic isInst, ascii_in_range;
 
     get_inst #(.REG_WIDTH(REG_WIDTH)) _get_inst (
-        .compressed_inst(compressed_inst),
-        .data(data),
+        .compressed_inst(compressed_buffer),
+        ._data(_data),
         .isInst(isInst)
     ); 
 
-    assign opcode = data[16:10];
-    assign funct7 = data[9:3];
-    assign funct3 = data[2:0];
+    assign opcode = _data[16:10];
+    assign funct7 = _data[9:3];
+    assign funct3 = _data[2:0];
+
+    logic [4:0] compressed_ascii;
 
     compress_letters _get_compression ( 
         .incoming_ascii(incoming_ascii),
@@ -48,12 +50,12 @@ module instruction_interpreter (
 
     // *************************************************************
 
-    typedef enum {
+    enum {
         IDLE, 
         BUSY,
         RETURN,
         ERROR
-    } state_t state;
+    } state;
 
     assign error_flag = (state == ERROR);
     assign done_flag = (state == RETURN);
@@ -66,7 +68,7 @@ module instruction_interpreter (
             if (new_character) begin
                 case (state) 
                     IDLE: if (ascii_in_range) begin
-                        state <= ACCUMULATING;
+                        state <= BUSY;
                         compressed_buffer <= {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED__, compressed_ascii};
                     end BUSY: begin
                         if (ascii_in_range) compressed_buffer <= {compressed_buffer[3:0], compressed_ascii}; 
@@ -83,52 +85,52 @@ module get_inst #(
     parameter REG_WIDTH 
     )(
     input wire [4:0][4:0] compressed_inst,
-    output wire [REG_WIDTH - 1:0] data,
-    output wire isInst
+    output logic [REG_WIDTH - 1:0] _data,
+    output logic isInst
 );
 
-    assign isInst = (data != 0);
+    assign isInst = (_data != 0);
 
     always_comb begin
         case (compressed_inst)
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_A, COMPRESSED_D, COMPRESSED_D} : data = {OP_REG, 7'b0000000, F3_ADD_SUB}; // add
-            {COMPRESSED__, COMPRESSED_A, COMPRESSED_D, COMPRESSED_D, COMPRESSED_I} : data = {OP_IMM, 7'b1111111, F3_ADD_SUB}; // addi
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_A, COMPRESSED_N, COMPRESSED_D} : data = {OP_REG, 7'b0000000, F3_AND}; // and
-            {COMPRESSED__, COMPRESSED_A, COMPRESSED_N, COMPRESSED_D, COMPRESSED_I} : data = {OP_IMM, 7'b1111111, F3_AND}; // andi
-            {COMPRESSED_A, COMPRESSED_U, COMPRESSED_I, COMPRESSED_P, COMPRESSED_C} : data = {OP_AUIPC, 7'b0000000, 3'b000}; // auipc
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_E, COMPRESSED_Q} : data = {OP_BRANCH, 7'b0000000, F3_BEQ}; // beq
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_G, COMPRESSED_E} : data = {OP_BRANCH, 7'b0000000, F3_BGE}; // bge
-            {COMPRESSED__, COMPRESSED_B, COMPRESSED_G, COMPRESSED_E, COMPRESSED_U} : data = {OP_BRANCH, 7'b0000000, F3_BGEU}; // bgeu
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_L, COMPRESSED_T} : data = {OP_BRANCH, 7'b0000000, F3_BLT}; // blt
-            {COMPRESSED__, COMPRESSED_B, COMPRESSED_L, COMPRESSED_T, COMPRESSED_U} : data = {OP_BRANCH, 7'b0000000, F3_BLTU}; // bltu
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_N, COMPRESSED_E} : data = {OP_BRANCH, 7'b0000000, F3_BNE}; // bne
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_J, COMPRESSED_A, COMPRESSED_L} : data = {OP_JAL, 7'b0000000, F3_ADD_SUB}; // jal
-            {COMPRESSED__, COMPRESSED_J, COMPRESSED_A, COMPRESSED_L, COMPRESSED_R} : data = {OP_JALR, 7'b0000000, F3_ADD_SUB}; // jalr
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_B} : data = {OP_LOAD, 7'b0000000, F3_LB}; // lb
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_B, COMPRESSED_U} : data = {OP_LOAD, 7'b0000000, F3_LBU}; // lbu
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_H} : data = {OP_LOAD, 7'b0000000, F3_LH}; // lh
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_H, COMPRESSED_U} : data = {OP_LOAD, 7'b0000000, F3_LHU}; // lhu
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_U, COMPRESSED_I} : data = {OP_LUI, 7'b0000000, 3'b000}; // lui
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_W} : data = {OP_LOAD, 7'b0000000, F3_LW}; // lw
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_O, COMPRESSED_R} : data = {OP_REG, 7'b0000000, F3_OR}; // or
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_O, COMPRESSED_R, COMPRESSED_I} : data = {OP_IMM, 7'b1111111, F3_OR}; // ori
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_L} : data = {OP_REG, 7'b0000000, F3_SLL}; // sll
-            {COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_L, COMPRESSED_I} : data = {OP_IMM, 7'b0100000, F3_SLL}; // slli
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_T} : data = {OP_REG, 7'b0000000, F3_SLT}; // slt
-            {COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_T, COMPRESSED_I} : data = {OP_IMM, 7'b1111111, F3_SLT}; // slti
-            {COMPRESSED_S, COMPRESSED_L, COMPRESSED_T, COMPRESSED_I, COMPRESSED_U} : data = {OP_IMM, 7'b1111111, F3_SLTU}; // sltiu
-            {COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_T, COMPRESSED_U} : data = {OP_REG, 7'b0000000, F3_SLTU}; // sltu
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_A} : data = {OP_REG, 7'b0100000, F3_SRL_SRA}; // sra
-            {COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_A, COMPRESSED_I} : data = {OP_IMM, 7'b0100000, F3_SRL_SRA}; // srai
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_L} : data = {OP_REG, 7'b0000000, F3_SRL_SRA}; // srl
-            {COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_L, COMPRESSED_I} : data = {OP_IMM, 7'b0000000, F3_SRL_SRA}; // srli
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_B} : data = {OP_STORE, 7'b0000000, F3_SB}; // sb
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_H} : data = {OP_STORE, 7'b0000000, F3_SH}; // sh
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_U, COMPRESSED_B} : data = {OP_REG, 7'b0100000, F3_ADD_SUB}; // sub
-            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_W} : data = {OP_STORE, 7'b0000000, F3_SW}; // sw
-            {COMPRESSED__, COMPRESSED__, COMPRESSED_X, COMPRESSED_O, COMPRESSED_R} : data = {OP_REG, 7'b0000000, F3_XOR}; // xor
-            {COMPRESSED__, COMPRESSED_X, COMPRESSED_O, COMPRESSED_R, COMPRESSED_I} : data = {OP_IMM, 7'b1111111, F3_XOR}; // xori
-            default                                                                : data = 0; // no inst
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_A, COMPRESSED_D, COMPRESSED_D} : _data = {OP_REG, 7'b0000000, F3_ADD_SUB}; // add
+            {COMPRESSED__, COMPRESSED_A, COMPRESSED_D, COMPRESSED_D, COMPRESSED_I} : _data = {OP_IMM, 7'b1111111, F3_ADD_SUB}; // addi
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_A, COMPRESSED_N, COMPRESSED_D} : _data = {OP_REG, 7'b0000000, F3_AND}; // and
+            {COMPRESSED__, COMPRESSED_A, COMPRESSED_N, COMPRESSED_D, COMPRESSED_I} : _data = {OP_IMM, 7'b1111111, F3_AND}; // andi
+            {COMPRESSED_A, COMPRESSED_U, COMPRESSED_I, COMPRESSED_P, COMPRESSED_C} : _data = {OP_AUIPC, 7'b0000000, 3'b000}; // auipc
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_E, COMPRESSED_Q} : _data = {OP_BRANCH, 7'b0000000, F3_BEQ}; // beq
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_G, COMPRESSED_E} : _data = {OP_BRANCH, 7'b0000000, F3_BGE}; // bge
+            {COMPRESSED__, COMPRESSED_B, COMPRESSED_G, COMPRESSED_E, COMPRESSED_U} : _data = {OP_BRANCH, 7'b0000000, F3_BGEU}; // bgeu
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_L, COMPRESSED_T} : _data = {OP_BRANCH, 7'b0000000, F3_BLT}; // blt
+            {COMPRESSED__, COMPRESSED_B, COMPRESSED_L, COMPRESSED_T, COMPRESSED_U} : _data = {OP_BRANCH, 7'b0000000, F3_BLTU}; // bltu
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_B, COMPRESSED_N, COMPRESSED_E} : _data = {OP_BRANCH, 7'b0000000, F3_BNE}; // bne
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_J, COMPRESSED_A, COMPRESSED_L} : _data = {OP_JAL, 7'b0000000, F3_ADD_SUB}; // jal
+            {COMPRESSED__, COMPRESSED_J, COMPRESSED_A, COMPRESSED_L, COMPRESSED_R} : _data = {OP_JALR, 7'b0000000, F3_ADD_SUB}; // jalr
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_B} : _data = {OP_LOAD, 7'b0000000, F3_LB}; // lb
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_B, COMPRESSED_U} : _data = {OP_LOAD, 7'b0000000, F3_LBU}; // lbu
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_H} : _data = {OP_LOAD, 7'b0000000, F3_LH}; // lh
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_H, COMPRESSED_U} : _data = {OP_LOAD, 7'b0000000, F3_LHU}; // lhu
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_U, COMPRESSED_I} : _data = {OP_LUI, 7'b0000000, 3'b000}; // lui
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_L, COMPRESSED_W} : _data = {OP_LOAD, 7'b0000000, F3_LW}; // lw
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_O, COMPRESSED_R} : _data = {OP_REG, 7'b0000000, F3_OR}; // or
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_O, COMPRESSED_R, COMPRESSED_I} : _data = {OP_IMM, 7'b1111111, F3_OR}; // ori
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_L} : _data = {OP_REG, 7'b0000000, F3_SLL}; // sll
+            {COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_L, COMPRESSED_I} : _data = {OP_IMM, 7'b0100000, F3_SLL}; // slli
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_T} : _data = {OP_REG, 7'b0000000, F3_SLT}; // slt
+            {COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_T, COMPRESSED_I} : _data = {OP_IMM, 7'b1111111, F3_SLT}; // slti
+            {COMPRESSED_S, COMPRESSED_L, COMPRESSED_T, COMPRESSED_I, COMPRESSED_U} : _data = {OP_IMM, 7'b1111111, F3_SLTU}; // sltiu
+            {COMPRESSED__, COMPRESSED_S, COMPRESSED_L, COMPRESSED_T, COMPRESSED_U} : _data = {OP_REG, 7'b0000000, F3_SLTU}; // sltu
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_A} : _data = {OP_REG, 7'b0100000, F3_SRL_SRA}; // sra
+            {COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_A, COMPRESSED_I} : _data = {OP_IMM, 7'b0100000, F3_SRL_SRA}; // srai
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_L} : _data = {OP_REG, 7'b0000000, F3_SRL_SRA}; // srl
+            {COMPRESSED__, COMPRESSED_S, COMPRESSED_R, COMPRESSED_L, COMPRESSED_I} : _data = {OP_IMM, 7'b0000000, F3_SRL_SRA}; // srli
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_B} : _data = {OP_STORE, 7'b0000000, F3_SB}; // sb
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_H} : _data = {OP_STORE, 7'b0000000, F3_SH}; // sh
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_U, COMPRESSED_B} : _data = {OP_REG, 7'b0100000, F3_ADD_SUB}; // sub
+            {COMPRESSED__, COMPRESSED__, COMPRESSED__, COMPRESSED_S, COMPRESSED_W} : _data = {OP_STORE, 7'b0000000, F3_SW}; // sw
+            {COMPRESSED__, COMPRESSED__, COMPRESSED_X, COMPRESSED_O, COMPRESSED_R} : _data = {OP_REG, 7'b0000000, F3_XOR}; // xor
+            {COMPRESSED__, COMPRESSED_X, COMPRESSED_O, COMPRESSED_R, COMPRESSED_I} : _data = {OP_IMM, 7'b1111111, F3_XOR}; // xori
+            default                                                                : _data = 0; // no inst
         endcase
     end
 

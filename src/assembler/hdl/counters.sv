@@ -49,13 +49,10 @@ module pc_mapping #(
     output logic [$clog2(NUMBER_LINES) + 1:0] pc
 );
 
-    typedef enum {
+    enum {
         IDLE,
         WAITING
-    } state_t state;
-
-    assign done_flag = (state == RETURN);
-
+    } state;
 
     always_ff @(posedge clk_in) begin
         if (rst_in) begin

@@ -19,13 +19,13 @@ module register_interpreter (
     output logic [4:0] register
 );
 
-    typedef enum {
+    enum {
         IDLE, 
         FIRST_DIGIT,
         SECOND_DIGIT,
         RETURN,
         ERROR
-    } state_t state;
+    } state;
 
     assign error_flag = (state == ERROR);
     assign done_flag = (state == RETURN);
