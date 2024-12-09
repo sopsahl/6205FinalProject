@@ -214,11 +214,31 @@ module top_level(
     .blue_out(img_blue)
   );
 
+  logic [7:0] mmo_red, mmo_green, mmo_blue;
+
+  visualizer #(
+    .SIZE(16),
+    .HEIGHT(1024),
+    .SCREEN_WIDTH(SCREEN_WIDTH),
+    .SCREEN_HEIGHT(SCREEN_HEIGHT))
+  mmo_visualizer (
+    .pixel_clk_in(clk_pixel),
+    .rst_in(sys_rst),
+    .tg_write_en(0), // TODO: get values from processor running
+    .tg_addr(0),  // TODO: get values from processor running
+    .tg_input(0),  // TODO: get values from processor running
+    .hcount_in(hcount),
+    .vcount_in(vcount), // what is this for? x_com>128 ? x_com-128 : 0
+    .red_out(mmo_red),
+    .green_out(mmo_green),
+    .blue_out(mmo_blue)
+  );
+
   logic [7:0] red, green, blue;
 
-  assign red = img_red;
-  assign green = img_green;
-  assign blue = img_blue;
+  assign red = sw[11] ? mmo_red : img_red;
+  assign green = sw[11] ? mmo_green : img_green;
+  assign blue = sw[11] ? mmo_blue : img_blue;
 
   logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] text_editor_addr;
   logic [7:0] text_editor_output;

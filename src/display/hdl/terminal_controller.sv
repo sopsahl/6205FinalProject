@@ -82,7 +82,9 @@ module terminal_controller #(
             45: char2ascii = 124;
             46: char2ascii = 38;
             47: char2ascii = 33;
-            48: char2ascii = 10;            
+            48: char2ascii = 10;
+            49: char2ascii = 0; // scroll up
+            50: char2ascii = 1; // scroll down
             default: char2ascii = 32;
         endcase
     end
@@ -135,11 +137,17 @@ module terminal_controller #(
                 end
             end else begin
                 if (x_btn_prev && !x_btn && cursor_x < SCREEN_WIDTH) begin
-                    tg_we <= 1;
-                    tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-                    tg_input <= char2ascii;
+                    if (char2ascii == 0) begin
+                        scroll_down <= 1;
+                    end else if (char2ascii == 1) begin
+                        scroll_up <= 1;
+                    end else begin
+                        tg_we <= 1;
+                        tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+                        tg_input <= char2ascii;
 
-                    cursor_x <= cursor_x + 1;
+                        cursor_x <= cursor_x + 1;
+                    end
                 end
 
                 if (status_update != 0) begin
@@ -159,23 +167,17 @@ module terminal_controller #(
                 end
                 
                 if (y_btn_prev && !y_btn) begin
-                    if (character[13] == 1) begin
-                        scroll_up <= 1;
-                    end else if (character[12] == 1) begin
-                        scroll_down <= 1;
-                    end else begin
-                        if (cursor_y < SCREEN_HEIGHT) begin
-                            if ((character[15] == 1 || character[14] == 1) && status_update < 8) begin 
-                                status_update <= status_update + 1;
-                            end else begin
-                                tg_we <= 1;
-                                tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-                                tg_input <= 10;
+                    if (cursor_y < SCREEN_HEIGHT) begin
+                        if ((character[15] == 1 || character[14] == 1) && status_update < 8) begin 
+                            status_update <= status_update + 1;
+                        end else begin
+                            tg_we <= 1;
+                            tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
+                            tg_input <= 10;
 
-                                cursor_x <= 0;
-                                cursor_y <= cursor_y + 1;
-                                status_update <= 0;
-                            end
+                            cursor_x <= 0;
+                            cursor_y <= cursor_y + 1;
+                            status_update <= 0;
                         end
                     end
                 end
