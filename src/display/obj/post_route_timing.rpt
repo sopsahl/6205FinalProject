@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Mon Dec  9 03:33:52 2024
-| Host         : eecs-digital-07 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Mon Dec  9 03:38:44 2024
+| Host         : eecs-digital-36 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_timing -file obj/post_route_timing.rpt
 | Design       : top_level
 | Device       : 7s50-csga324
@@ -12,20 +12,20 @@ Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanc
 
 Timing Report
 
-Slack (MET) :             2.530ns  (required time - arrival time)
+Slack (MET) :             2.654ns  (required time - arrival time)
   Source:                 draw_characters/terminal_grid/BRAM_reg_0/CLKARDCLK
                             (rising edge-triggered cell RAMB36E1 clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
-  Destination:            draw_characters/character_image/BRAM_reg_1_4/ADDRARDADDR[12]
+  Destination:            draw_characters/character_image/BRAM_reg_0_2/ADDRARDADDR[13]
                             (rising edge-triggered cell RAMB36E1 clocked by clk_pixel_clk_wiz_0  {rise@0.000ns fall@6.734ns period=13.468ns})
   Path Group:             clk_pixel_clk_wiz_0
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            13.468ns  (clk_pixel_clk_wiz_0 rise@13.468ns - clk_pixel_clk_wiz_0 rise@0.000ns)
-  Data Path Delay:        9.890ns  (logic 3.150ns (31.849%)  route 6.740ns (68.151%))
-  Logic Levels:           7  (CARRY4=4 LUT2=1 LUT4=1 LUT6=1)
-  Clock Path Skew:        -0.134ns (DCD - SCD + CPR)
-    Destination Clock Delay (DCD):    -1.546ns = ( 11.922 - 13.468 ) 
-    Source Clock Delay      (SCD):    -0.930ns
-    Clock Pessimism Removal (CPR):    0.482ns
+  Data Path Delay:        9.792ns  (logic 3.326ns (33.967%)  route 6.466ns (66.033%))
+  Logic Levels:           8  (CARRY4=4 LUT2=2 LUT4=1 LUT6=1)
+  Clock Path Skew:        -0.111ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.527ns = ( 11.941 - 13.468 ) 
+    Source Clock Delay      (SCD):    -0.925ns
+    Clock Pessimism Removal (CPR):    0.490ns
   Clock Uncertainty:      0.168ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
     Total System Jitter     (TSJ):    0.071ns
     Discrete Jitter          (DJ):    0.329ns
@@ -43,31 +43,33 @@ Slack (MET) :             2.530ns  (required time - arrival time)
                                                      -6.965    -4.291 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, routed)           1.666    -2.625    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.096    -2.529 r  mhdmicw/clkout1_buf/O
-                         net (fo=362, routed)         1.599    -0.930    draw_characters/terminal_grid/clk_pixel
-    RAMB36_X1Y5          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg_0/CLKARDCLK
+                         net (fo=362, routed)         1.604    -0.925    draw_characters/terminal_grid/clk_pixel
+    RAMB36_X0Y6          RAMB36E1                                     r  draw_characters/terminal_grid/BRAM_reg_0/CLKARDCLK
   -------------------------------------------------------------------    -------------------
-    RAMB36_X1Y5          RAMB36E1 (Prop_ramb36e1_CLKARDCLK_DOADO[3])
-                                                      0.882    -0.048 f  draw_characters/terminal_grid/BRAM_reg_0/DOADO[3]
-                         net (fo=12, routed)          1.472     1.424    draw_characters/terminal_grid/ram_data_0[3]
-    SLICE_X43Y26         LUT6 (Prop_lut6_I3_O)        0.124     1.548 r  draw_characters/terminal_grid/g1_b1/O
-                         net (fo=1, routed)           0.551     2.098    draw_characters/terminal_grid/g1_b1_n_0
-    SLICE_X45Y26         LUT4 (Prop_lut4_I1_O)        0.124     2.222 r  draw_characters/terminal_grid/image_addr_carry_i_5/O
-                         net (fo=1, routed)           0.000     2.222    draw_characters/terminal_grid_n_6
-    SLICE_X45Y26         CARRY4 (Prop_carry4_S[0]_O[0])
-                                                      0.247     2.469 r  draw_characters/image_addr_carry/O[0]
-                         net (fo=1, routed)           0.455     2.924    draw_characters/image_addr_carry_n_7
-    SLICE_X46Y26         LUT2 (Prop_lut2_I1_O)        0.299     3.223 r  draw_characters/i__carry__0_i_7/O
-                         net (fo=1, routed)           0.000     3.223    draw_characters/terminal_grid/S[1]
-    SLICE_X46Y26         CARRY4 (Prop_carry4_S[1]_O[2])
-                                                      0.578     3.801 r  draw_characters/terminal_grid/i__carry__0_i_1__2/O[2]
-                         net (fo=2, routed)           0.812     4.613    draw_characters/PCOUT_3[10]
-    SLICE_X47Y25         CARRY4 (Prop_carry4_DI[3]_CO[3])
-                                                      0.562     5.175 r  draw_characters/image_addr_inferred__1/i__carry__0/CO[3]
-                         net (fo=1, routed)           0.000     5.175    draw_characters/image_addr_inferred__1/i__carry__0_n_0
-    SLICE_X47Y26         CARRY4 (Prop_carry4_CI_O[1])
-                                                      0.334     5.509 r  draw_characters/image_addr_inferred__1/i__carry__1/O[1]
-                         net (fo=16, routed)          3.451     8.960    draw_characters/character_image/ADDRARDADDR[12]
-    RAMB36_X0Y13         RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_1_4/ADDRARDADDR[12]
+    RAMB36_X0Y6          RAMB36E1 (Prop_ramb36e1_CLKARDCLK_DOADO[1])
+                                                      0.882    -0.043 r  draw_characters/terminal_grid/BRAM_reg_0/DOADO[1]
+                         net (fo=12, routed)          1.631     1.588    draw_characters/terminal_grid/ram_data_0[1]
+    SLICE_X8Y25          LUT6 (Prop_lut6_I1_O)        0.124     1.712 r  draw_characters/terminal_grid/g1_b1/O
+                         net (fo=1, routed)           0.661     2.373    draw_characters/terminal_grid/g1_b1_n_0
+    SLICE_X8Y26          LUT4 (Prop_lut4_I1_O)        0.124     2.497 r  draw_characters/terminal_grid/image_addr_carry_i_5/O
+                         net (fo=1, routed)           0.000     2.497    draw_characters/terminal_grid_n_6
+    SLICE_X8Y26          CARRY4 (Prop_carry4_S[0]_O[0])
+                                                      0.252     2.749 r  draw_characters/image_addr_carry/O[0]
+                         net (fo=1, routed)           0.734     3.483    draw_characters/image_addr_carry_n_7
+    SLICE_X9Y23          LUT2 (Prop_lut2_I1_O)        0.295     3.778 r  draw_characters/i__carry__0_i_7/O
+                         net (fo=1, routed)           0.000     3.778    draw_characters/terminal_grid/S[1]
+    SLICE_X9Y23          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550     4.328 r  draw_characters/terminal_grid/i__carry__0_i_1__2/CO[3]
+                         net (fo=1, routed)           0.000     4.328    draw_characters/terminal_grid/i__carry__0_i_1__2_n_0
+    SLICE_X9Y24          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222     4.550 r  draw_characters/terminal_grid/i__carry__1_i_5/O[0]
+                         net (fo=1, routed)           0.530     5.080    draw_characters/terminal_grid/PCOUT_3[12]
+    SLICE_X10Y24         LUT2 (Prop_lut2_I1_O)        0.299     5.379 r  draw_characters/terminal_grid/i__carry__1_i_3__0/O
+                         net (fo=1, routed)           0.000     5.379    draw_characters/terminal_grid_n_13
+    SLICE_X10Y24         CARRY4 (Prop_carry4_S[1]_O[2])
+                                                      0.578     5.957 r  draw_characters/image_addr_inferred__1/i__carry__1/O[2]
+                         net (fo=16, routed)          2.909     8.867    draw_characters/character_image/ADDRARDADDR[13]
+    RAMB36_X2Y2          RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_0_2/ADDRARDADDR[13]
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_pixel_clk_wiz_0 rise edge)
@@ -80,17 +82,17 @@ Slack (MET) :             2.530ns  (required time - arrival time)
                                                      -7.221     8.779 r  mhdmicw/mmcm_adv_inst/CLKOUT0
                          net (fo=1, routed)           1.587    10.366    mhdmicw/clk_pixel_clk_wiz_0
     BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    10.457 r  mhdmicw/clkout1_buf/O
-                         net (fo=362, routed)         1.465    11.922    draw_characters/character_image/clk_pixel
-    RAMB36_X0Y13         RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_1_4/CLKARDCLK
-                         clock pessimism              0.482    12.404    
-                         clock uncertainty           -0.168    12.236    
-    RAMB36_X0Y13         RAMB36E1 (Setup_ramb36e1_CLKARDCLK_ADDRARDADDR[12])
-                                                     -0.745    11.491    draw_characters/character_image/BRAM_reg_1_4
+                         net (fo=362, routed)         1.485    11.941    draw_characters/character_image/clk_pixel
+    RAMB36_X2Y2          RAMB36E1                                     r  draw_characters/character_image/BRAM_reg_0_2/CLKARDCLK
+                         clock pessimism              0.490    12.432    
+                         clock uncertainty           -0.168    12.264    
+    RAMB36_X2Y2          RAMB36E1 (Setup_ramb36e1_CLKARDCLK_ADDRARDADDR[13])
+                                                     -0.743    11.521    draw_characters/character_image/BRAM_reg_0_2
   -------------------------------------------------------------------
-                         required time                         11.491    
-                         arrival time                          -8.960    
+                         required time                         11.521    
+                         arrival time                          -8.867    
   -------------------------------------------------------------------
-                         slack                                  2.530    
+                         slack                                  2.654    
 
 
 

@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date             : Mon Dec  9 03:33:52 2024
-| Host             : eecs-digital-07 running 64-bit Ubuntu 24.04.1 LTS
+| Date             : Mon Dec  9 03:38:44 2024
+| Host             : eecs-digital-36 running 64-bit Ubuntu 24.04.1 LTS
 | Command          : report_power -file obj/post_route_power.rpt
 | Design           : top_level
 | Device           : xc7s50csga324-1
@@ -30,7 +30,7 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.427        |
+| Total On-Chip Power (W)  | 0.426        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
 | Dynamic (W)              | 0.352        |
@@ -53,19 +53,20 @@ Table of Contents
 | On-Chip                 | Power (W) | Used     | Available | Utilization (%) |
 +-------------------------+-----------+----------+-----------+-----------------+
 | Clocks                  |     0.005 |        6 |       --- |             --- |
-| Slice Logic             |     0.004 |     1191 |       --- |             --- |
-|   LUT as Logic          |     0.004 |      633 |     32600 |            1.94 |
+| Slice Logic             |     0.004 |     1199 |       --- |             --- |
+|   LUT as Logic          |     0.004 |      627 |     32600 |            1.92 |
 |   CARRY4                |    <0.001 |       73 |      8150 |            0.90 |
 |   Register              |    <0.001 |      312 |     65200 |            0.48 |
 |   LUT as Shift Register |    <0.001 |        2 |      9600 |            0.02 |
+|   F7/F8 Muxes           |    <0.001 |        1 |     32600 |           <0.01 |
 |   Others                |     0.000 |       50 |       --- |             --- |
-| Signals                 |     0.006 |     1076 |       --- |             --- |
+| Signals                 |     0.006 |     1089 |       --- |             --- |
 | Block RAM               |     0.054 |     35.5 |        75 |           47.33 |
 | MMCM                    |     0.105 |        1 |         5 |           20.00 |
 | DSPs                    |    <0.001 |        1 |       120 |            0.83 |
 | I/O                     |     0.178 |       75 |       210 |           35.71 |
 | Static Power            |     0.074 |          |           |                 |
-| Total                   |     0.427 |          |           |                 |
+| Total                   |     0.426 |          |           |                 |
 +-------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -75,8 +76,8 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.079 |       0.068 |      0.011 |       NA    | Unspecified | NA         |
-| Vccaux    |       1.800 |     0.072 |       0.060 |      0.013 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.079 |       0.067 |      0.011 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.073 |       0.060 |      0.013 |       NA    | Unspecified | NA         |
 | Vcco33    |       3.300 |     0.053 |       0.052 |      0.001 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -146,14 +147,14 @@ Table of Contents
 | Name                  | Power (W) |
 +-----------------------+-----------+
 | top_level             |     0.352 |
-|   draw_characters     |     0.035 |
+|   draw_characters     |     0.033 |
 |     character_image   |     0.024 |
-|     character_pallete |     0.004 |
+|     character_pallete |     0.003 |
 |     terminal_grid     |     0.004 |
 |   mhdmicw             |     0.105 |
-|   mmo_visualizer      |     0.029 |
+|   mmo_visualizer      |     0.030 |
 |     character_image   |     0.024 |
-|     character_pallete |     0.004 |
+|     character_pallete |     0.005 |
 +-----------------------+-----------+
 
 
