@@ -170,15 +170,15 @@ module label_storage #(
 
     // always_comb begin // Single Cycle Reads
     //     case (current_label)
-    //         label_storage[0] : offset = $signed(pc) - $signed(pc_storage[0]);
-    //         label_storage[1] : offset = $signed(pc) - $signed(pc_storage[1]);
-    //         label_storage[2] : offset = $signed(pc) - $signed(pc_storage[2]);
-    //         label_storage[3] : offset = $signed(pc) - $signed(pc_storage[3]);
-    //         label_storage[4] : offset = $signed(pc) - $signed(pc_storage[4]);
-    //         label_storage[5] : offset = $signed(pc) - $signed(pc_storage[5]);
-    //         label_storage[6] : offset = $signed(pc) - $signed(pc_storage[6]);
-    //         label_storage[7] : offset = $signed(pc) - $signed(pc_storage[7]);
-    //         default : offset = 0;
+            // label_storage[0] : offset = $signed(pc_storage[0]) - $signed(pc);
+            // label_storage[1] : offset = $signed(pc_storage[1]) - $signed(pc);
+            // label_storage[2] : offset = $signed(pc_storage[2]) - $signed(pc);
+            // label_storage[3] : offset = $signed(pc_storage[3]) - $signed(pc);
+            // label_storage[4] : offset = $signed(pc_storage[4]) - $signed(pc);
+            // label_storage[5] : offset = $signed(pc_storage[5]) - $signed(pc);
+            // label_storage[6] : offset = $signed(pc_storage[6]) - $signed(pc);
+            // label_storage[7] : offset = $signed(pc_storage[7]) - $signed(pc);
+            // default : offset = 0;
     //     endcase
     // end
 
