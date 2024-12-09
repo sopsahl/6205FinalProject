@@ -73,7 +73,7 @@ module visualizer #(
       if (hcount_in == 0) begin   
         read_addr <= vcount_in>>4;
 
-        if (bar_height > 0) begin     
+        if (tg_output > 0) begin     
             bar_height <= tg_output * SIZE - 2;
         end else begin
             bar_height <= 0;
