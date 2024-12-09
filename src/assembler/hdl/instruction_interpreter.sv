@@ -73,9 +73,9 @@ module instruction_interpreter (
                     end BUSY: begin
                         if (ascii_in_range) compressed_buffer <= {compressed_buffer[3:0], compressed_ascii}; 
                         else state <= ((incoming_ascii == " " || incoming_ascii == ",") && isInst) ? RETURN : ERROR;
-                    end RETURN : state <= IDLE;
+                    end
                 endcase
-            end
+            end else if (state == RETURN) state <= IDLE;
         end else state <= IDLE;
     end
 

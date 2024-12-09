@@ -20,10 +20,13 @@ module assembler #(
     output logic error_flag, // Error encountered
 
     input assembler_state_t assembler_state, // Determines what we are doing at any given point
-    output logic [31:0] instruction
+    output logic [31:0] instruction,
+    output logic new_instruction
 );  
 
     assign error_flag = inst_error || imm_error || reg_error || label_error; 
+    assign new_instruction = new_instruction_buffer;
+    assign done_flag = (new_instruction) || (label_done && assembler_state == PC_MAPPING);
 
     // *****************************************
     // State Logic for Instruction Mapping
@@ -44,8 +47,12 @@ module assembler #(
     inst_state instruction_state;
     inst_state next_instruction_state;
 
+    logic [6:0] opcode;
+    assign opcode = (instruction_state == READ_INST) ? opcode_buffer : inst.opcode;
+
     always_comb begin
-        case (inst.opcode) 
+        // case (inst.opcode) // For builds
+        case (opcode) // For Simulation
             OP_REG : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? DONE : IDLE;
             OP_IMM, OP_LOAD, OP_STORE: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
@@ -162,55 +169,35 @@ module assembler #(
     // *****************************************
     // INSTRUCTION_MAPPING STATE LOGIC
 
-    logic inst_ready_buffer;
+    logic inst_ready_buffer, new_instruction_buffer;
 
     always_ff @(posedge clk_in) begin
         if (assembler_state == INSTRUCTION_MAPPING && !rst_in) begin
-            if (new_line) instruction_state <= READ_INST; // start reading
-            else begin
-                case (instruction_state)
-                    READ_INST : begin
-                        if (inst_done) begin
-                            inst.opcode <= opcode_buffer;
-                            inst.funct3 <= funct3_buffer;
-                            inst.funct7 <= funct7_buffer;
-                        end else if (inst_ready_buffer) instruction_state <= next_instruction_state;
-                    end READ_RD : begin
-                        if (reg_done) begin
-                            inst.rd <= reg_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_RS1 : begin
-                        if (reg_done) begin
-                            inst.rs1 <= reg_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_RS2 : begin
-                        if (reg_done) begin
-                            inst.rs2 <= reg_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_IMM : begin
-                        if (imm_done) begin
-                            inst.imm <= immediate_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_LABEL : begin
-                        if (label_done) begin
-                            inst.imm <= offset;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end DONE : begin 
-                        instruction_state <= IDLE;
-                        instruction <= create_inst(inst); // Create the instruction
+            case (instruction_state)
+                READ_INST : begin
+                    if (inst_done) begin
+                        inst.opcode <= opcode_buffer;
+                        inst.funct3 <= funct3_buffer;
+                        inst.funct7 <= funct7_buffer;
                     end
-                endcase
-            end
+                end READ_RD : if (reg_done) inst.rd <= reg_buffer;
+                READ_RS1 : if (reg_done) inst.rs1 <= reg_buffer;
+                READ_RS2 : if (reg_done) inst.rs2 <= reg_buffer;
+                READ_IMM : if (imm_done) inst.imm <= immediate_buffer;
+                READ_LABEL : if (label_done) inst.imm <= offset;
+                DONE : instruction <= create_inst(inst); // Create the instruction
+            endcase 
+
+            instruction_state <= (new_line) ? READ_INST :
+                (((incoming_character == "/" || incoming_character == "'") && instruction_state == READ_INST) || instruction_state == DONE) ? IDLE :
+                (label_done || imm_done || inst_done || reg_done) ? next_instruction_state : instruction_state;
+            
+            // Buffers
+            // inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
+            new_instruction_buffer <= instruction_state == DONE; // Store a cycle delay
+        
         end else instruction_state <= IDLE; // Either Reset or different State
 
-        // Buffers
-        inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
-        done_flag <= instruction_state == DONE; // One cycle delay for the instruction load
     end
 
     // *****************************************

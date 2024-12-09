@@ -23,6 +23,7 @@ module register_interpreter (
         IDLE, 
         FIRST_DIGIT,
         SECOND_DIGIT,
+        VALIDATION,
         RETURN,
         ERROR
     } state;
@@ -42,9 +43,9 @@ module register_interpreter (
                     end SECOND_DIGIT: begin
                         register <= register + incoming_ascii[3:0]; 
                         state <= ((incoming_ascii >= "0" && incoming_ascii <= "9") && !(register >= 30 && incoming_ascii[3:0] >= 2)) ? RETURN : ERROR;
-                    end RETURN: state <= (incoming_ascii == " " || incoming_ascii == ",") ? IDLE : ERROR;
+                    end VALIDATION: state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
                 endcase
-            end
+            end else if (state == RETURN) state <= IDLE;
 
         end else state <= IDLE;
     end
