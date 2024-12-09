@@ -57,8 +57,8 @@ class Test:
 TESTS = [
     # Test("EMPTY"), # WORKS
     # Test("EVERY_INST",  from_directory="every_inst"), # DOES NOT WORK
-    # Test('R-Type', from_directory="Rtype"), # WORKS
-    # Test('I-Type', from_directory="Itype"), # DOES NOT WORK
+    Test('R-Type', from_directory="Rtype"), # WORKS
+    Test('I-Type', from_directory="Itype"), # DOES NOT WORK
     # Test('Branch', from_directory='branch'), # DOES NOT WORK
     # Test('Jumps', from_directory='jumps'), # JAL DOESN"T WORK
     # Test('LUI and AUIPC', from_directory='lui_auipc'), # DOES NOT WORK

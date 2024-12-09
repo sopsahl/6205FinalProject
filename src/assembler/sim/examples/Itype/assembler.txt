@@ -13,6 +13,6 @@
     andi r07, r01, xF0   / AND Immediate
     slli r07, r01, x04        / Shift Left Logical Imm
     srli r07, r01, x04      / Shift Right Logical Imm
-    srai r07, r01, x4      / Shift Right Arithmetic Imm
+    srai r07, r01, x04      / Shift Right Arithmetic Imm
     slti r07, r01, x0A     / Set Less Than Imm
     sltiu r07, r01, x0A    / Set Less Than Imm Unsigned
