@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Mon Dec  9 00:33:59 2024
-| Host         : eecs-digital-19 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Mon Dec  9 03:33:39 2024
+| Host         : eecs-digital-07 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_utilization -file obj/post_synth_util.rpt -hierarchical -hierarchical_depth 4
 | Design       : top_level
 | Device       : xc7s50csga324-1
@@ -22,29 +22,29 @@ Table of Contents
 +-----------------------+-----------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
 |        Instance       |                        Module                       | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP Blocks |
 +-----------------------+-----------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+
-| top_level             |                                               (top) |        660 |        658 |       0 |    2 | 311 |     34 |      3 |          1 |
-|   (top_level)         |                                               (top) |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
+| top_level             |                                               (top) |        664 |        662 |       0 |    2 | 310 |     34 |      3 |          1 |
+|   (top_level)         |                                               (top) |          0 |          0 |       0 |    0 |   2 |      0 |      0 |          0 |
 |   bksp_b              |                                           debouncer |          9 |          9 |       0 |    0 |  21 |      0 |      0 |          0 |
 |   blue_ser            |                                     tmds_serializer |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   draw_characters     |                                   character_sprites |        187 |        186 |       0 |    1 |  59 |     18 |      1 |          1 |
+|   draw_characters     |                                   character_sprites |        215 |        214 |       0 |    1 |  59 |     18 |      1 |          1 |
 |     (draw_characters) |                                   character_sprites |         67 |         66 |       0 |    1 |  59 |      0 |      0 |          1 |
 |     character_image   | xilinx_single_port_ram_read_first__parameterized0_6 |         16 |         16 |       0 |    0 |   0 |     16 |      0 |          0 |
-|     character_pallete | xilinx_single_port_ram_read_first__parameterized1_7 |         81 |         81 |       0 |    0 |   0 |      0 |      1 |          0 |
+|     character_pallete | xilinx_single_port_ram_read_first__parameterized1_7 |        109 |        109 |       0 |    0 |   0 |      0 |      1 |          0 |
 |     terminal_grid     |                   xilinx_single_port_ram_read_first |         23 |         23 |       0 |    0 |   0 |      2 |      0 |          0 |
 |   green_ser           |                                   tmds_serializer_0 |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
 |   mhdmicw             |                                   hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |   0 |      0 |      0 |          0 |
-|   mmo_visualizer      |                                          visualizer |        194 |        193 |       0 |    1 |  42 |     16 |      2 |          0 |
-|     (mmo_visualizer)  |                                          visualizer |         44 |         43 |       0 |    1 |  42 |      0 |      0 |          0 |
+|   mmo_visualizer      |                                          visualizer |        177 |        176 |       0 |    1 |  40 |     16 |      2 |          0 |
+|     (mmo_visualizer)  |                                          visualizer |         60 |         59 |       0 |    1 |  40 |      0 |      0 |          0 |
 |     character_image   |   xilinx_single_port_ram_read_first__parameterized0 |          0 |          0 |       0 |    0 |   0 |     16 |      0 |          0 |
-|     character_pallete |   xilinx_single_port_ram_read_first__parameterized1 |        134 |        134 |       0 |    0 |   0 |      0 |      1 |          0 |
-|     register_values   |   xilinx_single_port_ram_read_first__parameterized2 |         16 |         16 |       0 |    0 |   0 |      0 |      1 |          0 |
-|   mvg                 |                                       video_sig_gen |         83 |         83 |       0 |    0 |  21 |      0 |      0 |          0 |
-|   nolabel_line113     |                              ps2_keyboard_interface |         57 |         57 |       0 |    0 |  31 |      0 |      0 |          0 |
+|     character_pallete |   xilinx_single_port_ram_read_first__parameterized1 |         88 |         88 |       0 |    0 |   0 |      0 |      1 |          0 |
+|     register_values   |   xilinx_single_port_ram_read_first__parameterized2 |         29 |         29 |       0 |    0 |   0 |      0 |      1 |          0 |
+|   mvg                 |                                       video_sig_gen |         84 |         84 |       0 |    0 |  21 |      0 |      0 |          0 |
+|   nolabel_line115     |                              ps2_keyboard_interface |         64 |         64 |       0 |    0 |  30 |      0 |      0 |          0 |
 |   red_ser             |                                   tmds_serializer_1 |          1 |          1 |       0 |    0 |   1 |      0 |      0 |          0 |
-|   terminal            |                                 terminal_controller |         84 |         84 |       0 |    0 |  52 |      0 |      0 |          0 |
-|   tmds_blue           |                                        tmds_encoder |          1 |          1 |       0 |    0 |  14 |      0 |      0 |          0 |
-|   tmds_green          |                                      tmds_encoder_2 |         19 |         19 |       0 |    0 |  14 |      0 |      0 |          0 |
-|   tmds_red            |                                      tmds_encoder_3 |          7 |          7 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   terminal            |                                 terminal_controller |         80 |         80 |       0 |    0 |  52 |      0 |      0 |          0 |
+|   tmds_blue           |                                        tmds_encoder |          2 |          2 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_green          |                                      tmds_encoder_2 |          5 |          5 |       0 |    0 |  14 |      0 |      0 |          0 |
+|   tmds_red            |                                      tmds_encoder_3 |          9 |          9 |       0 |    0 |  14 |      0 |      0 |          0 |
 |   x_b                 |                                         debouncer_4 |          9 |          9 |       0 |    0 |  21 |      0 |      0 |          0 |
 |   y_b                 |                                         debouncer_5 |          9 |          9 |       0 |    0 |  21 |      0 |      0 |          0 |
 +-----------------------+-----------------------------------------------------+------------+------------+---------+------+-----+--------+--------+------------+

@@ -43,11 +43,15 @@ module translate_keypress (
         'h3e: char = 42;
         'h46: char = 43;
         'h45: char = 44;
+        'h54: char = 29;
+        'h5b: char = 30;
         'h41: char = 32; // comma
         'h49: char = 33; // period
-        'h29: char = 0; // space
+        'h29: char = 0;  // space
         'h5a: char = 48; // enter
         'h66: char = 27; // bksp
+        'h05: char = 49; // scroll up
+        'h06: char = 50; // scroll down
         default: char = 0;
     endcase
  end

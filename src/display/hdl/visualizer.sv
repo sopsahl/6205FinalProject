@@ -40,11 +40,12 @@ module visualizer #(
   assign x_np = (hcount_in>>4) < SCREEN_WIDTH ? (hcount_in>>4) : SCREEN_WIDTH - 1;
   assign y_np = (vcount_in>>4) < SCREEN_HEIGHT ? (vcount_in>>4) : SCREEN_HEIGHT - 1;
 
-  assign image_addr = (h[1] - 16*x_pos) + ((v[1] - 16*y_pos) * SIZE) + (34*SIZE*SIZE);
+  assign image_addr = (h[1] - 16*x_pos) + ((v[1] - 16*y_pos) * SIZE) + (34*SIZE*SIZE); // ascii2char --> 34 (hashtag only)
 
   logic [5:0] in_sprite;
   logic [23:0] output_colors;
   logic [7:0] pallete_addr;
+  logic [$clog2(SIZE)-1:0] counter; // counter to decrement bar height
 
   always_ff @(posedge pixel_clk_in) begin
     if (rst_in) begin
@@ -52,6 +53,7 @@ module visualizer #(
       read_addr <= 0;
       h <= 0;
       v <= 0;
+      counter <= 0;
     end else begin
       h[0] <= hcount_in;
       h[1] <= h[0];
@@ -59,16 +61,23 @@ module visualizer #(
       v[0] <= vcount_in;
       v[1] <= v[0];
 
-      in_sprite[0] <= ((hcount_in >= 16*x_np && hcount_in < (16*x_np + SIZE)) && (vcount_in >= 16*y_np && vcount_in < (16*y_np + SIZE))) && bar_height > 0;
+      in_sprite[0] <= ((hcount_in >= 16*x_np && hcount_in < (16*x_np + SIZE)) && (vcount_in >= 16*y_np && vcount_in < (16*y_np + SIZE))) && bar_height > 0; // dont show hashtag if bar_height is zero
       in_sprite[1] <= in_sprite[0];
       in_sprite[2] <= in_sprite[1];
       in_sprite[3] <= in_sprite[2];
       in_sprite[4] <= in_sprite[3];
       in_sprite[5] <= in_sprite[4];
 
-      if (hcount_in == 0) begin
-        read_addr <= vcount_in;
-        bar_height <= tg_output;
+      counter <= counter + 1; // counter loops from 0 to 15
+
+      if (hcount_in == 0) begin   
+        read_addr <= vcount_in>>4;
+
+        if (bar_height > 0) begin     
+            bar_height <= tg_output * SIZE - 2;
+        end else begin
+            bar_height <= 0;
+        end
       end else begin
         if (bar_height > 0) begin
             bar_height <= bar_height - 1;
