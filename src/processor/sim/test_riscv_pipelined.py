@@ -415,6 +415,7 @@ async def bubble_sort_sim(dut):
         #pc:120
         #sw x14, 0(x17)
         RISCVInstruction.S_type(35, 2, 0, 17, 14),
+        #beginning of bub sort 
         #pc:124
         #addi x12, x0, 0
         RISCVInstruction.I_type(19, 0, 0, 0, 12),
@@ -642,7 +643,144 @@ async def mini_bubsort(dut):
     dut.rst.value = 0
     await ClockCycles(dut.clk, 1)
     await RisingEdge(dut.instruction_done)
-    
+
+async def bub_sort_from_mem(dut):
+    instructions = [
+    #START
+    # PC: 0
+    # addi x10, x0, 0        # x10 = base_addr = 0
+    RISCVInstruction.I_type(19, 0, 0, 0, 10),
+
+    # PC: 4
+    # addi x11, x0, 10       # x11 = n = size (16) (array size) ####CHANGE SIZE HERE #####
+    RISCVInstruction.I_type(19, 0, 16, 0, 11),
+
+    # Begin Bubble Sort Algorithm
+    # PC: 8
+    # addi x12, x0, 0        # x12 = i = 0 (outer loop index)
+    RISCVInstruction.I_type(19, 0, 0, 0, 12),
+
+    # Outer Loop Start
+    # PC: 12
+    # addi x31, x11, -1      # x31 = n - 1
+    RISCVInstruction.I_type(19, 0, -1, 11, 31),
+
+    # PC: 16
+    # bge x12, x31, 92       # if i >= n - 1, branch to PC 108 (Program End)
+    RISCVInstruction.B_type(99, 5, 92, 12, 31),
+
+    # Inner Loop Initialization
+    # PC: 20
+    # addi x13, x0, 0        # x13 = j = 0 (inner loop index)
+    RISCVInstruction.I_type(19, 0, 0, 0, 13),
+
+    # Inner Loop Start
+    # PC: 24
+    # sub x31, x11, x12      # x31 = n - i
+    RISCVInstruction.R_type(51, 0, 0x20, 11, 12, 31),
+
+    # PC: 28
+    # addi x31, x31, -1      # x31 = n - i - 1
+    RISCVInstruction.I_type(19, 0, -1, 31, 31),
+
+    # PC: 32
+    # bge x13, x31, 68       # if j >= n - i - 1, branch to PC 100 (Increment i)
+    RISCVInstruction.B_type(99, 5, 68, 13, 31),
+
+    # Load A[j] into x14
+    # PC: 36
+    # slli x16, x13, 2       # x16 = j * 4 (word size)
+    RISCVInstruction.I_type(19, 1, 2, 13, 16),
+
+    # PC: 40
+    # add x17, x10, x16      # x17 = base_addr + (j * 4)
+    RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+
+    # PC: 44
+    # lw x14, 0(x17)         # x14 = A[j]
+    RISCVInstruction.I_type(3, 2, 0, 17, 14),
+
+    # Load A[j+1] into x15
+    # PC: 48
+    # addi x18, x13, 1       # x18 = j + 1
+    RISCVInstruction.I_type(19, 0, 1, 13, 18),
+
+    # PC: 52
+    # slli x16, x18, 2       # x16 = (j + 1) * 4
+    RISCVInstruction.I_type(19, 1, 2, 18, 16),
+
+    # PC: 56
+    # add x17, x10, x16      # x17 = base_addr + ((j + 1) * 4)
+    RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+
+    # PC: 60
+    # lw x15, 0(x17)         # x15 = A[j + 1]
+    RISCVInstruction.I_type(3, 2, 0, 17, 15),
+
+    # Compare A[j] and A[j+1]
+    # PC: 64
+    # blt x14, x15, 28       # if A[j] < A[j+1], skip swapping
+    RISCVInstruction.B_type(99, 4, 28, 14, 15),
+
+    # Swap A[j] and A[j+1]
+    # PC: 68
+    # slli x16, x13, 2       # x16 = j * 4
+    RISCVInstruction.I_type(19, 1, 2, 13, 16),
+
+    # PC: 72
+    # add x17, x10, x16      # x17 = base_addr + (j * 4)
+    RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+
+    # PC: 76
+    # sw x15, 0(x17)         # A[j] = A[j+1]
+    RISCVInstruction.S_type(35, 2, 0, 17, 15),
+
+    # PC: 80
+    # slli x16, x18, 2       # x16 = (j + 1) * 4
+    RISCVInstruction.I_type(19, 1, 2, 18, 16),
+
+    # PC: 84
+    # add x17, x10, x16      # x17 = base_addr + ((j + 1) * 4)
+    RISCVInstruction.R_type(51, 0, 0, 10, 16, 17),
+
+    # PC: 88
+    # sw x14, 0(x17)         # A[j+1] = A[j]
+    RISCVInstruction.S_type(35, 2, 0, 17, 14),
+
+    # Increment j
+    # PC: 92
+    # addi x13, x13, 1       # j = j + 1
+    RISCVInstruction.I_type(19, 0, 1, 13, 13),
+
+    # PC: 96
+    # jal x0, -72            # Jump back to PC 24 (Inner Loop Start)
+    RISCVInstruction.J_type(111, -72, 0),
+
+    # Increment i
+    # PC: 100
+    # addi x12, x12, 1       # i = i + 1
+    RISCVInstruction.I_type(19, 0, 1, 12, 12),
+
+    # PC: 104
+    # jal x0, -92            # Jump back to PC 12 (Outer Loop Start)
+    RISCVInstruction.J_type(111, -92, 0),
+
+    # Program End
+    # PC: 108
+    0,
+]
+
+    hex_instructions = [format_hex32(instr) for instr in instructions]
+    with open("../data/instructionMem.mem", "w") as f:
+        for instr in hex_instructions:
+            f.write(f"{instr}\n")
+    dut.rst.value = 1
+    dut.ending_pc.value = 108
+    await ClockCycles(dut.clk, 1)
+    dut.rst.value = 0
+    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.instruction_done)
+    # await ClockCycles(dut.clk, 200000)
 
 
 
@@ -662,9 +800,10 @@ async def test_ALU_operations(dut):
     # await test_load_use_hazard(dut)
     # await test_memory_hazard(dut)
     # await test_mixed_hazards(dut)
-    await bubble_sort_sim(dut)
+    # await bubble_sort_sim(dut)
     # await test_negative_alu(dut)
     # await mini_bubsort(dut)
+    await bub_sort_from_mem(dut)
 
     #timing issues
 
