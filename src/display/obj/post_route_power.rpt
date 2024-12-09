@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date             : Sun Dec  8 17:06:42 2024
-| Host             : eecs-digital-16 running 64-bit Ubuntu 24.04.1 LTS
+| Date             : Sun Dec  8 23:20:30 2024
+| Host             : eecs-digital-45 running 64-bit Ubuntu 24.04.1 LTS
 | Command          : report_power -file obj/post_route_power.rpt
 | Design           : top_level
 | Device           : xc7s50csga324-1
@@ -53,16 +53,16 @@ Table of Contents
 | On-Chip        | Power (W) | Used     | Available | Utilization (%) |
 +----------------+-----------+----------+-----------+-----------------+
 | Clocks         |     0.004 |        6 |       --- |             --- |
-| Slice Logic    |     0.003 |      909 |       --- |             --- |
-|   LUT as Logic |     0.003 |      449 |     32600 |            1.38 |
+| Slice Logic    |     0.003 |      926 |       --- |             --- |
+|   LUT as Logic |     0.003 |      474 |     32600 |            1.45 |
 |   CARRY4       |    <0.001 |       44 |      8150 |            0.54 |
-|   Register     |    <0.001 |      265 |     65200 |            0.41 |
+|   Register     |    <0.001 |      266 |     65200 |            0.41 |
 |   Others       |     0.000 |       40 |       --- |             --- |
-| Signals        |     0.004 |      797 |       --- |             --- |
+| Signals        |     0.004 |      822 |       --- |             --- |
 | Block RAM      |     0.029 |     18.5 |        75 |           24.67 |
 | MMCM           |     0.105 |        1 |         5 |           20.00 |
 | DSPs           |    <0.001 |        1 |       120 |            0.83 |
-| I/O            |     0.174 |       75 |       210 |           35.71 |
+| I/O            |     0.175 |       75 |       210 |           35.71 |
 | Static Power   |     0.073 |          |           |                 |
 | Total          |     0.393 |          |           |                 |
 +----------------+-----------+----------+-----------+-----------------+
