@@ -1,14 +1,22 @@
+`timescale 1ns / 1ps
+`default_nettype none
+`ifdef SYNTHESIS
+`define FPATH(X) `"X`"
+`else /* ! SYNTHESIS */
+`define FPATH(X) `"../../data/X`"
+`endif  /* ! SYNTHESIS */
+
 module riscv_processor (
-    input  logic        clk,
-    input  logic        rst,
-    input  logic [31:0] ending_pc,
+    input  wire       clk,
+    input  wire        rst,
+    input  wire [31:0] ending_pc,
   
     output logic [31:0] pc_out,
-    output logic  instruction_done
-    // output logic write_enable, 
-    // output logic [31:0] w_data,
-    // output logic [31:0] w_addr
+    output logic  instruction_done,
     
+    output logic write_enable, 
+    output logic [31:0] w_data,
+    output logic [31:0] w_addr
 );
     // Program Counter
     logic [31:0] pc;
@@ -150,7 +158,7 @@ logic memory_hazard;
     .RAM_WIDTH(32),                       // Specify RAM data width
     .RAM_DEPTH(2048),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    .INIT_FILE("/Users/ziyadhassan/6205/6205FinalProject/Final_project/data/instructionMem.mem")          // Specify name/location of RAM initialization file if using one (leave blank if not)
+    .INIT_FILE(`FPATH(instructionMem.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
    ) imem (
     .addra(pc>>2),//what if we fetched next_pc     // Address bus, width determined from RAM_DEPTH
     .dina(),       // RAM input data, width determined from RAM_WIDTH
@@ -166,7 +174,7 @@ logic memory_hazard;
     .RAM_WIDTH(32),
     .RAM_DEPTH(1024),
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
-    .INIT_FILE("/Users/ziyadhassan/6205/6205FinalProject/Final_project/data/dataMem.mem")
+    .INIT_FILE(`FPATH(dataMem.mem))
 ) dmem (
     // Port A - Read port
     .clka(clk),
@@ -187,9 +195,9 @@ logic memory_hazard;
     .rstb(rst),
     .regceb(1'b1)
 );
-// assign write_enable = mem2_wb_reg.mem_write && mem2_wb_reg.valid;
-// assign w_data = data_to_write;
-// assign w_addr = mem2_wb_reg.alu_result>>2;
+assign write_enable = mem2_wb_reg.mem_write && mem2_wb_reg.valid;
+assign w_data = data_to_write;
+assign w_addr = mem2_wb_reg.alu_result>>2;
 
 
 
@@ -320,6 +328,13 @@ end
             rs2_val = registers[inst_fields.rs2];
 
         end
+        else begin 
+            inst_fields = 32'b0;
+            imm = 32'b0;
+            rs1_val = 32'b0;
+            rs2_val = 32'b0;
+
+        end 
     end 
         //decode 
          control_unit ctrl(
@@ -539,6 +554,10 @@ always_comb begin
         data_to_write[31:24] = memory_store_enable[3]? final_store_data[31:24]:load_value[31:24];
 
     end
+    else begin 
+        data_to_write = 32'b0;
+
+    end 
 end
 
 
@@ -612,3 +631,4 @@ end
 
 
 endmodule
+`default_nettype none
