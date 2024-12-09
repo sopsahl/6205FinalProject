@@ -1,0 +1,60 @@
+# RISC-V Instruction Test Program
+# Tests all instructions on the provided card
+
+
+start:
+
+    # Core R-Type Instructions
+    add x7, x1, x31      # ADD
+    sub x7, x1, x2      # SUB
+    xor x7, x1, x2      # XOR
+    or x7, x1, x2       # OR
+    and x7, x1, x2      # AND
+    sll x7, x1, x2      # Shift Left Logical
+    srl x7, x1, x2      # Shift Right Logical
+    sra x7, x1, x30      # Shift Right Arithmetic
+    slt x7, x1, x2      # Set Less Than
+    sltu x7, x1, x2     # Set Less Than Unsigned
+
+    # I-Type Immediate Instructions
+    addi x7, x1, 0x0A     # ADD Immediate
+    xori x7, x1, 0xF0   # XOR Immediate
+    ori x7, x1, 0xF0    # OR Immediate
+    andi x7, x1, 0xF0   # AND Immediate
+    slli x7, x1, 0x4        # Shift Left Logical Imm
+    srli x7, x1, 0x4      # Shift Right Logical Imm
+    srai x7, x1, 0x4      # Shift Right Arithmetic Imm
+    slti x7, x1, 0x0A     # Set Less Than Imm
+    sltiu x7, x1, 0x0A    # Set Less Than Imm Unsigned
+
+    # Load Instructions
+    lb x7, 0(x4)        # Load Byte
+    lh x7, 4(x4)        # Load Half
+    lw x7, 8(x4)        # Load Word
+    lbu x7, 12(x4)       # Load Byte Unsigned
+    lhu x7, 16(x4)       # Load Half Unsigned
+
+    # Store Instructions
+    sb x1, 0(x6)        # Store Byte
+    sh x1, 0(x6)        # Store Half
+    sw x1, 4(x6)        # Store Word
+
+    # Branch Instructions
+    beq x1, x2, labela  # Branch Equal
+    bne x1, x2, labela  # Branch Not Equal
+    blt x1, x2, labela  # Branch Less Than
+    bge x1, x2, labela  # Branch Greater or Equal
+    bltu x1, x2, labela # Branch Less Than Unsigned
+    bgeu x1, x2, labela # Branch Greater or Equal Unsigned
+labela:
+
+    # Jump Instructions
+    jal x7, labelb      # Jump And Link
+    jalr x7, 0(x4)      # Jump And Link Register
+labelb:
+
+    # Upper Immediate Instructions
+    lui x7, 0x12345     # Load Upper Immediate
+    auipc x7, 0x12345   # Add Upper Immediate to PC
+
+# End of Program

@@ -1,0 +1,62 @@
+
+
+/ RISC-V Instruction Test Program
+/ Tests all instructions on the provided card
+
+
+'start'
+
+    / Core R-Type Instructions
+    add r07, r01, r31      / ADD
+    sub r07, r01, r02      / SUB
+    xor r07, r01, r02      / XOR
+    or r07, r01, r02       / OR
+    and r07, r01, r02      / AND
+    sll r07, r01, r02      / Shift Left Logical
+    srl r07, r01, r02      / Shift Right Logical
+    sra r07, r01, r30      / Shift Right Arithmetic
+    slt r07, r01, r02      / Set Less Than
+    sltu r07, r01, r02     / Set Less Than Unsigned
+
+    / I-Type Immediate Instructions
+    addi r07, r01, x0A     / ADD Immediate
+    xori r07, r01, xF0   / XOR Immediate
+    ori r07, r01, xF0    / OR Immediate
+    andi r07, r01, xF0   / AND Immediate
+    slli r07, r01, x04        / Shift Left Logical Imm
+    srli r07, r01, x04      / Shift Right Logical Imm
+    srai r07, r01, x4      / Shift Right Arithmetic Imm
+    slti r07, r01, x0A     / Set Less Than Imm
+    sltiu r07, r01, x0A    / Set Less Than Imm Unsigned
+
+    / Load Instructions
+    lb r07, r04, x0       / Load Byte
+    lh r07, r04, x4         / Load Half
+    lw r07, r04, x8        / Load Word
+    lbu r07, r04, x0c        / Load Byte Unsigned
+    lhu r07, r04, x10        / Load Half Unsigned
+
+    / Store Instructions
+    sb r01, r06, x0        / Store Byte
+    sh r01, r06, x0       / Store Half
+    sw r01, r06, x4      / Store Word
+
+    / Branch Instructions
+    beq r01, r02, 'labela'  / Branch Equal
+    bne r01, r02, 'labela'  / Branch Not Equal
+    blt r01, r02, 'labela'  / Branch Less Than
+    bge r01, r02, 'labela'  / Branch Greater or Equal
+    bltu r01, r02, 'labela' / Branch Less Than Unsigned
+    bgeu r01, r02, 'labela' / Branch Greater or Equal Unsigned
+'labela'
+
+    / Jump Instructions
+    jal r07, 'labelb'      / Jump And Link
+    jalr r07, 0(r04)      / Jump And Link Register
+'labelb'
+
+    / Upper Immediate Instructions
+    lui r07, x12345     / Load Upper Immediate
+    auipc r07, x12345   / Add Upper Immediate to PC
+
+/ End of Program

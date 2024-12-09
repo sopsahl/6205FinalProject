@@ -1,13 +1,34 @@
+import os
+
 CHAR_PER_LINE = 32
 NUM_LINES = 64
 
 class Test:
-    def __init__(self, name, code="", instructions=[], error=None):
+    def __init__(self, name, code="", instructions=[], from_directory = "", error=None):
         self.name = name
+
+        if from_directory != "":
+            try:
+                with open(f'../examples/{from_directory}/assembler.txt') as f:
+                    code = f.read()
+                with open(f'../examples/{from_directory}/instructions.txt') as f:
+                      for line in f:
+                            if line.strip():
+                                instructions.append(int(line.strip(), 16))
+
+            except: 
+                  
+                with open(f'./examples/{from_directory}/assembler.txt') as f:
+                    code = f.read()
+                with open(f'./examples/{from_directory}/instructions.txt') as f:
+                      for line in f:
+                            if line.strip():
+                                  instructions.append(int(line.strip(), 16))
+
         self.code = self.clean_code(code)
         self.expected_instructions = [hex(inst) for inst in instructions]
+        
         self.error_line = error
-
         self.returned_instructions = []
 
     def clean_code(self, code):
@@ -16,7 +37,8 @@ class Test:
         ]
         for line_index, line in enumerate(code.split('\n')):
             for char_index, char in enumerate(line):
-                buffer[line_index][char_index] = char
+                if char_index < CHAR_PER_LINE:
+                    buffer[line_index][char_index] = char
 
         return buffer
     
@@ -32,17 +54,15 @@ class Test:
 
 TESTS = [
     Test("EMPTY"), 
-    Test("INST",
-        '''
-        add r00, r01, r02
+    Test("ADD",
+        code='''
+        add r31, r01, r02
         ''',
-        [0x00208033]
+        instructions=[0x00208fb3]
         ),
 
-    Test("LABEL",
-        '''
-        'loop'
-        beq r01, r11, 'loop'
-        '''
-         )
+    Test("EVERY_INST",
+        from_directory="every_inst"
+        )
 ]
+
