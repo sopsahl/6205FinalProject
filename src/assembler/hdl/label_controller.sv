@@ -51,20 +51,24 @@ module label_controller #(
 
 
     logic isAlpha;
-    assign isAlpha = (incoming_character >= "a" && incoming_character >= "z") || (incoming_character >= "A" && incoming_character >= "Z");
+    assign isAlpha = (incoming_character >= "a" && incoming_character <= "z") || (incoming_character >= "A" && incoming_character <= "Z");
+
+    logic map_flag;
+    assign map_flag = (isAlpha || incoming_character == "/") && state == IDLE;
 
     always_ff @(posedge clk_in) begin
         if (valid_data && !rst_in && !new_line) begin
             if (new_character) begin
                 case (state) 
                     IDLE: begin
-                        if (incoming_character == "'") begin 
+                        if (isAlpha || incoming_character == "/") mapping_state <= SKIP;
+                        else if (incoming_character == "'") begin 
                             state <= BUSY;
                             label_buffer <= 0;
-                        end else if (isAlpha || incoming_character == "/") mapping_state <= SKIP;
+                        end 
                     end BUSY: begin
                         if (isAlpha) begin
-                            label_buffer <= {label_buffer[NUMBER_LETTERS - 1 : 1], incoming_character[4:0]};
+                            label_buffer <= {label_buffer[NUMBER_LETTERS - 2 : 0], incoming_character[4:0]};
                         end else begin
                             if (incoming_character == "'") begin
                                 state <= RETURN; 
@@ -74,7 +78,10 @@ module label_controller #(
                     end
                 endcase
             end else state <= (state == RETURN) ? IDLE : state; // Allows for single high pulse of done_flag
-        end else state <= IDLE; mapping_state <= CLEAN;
+        end else begin
+            state <= IDLE; 
+            mapping_state <= CLEAN;
+        end
     end
 
 endmodule // immediate_interpreter
@@ -99,8 +106,8 @@ module label_storage #(
     always_ff @(posedge clk_in) begin
         if (rst_in) label_storage <= 0;
         else if (write_enable) begin // In write mode
-            label_storage <= {label_storage[STORAGE_SIZE - 1:1], current_label};
-            pc_storage <= {pc_storage[STORAGE_SIZE - 1:1], pc};
+            label_storage <= {label_storage[STORAGE_SIZE - 2:0], current_label};
+            pc_storage <= {pc_storage[STORAGE_SIZE - 2:0], pc};
         end 
     end
 
@@ -143,14 +150,14 @@ module label_storage #(
 
     always_comb begin // Single Cycle Reads
         case (current_label)
-            label_storage0 : offset = $signed(pc) - $signed(pc_storage0);
-            label_storage1 : offset = $signed(pc) - $signed(pc_storage1);
-            label_storage2 : offset = $signed(pc) - $signed(pc_storage2);
-            label_storage3 : offset = $signed(pc) - $signed(pc_storage3);
-            label_storage4 : offset = $signed(pc) - $signed(pc_storage4);
-            label_storage5 : offset = $signed(pc) - $signed(pc_storage5);
-            label_storage6 : offset = $signed(pc) - $signed(pc_storage6);
-            label_storage7 : offset = $signed(pc) - $signed(pc_storage7);
+            label_storage0 : offset = $signed(pc_storage0) - $signed(pc);
+            label_storage1 : offset = $signed(pc_storage1) - $signed(pc);
+            label_storage2 : offset = $signed(pc_storage2) - $signed(pc);
+            label_storage3 : offset = $signed(pc_storage3) - $signed(pc);
+            label_storage4 : offset = $signed(pc_storage4) - $signed(pc);
+            label_storage5 : offset = $signed(pc_storage5) - $signed(pc);
+            label_storage6 : offset = $signed(pc_storage6) - $signed(pc);
+            label_storage7 : offset = $signed(pc_storage7) - $signed(pc);
             default : offset = 0;
         endcase
     end
