@@ -64,6 +64,7 @@ always_comb begin
             // alu_src = 1'b1;    // Use immediate
             // alu_ctrl = 4'b1011; // New ALU op for AUIPC
         end 
+    
         endcase
     end
 
@@ -106,7 +107,9 @@ always_comb begin
             end
 
 
-            default: begin end 
+            default: begin
+                alu_ctrl = 4'b0000;
+             end 
         endcase
     end
 endmodule
