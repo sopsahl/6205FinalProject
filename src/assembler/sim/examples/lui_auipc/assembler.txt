@@ -1,0 +1,7 @@
+
+
+/ Upper Immediate Instructions
+lui r07, x12345     / Load Upper Immediate
+auipc r07, x12345   / Add Upper Immediate to PC
+
+/ End of Program

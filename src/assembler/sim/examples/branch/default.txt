@@ -1,0 +1,20 @@
+# RISC-V Instruction Test Program
+# Tests all instructions on the provided card
+
+
+start:
+    # Branch Instructions
+    beq x1, x2, labela  # Branch Equal
+    bne x1, x2, labela  # Branch Not Equal
+    blt x1, x2, labela  # Branch Less Than
+    bge x1, x2, labela  # Branch Greater or Equal
+    bltu x1, x2, labela # Branch Less Than Unsigned
+    bgeu x1, x2, labela # Branch Greater or Equal Unsigned
+labela:
+    # Branch Instructions
+    beq x1, x2, labela  # Branch Equal
+    bne x1, x2, labela  # Branch Not Equal
+    blt x1, x2, labela  # Branch Less Than
+    bge x1, x2, labela  # Branch Greater or Equal
+    bltu x1, x2, labela # Branch Less Than Unsigned
+    bgeu x1, x2, labela # Branch Greater or Equal Unsigned

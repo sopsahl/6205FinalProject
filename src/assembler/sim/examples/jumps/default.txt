@@ -1,0 +1,13 @@
+# RISC-V Instruction Test Program
+# Tests all instructions on the provided card
+
+
+start:
+    # Jump Instructions
+    jal x7, labelb      # Jump And Link
+    jalr x7, 0(x4)      # Jump And Link Register
+labelb:
+    # Jump Instructions
+    jal x7, labelb      # Jump And Link
+    jalr x7, 0(x4)      # Jump And Link Register
+# End of Program

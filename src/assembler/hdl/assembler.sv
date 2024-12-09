@@ -55,10 +55,8 @@ module assembler #(
         case (opcode) // For Simulation
             OP_REG : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? DONE : IDLE;
-            OP_IMM, OP_LOAD, OP_STORE: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
+            OP_IMM, OP_LOAD, OP_STORE, OP_JALR: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_IMM : (instruction_state == READ_IMM) ? DONE : IDLE;
-            OP_JALR : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
-                            (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_LABEL : (instruction_state == READ_LABEL) ? DONE : IDLE;
             OP_BRANCH : next_instruction_state = (instruction_state == READ_INST) ? READ_RS1 :
                             (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? READ_LABEL : (instruction_state == READ_LABEL) ? DONE : IDLE;
             OP_LUI, OP_AUIPC : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :

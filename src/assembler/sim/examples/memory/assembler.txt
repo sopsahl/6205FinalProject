@@ -1,0 +1,20 @@
+
+
+/ RISC-V Instruction Test Program
+/ Tests all instructions on the provided card
+
+'start'
+
+    / Load Instructions
+    lb r07, r04, x0       / Load Byte
+    lh r07, r04, x4         / Load Half
+    lw r07, r04, x8        / Load Word
+    lbu r07, r04, x0c        / Load Byte Unsigned
+    lhu r07, r04, x10        / Load Half Unsigned
+
+    / Store Instructions
+    sb r01, r06, x0        / Store Byte
+    sh r01, r06, x0       / Store Half
+    sw r01, r06, x4      / Store Word
+
+   

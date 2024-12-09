@@ -52,7 +52,7 @@
 
     / Jump Instructions
     jal r07, 'labelb'      / Jump And Link
-    jalr r07, 0(r04)      / Jump And Link Register
+    jalr r07, r04, x0      / Jump And Link Register
 'labelb'
 
     / Upper Immediate Instructions
