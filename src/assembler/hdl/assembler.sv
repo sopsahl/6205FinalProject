@@ -210,7 +210,7 @@ function logic [31:0] create_inst(InstFields inst);
         OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
         OP_STORE : return {inst.imm[11:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:0], inst.opcode};
         OP_BRANCH : return {inst.imm[12], inst.imm[10:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:1], inst.imm[11], inst.opcode};
-        OP_LUI, OP_AUIPC : return {inst.imm[31:12], inst.rd, inst.opcode};
+        OP_LUI, OP_AUIPC : return {inst.imm[19:0], inst.rd, inst.opcode};
         OP_JAL : return {inst.imm[20], inst.imm[10:1], inst.imm[11], inst.imm[19:12], inst.rd, inst.opcode};
         default: return 32'b0;
     endcase

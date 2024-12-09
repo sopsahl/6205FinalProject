@@ -61,7 +61,7 @@ TESTS = [
     Test('I-Type', from_directory="Itype"), # DOES NOT WORK
     # Test('Branch', from_directory='branch'), # DOES NOT WORK
     # Test('Jumps', from_directory='jumps'), # JAL DOESN"T WORK
-    # Test('LUI and AUIPC', from_directory='lui_auipc'), # DOES NOT WORK
+    Test('LUI and AUIPC', from_directory='lui_auipc'), # DOES NOT WORK
     # Test('Loads and Stores', from_directory='memory') # DOES NOT WORK
 ]
 
