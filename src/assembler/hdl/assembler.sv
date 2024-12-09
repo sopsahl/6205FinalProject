@@ -1,11 +1,13 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-import assembler_constants::*;
+import constants::*;
 
 module assembler #(
     parameter CHAR_PER_LINE = 64,
-    parameter NUMBER_LINES = 256
+    parameter NUMBER_LINES = 256,
+    parameter NUM_LABELS = 8,
+    parameter LABEL_SIZE = 6
     ) (     
     input wire clk_in,
     input wire rst_in,
@@ -17,9 +19,14 @@ module assembler #(
     output logic done_flag, // Instruction is Ready
     output logic error_flag, // Error encountered
 
-    input assembler_state assembler_state, // Determines what we are doing at any given point
-    output logic [31:0] instruction
+    input assembler_state_t assembler_state, // Determines what we are doing at any given point
+    output logic [31:0] instruction,
+    output logic new_instruction
 );  
+
+    assign error_flag = inst_error || imm_error || reg_error || label_error; 
+    assign new_instruction = new_instruction_buffer;
+    assign done_flag = (new_instruction) || (label_done && assembler_state == PC_MAPPING);
 
     // *****************************************
     // State Logic for Instruction Mapping
@@ -34,14 +41,18 @@ module assembler #(
         READ_RS2,
         READ_IMM,
         READ_LABEL,
-        DONE,
-        ERROR
-    } inst_state instruction_state;
+        DONE
+    } inst_state;
 
+    inst_state instruction_state;
     inst_state next_instruction_state;
 
+    logic [6:0] opcode;
+    assign opcode = (instruction_state == READ_INST) ? opcode_buffer : inst.opcode;
+
     always_comb begin
-        case (inst.opcode) 
+        // case (inst.opcode) // For builds
+        case (opcode) // For Simulation
             OP_REG : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? DONE : IDLE;
             OP_IMM, OP_LOAD, OP_STORE: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
@@ -58,15 +69,6 @@ module assembler #(
         endcase
     end
 
-    logic [$clog2(NUMBER_LINES) + 1 : 0] inst_pc;
-
-    pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
-        .clk_in(clk_in),
-        .rst_in((assembler_state != INSTRUCTION_MAPPING) || rst_in),
-        .evt_in(instruction_state == DONE),
-        .count_out(inst_pc)
-    );
-
     // *****************************************
     // *****************************************
     // Interpreter Modules
@@ -79,7 +81,6 @@ module assembler #(
 
     logic inst_error, reg_error, imm_error;
     logic inst_done, reg_done, imm_done;
-    logic inst_busy, reg_busy, imm_busy;
 
     instruction_interpreter get_inst (
         .clk_in(clk_in),
@@ -89,7 +90,6 @@ module assembler #(
         .incoming_ascii(incoming_character),
         .error_flag(inst_error),
         .done_flag(inst_done),
-        .busy_flag(inst_busy),
         .opcode(opcode_buffer),
         .funct7(funct7_buffer),
         .funct3(funct3_buffer)
@@ -103,7 +103,6 @@ module assembler #(
         .incoming_ascii(incoming_character),
         .error_flag(reg_error),
         .done_flag(reg_done),
-        .busy_flag(reg_flag),
         .register(reg_buffer)
     );
 
@@ -115,70 +114,108 @@ module assembler #(
         .incoming_ascii(incoming_character),
         .error_flag(imm_error),
         .done_flag(imm_done),
-        .busy_flag(imm_busy),
         .isUtype((inst.opcode == OP_AUIPC) || (inst.opcode == OP_LUI)),
         .immediate(immediate_buffer)
     );
 
-    logic inst_ready_buffer;
+    // *****************************************
+    // *****************************************
+    // Label Controller
+
+    logic [31:0] offset;
+    logic label_error, label_done;
+    
+    label_controller #(.NUMBER_LINES(NUMBER_LINES), .NUMBER_LETTERS(LABEL_SIZE), .NUM_LABELS(NUM_LABELS)) label_controller (
+        .clk_in(clk_in),
+        .rst_in(rst_in),
+        .new_line(new_line),
+        .new_character(new_character),
+        .valid_data(instruction_state == READ_LABEL || assembler_state == PC_MAPPING),
+        .pc(pc),
+        .incoming_character(incoming_character),
+        .done_flag(label_done),
+        .error_flag(label_error),
+        .assembler_state(assembler_state),
+        .offset(offset)
+    );
 
     // *****************************************
     // *****************************************
-    // LABEL MAPPING
+    // PC logic
 
-    logic [NUMBER_LINES - 1 : 0] is_instruction;
+    logic [$clog2(NUMBER_LINES) + 1 : 0] label_pc;
+    logic [$clog2(NUMBER_LINES) + 1 : 0] inst_pc;
+    logic [$clog2(NUMBER_LINES) + 1 : 0] pc;
+
+    pc_mapping #(.NUMBER_LINES(NUMBER_LINES)) label_pc_counter (
+        .clk_in(clk_in),
+        .rst_in(assembler_state != PC_MAPPING || rst_in),
+        .new_line(new_line),
+        .new_character(new_character),
+        .incoming_ascii(incoming_character),
+        .pc(label_pc)
+    );
+
+    pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
+        .clk_in(clk_in),
+        .rst_in((assembler_state != INSTRUCTION_MAPPING) || rst_in),
+        .evt_in(instruction_state == DONE),
+        .count_out(inst_pc)
+    );
+
+    assign pc = (assembler_state == PC_MAPPING) ? label_pc : inst_pc;
 
     // *****************************************
     // *****************************************
     // INSTRUCTION_MAPPING STATE LOGIC
 
+    logic inst_ready_buffer, new_instruction_buffer;
+
     always_ff @(posedge clk_in) begin
         if (assembler_state == INSTRUCTION_MAPPING && !rst_in) begin
-            if (inst_error || imm_error || reg_error || label_error || ...) instruction_state <= ERROR;
-            else if (new_line) instruction_state <= READ_INST; // start reading
-            else begin
-                case (instruction_state)
-                    READ_INST : begin
-                        if (inst_done) begin
-                            inst.opcode <= opcode_buffer;
-                            inst.funct3 <= funct3_buffer;
-                            inst.funct7 <= funct7_buffer;
-                        end else if (inst_ready_buffer) instruction_state <= next_instruction_state;
-                    end READ_RD : begin
-                        if (reg_done) begin
-                            inst.rd <= reg_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_RS1 : begin
-                        if (reg_done) begin
-                            inst.rs1 <= reg_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_RS2 : begin
-                        if (reg_done) begin
-                            inst.rs2 <= reg_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_IMM : begin
-                        if (imm_done) begin
-                            inst.imm <= immediate_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end READ_LABEL : begin
-                        if (label_done) begin
-                            inst.imm <= label_buffer;
-                            instruction_state <= next_instruction_state;
-                        end
-                    end DONE : instruction_state <= IDLE;
-                endcase
-            end
+            case (instruction_state)
+                READ_INST : begin
+                    if (inst_done) begin
+                        inst.opcode <= opcode_buffer;
+                        inst.funct3 <= funct3_buffer;
+                        inst.funct7 <= funct7_buffer;
+                    end
+                end READ_RD : if (reg_done) inst.rd <= reg_buffer;
+                READ_RS1 : if (reg_done) inst.rs1 <= reg_buffer;
+                READ_RS2 : if (reg_done) inst.rs2 <= reg_buffer;
+                READ_IMM : if (imm_done) inst.imm <= immediate_buffer;
+                READ_LABEL : if (label_done) inst.imm <= offset;
+                DONE : instruction <= create_inst(inst); // Create the instruction
+            endcase 
+
+            instruction_state <= (new_line) ? READ_INST :
+                (((incoming_character == "/" || incoming_character == "'") && instruction_state == READ_INST) || instruction_state == DONE) ? IDLE :
+                (label_done || imm_done || inst_done || reg_done) ? next_instruction_state : instruction_state;
+            
+            // Buffers
+            // inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
+            new_instruction_buffer <= instruction_state == DONE; // Store a cycle delay
+        
         end else instruction_state <= IDLE; // Either Reset or different State
 
-        // Buffers
-        inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
     end
+
+    // *****************************************
 
 
 endmodule // assembler
+
+function logic [31:0] create_inst(InstFields inst);
+    case (inst.opcode) 
+        OP_REG : return {inst.funct7, inst.rs2, inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_IMM : return {inst.imm[11:5] && inst.funct7, inst.imm[4:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_STORE : return {inst.imm[11:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:0], inst.opcode};
+        OP_BRANCH : return {inst.imm[12], inst.imm[10:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:1], inst.imm[11], inst.opcode};
+        OP_LUI, OP_AUIPC : return {inst.imm[31:12], inst.rd, inst.opcode};
+        OP_JAL : return {inst.imm[20], inst.imm[10:1], inst.imm[11], inst.imm[19:12], inst.rd, inst.opcode};
+        default: return 32'b0;
+    endcase
+endfunction
 
 `default_nettype wire

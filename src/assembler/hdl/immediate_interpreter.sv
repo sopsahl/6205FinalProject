@@ -6,7 +6,7 @@
 // Suppots up to 4 bytes of data (8 characters)
 // done_flag is high 1 cycle after the delimiter (" " or ",")
 
-import assembler_constants::*;
+import constants::*;
 
 module immediate_interpreter (
     input wire clk_in,
@@ -16,29 +16,29 @@ module immediate_interpreter (
     input wire [7 : 0] incoming_ascii,
     output logic error_flag,
     output logic done_flag,
-    output logic busy_flag,
 
     input wire isUtype,
     output logic [31:0] immediate
 );
 
-    typedef enum {
+    enum {
         IDLE, 
         FIRST_NUM,
         BUSY,
         RETURN,
         ERROR
-    } state_t state;
+    } state;
 
     assign error_flag = (state == ERROR);
     assign done_flag = (state == RETURN);
-    assign busy_flag = (state != IDLE);
 
-    logic isValid;
-    assign isValid = isAlpha(incoming_ascii) || isNum(incoming_ascii);
+    logic isNum, isAlpha, isValid;
+    assign isNum = (incoming_ascii >= "0" && incoming_ascii <= "9");
+    assign isAlpha = (incoming_ascii >= "a" && incoming_ascii <= "f") || (incoming_ascii >= "A" && incoming_ascii <= "F");
+    assign isValid = isNum || isAlpha;
 
     logic [3:0] hex_value;
-    assign hex_value = ascii_to_hex(incoming_ascii);
+    assign hex_value = (isNum) ? incoming_ascii[3:0] : (isAlpha) ? incoming_ascii[3:0] + 4'h9 : 4'h0;
 
     always_ff @(posedge clk_in) begin
         
@@ -47,12 +47,12 @@ module immediate_interpreter (
                 case (state) 
                     IDLE: if (incoming_ascii == "x" || incoming_ascii == "X") state <= FIRST_NUM;
                     FIRST_NUM: begin
-                        immediate <= (isUtype) ? {28'b0, hex_value} : {28{hex_value[3]}, hex_value}; // Extend the MSB
+                        immediate <= (isUtype) ? {28'b0, hex_value} : {{28{hex_value[3]}}, hex_value}; // Extend the MSB
                         state <= (isValid) ? BUSY : IDLE;
                     end BUSY: begin
                         if (isValid) immediate <= ((immediate << 4) | hex_value);
                         else state <= (incoming_ascii == " " || incoming_ascii == ",") ? RETURN : ERROR;
-                    end RETURN: state <= IDLE;
+                    end
                 endcase
             end else state <= (state == RETURN) ? IDLE : state; // Allows for single high pulse of done_flag
         end else state <= IDLE;

@@ -1,5 +1,6 @@
+`timescale 1ns / 1ps
 
-package assembler_constants;
+package constants;
 
     // Instruction Fields
     typedef struct packed {
@@ -17,7 +18,7 @@ package assembler_constants;
         PC_MAPPING,
         INSTRUCTION_MAPPING,
         ERROR
-    } assembler_state;
+    } assembler_state_t;
 
     // Compressed ASCII Values
         parameter logic [4:0] COMPRESSED__ = 5'h00;
@@ -92,30 +93,4 @@ package assembler_constants;
         parameter logic [6:0] F7_IMM      = 7'b1111111;  // IMMEDIATE f7 used in AND
 
 
-    function logic isNum(byte ascii_char);
-        return (ascii_char >= "0" && ascii_char <= "9");
-    endfunction
-
-    function logic isAlpha(byte ascii_char);
-        return ((ascii_char >= "a" && ascii_char <= "f") || (ascii_char >= "A" && ascii_char <= "F"));
-    endfunction
-
-    function logic [3:0] ascii_to_hex(byte ascii_char);
-        return (isNum(ascii_char)) ? ascii_char[3:0] : (isAlpha(ascii_char)) ? ascii_char[3:0] + 4'h9 : 4'h0;
-    endfunction
-
-    function logic [31:0] create_inst(InstFields inst);
-        case (inst.opcode) 
-            OP_REG : return {inst.funct7, inst.rs2, inst.rs1, inst.funct3, inst.rd, inst.opcode};
-            OP_IMM : return {inst.imm[11:5] && inst.funct7, inst.imm[4:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
-            OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
-            OP_STORE : return {inst.imm[11:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:0], inst.opcode};
-            OP_BRANCH : return {inst.imm[12], inst.imm[10:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:1], inst.imm[11], inst.opcode};
-            OP_LUI, OP_AUIPC : return {inst.imm[31:12], inst.rd, inst.opcode};
-            OP_JAL : return {inst.imm[20], inst.imm[10:1], inst.imm[11], inst.imm[19:12], inst.rd, inst.opcode};
-            default: return 32'b0;
-        endcase
-    endfunction
-
-
-endpackage
+endpackage // constants

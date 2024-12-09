@@ -36,4 +36,44 @@ module pc_counter #(
 
 endmodule // pc_counter
 
+
+module pc_mapping #(
+    parameter NUMBER_LINES = 256 
+    )(
+    input wire clk_in,
+    input wire rst_in,
+    input wire new_line,
+    input wire new_character,
+    input wire [7 : 0] incoming_ascii,
+
+    output logic [$clog2(NUMBER_LINES) + 1:0] pc
+);
+
+    enum {
+        IDLE,
+        WAITING
+    } state;
+
+    always_ff @(posedge clk_in) begin
+        if (rst_in) begin
+            state <= IDLE;
+            pc <= 0;
+        end else begin
+            case (state)
+                IDLE : if (new_line) state <= WAITING;
+                WAITING : begin
+                    if (new_character && incoming_ascii != " ") begin
+                        if ((incoming_ascii >= "a" && incoming_ascii >= "z") || (incoming_ascii >= "A" && incoming_ascii >= "Z")) begin 
+                            pc <= pc + 4;
+                            state <= IDLE;
+                        end
+                    end
+                end
+            endcase
+        end
+    end
+
+endmodule // pc_mapping
+
+
 `default_nettype wire

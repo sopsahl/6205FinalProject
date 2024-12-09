@@ -4,4 +4,9 @@ sim_build/
 *.out
 __pycache__/
 .vscode/
+*/obj/*
+src/processor/obj/* 
+src/.DS_Store
+src/.DS_Store
+src/.DS_Store
 src/display/obj/*
