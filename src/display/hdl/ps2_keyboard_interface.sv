@@ -6,7 +6,8 @@ module ps2_keyboard_interface (
     output logic [7:0]  data_out,   // Decoded data output
     output logic        key_pressed,  // Data valid signal
     output logic        enter_pressed,
-    output logic        bksp_pressed
+    output logic        bksp_pressed,
+    output logic         break_entered
 );
     // Synchronize PS/2 clock and data to FPGA clock domain
     logic ps2_clk_sync0, ps2_clk_sync1;
@@ -39,11 +40,12 @@ module ps2_keyboard_interface (
             state <=IDLE;
             data_counter <= 0;
             full_message <= 11'b0;
-            data <= 8'b0;
+            data_out <= 8'b0;
             key_pressed <= 0;
             enter_pressed <= 0;
             bksp_pressed <= 0;
             key_down <= 0;
+            break_entered <= 0;
         end
         else begin
             //we just sampled a falling edge 
@@ -55,6 +57,7 @@ module ps2_keyboard_interface (
                         state <= PROCESSING;
                         data_counter <= 1;
                         full_message <= 11'b0;
+                        
                         data <= 8'b0;
                     end
                     else begin 
@@ -80,21 +83,33 @@ module ps2_keyboard_interface (
                     //stop bit
                     if(ps2_data_sync1 == 1'b1)begin 
                         state <= IDLE;
-                        data <= full_message[8:1];
+                        data_out<= full_message[8:1];
+                        // data <= full_message[8:1];
+                            // if (full_message[8:1] == 'h5a) begin
+                            //     enter_pressed <= 1;
+                            // end else if (full_message[8:1] == 'h66) begin
+                            //     bksp_pressed <= 1;
+                            // end else begin
+                            //     key_pressed <= 1;
+                            // en
+                        // data <= full_message[8:1];
 
-                        if (key_down == 0) begin
-                            data_out <= full_message[8:1];
-
-                            if (full_message[8:1] == 'h5a) begin
+                        case(full_message[8:1])
+                            8'h5a: begin
                                 enter_pressed <= 1;
-                            end else if (full_message[8:1] == 'h66) begin
+                            end
+                            8'hF0: begin
+                                break_entered <= 1;
+                            end
+                            8'h66: begin
                                 bksp_pressed <= 1;
-                            end else begin
+                            end
+                            default: begin
                                 key_pressed <= 1;
                             end
-                        end
 
-                        key_down <= key_down + 1;
+                        endcase
+
 
                     end
                     else begin 
@@ -108,6 +123,7 @@ module ps2_keyboard_interface (
                 key_pressed <= 0;
                 enter_pressed <= 0;
                 bksp_pressed <= 0;
+                break_entered <= 0;
             end
         end
     end 
