@@ -64,7 +64,7 @@ module pc_mapping #(
                 IDLE : if (new_line) state <= WAITING;
                 WAITING : begin
                     if (new_character) begin
-                        if ((incoming_ascii == "/") || (incoming_ascii == "'") || (incoming_ascii >= "0" && incoming_ascii <= "9")) state <= IDLE;
+                        if ((incoming_ascii == "/") || (incoming_ascii == ".") || (incoming_ascii >= "0" && incoming_ascii <= "9")) state <= IDLE;
                         else if ((incoming_ascii >= "a" && incoming_ascii >= "z") || (incoming_ascii >= "A" && incoming_ascii >= "Z")) begin 
                             pc <= pc + 4;
                             state <= IDLE;
