@@ -653,7 +653,7 @@ async def bub_sort_from_mem(dut):
 
     # PC: 4
     # addi x11, x0, 10       # x11 = n = size (16) (array size) ####CHANGE SIZE HERE #####
-    RISCVInstruction.I_type(19, 0, 16, 0, 11),
+    RISCVInstruction.I_type(19, 0, 43, 0, 11),
 
     # Begin Bubble Sort Algorithm
     # PC: 8
@@ -779,7 +779,7 @@ async def bub_sort_from_mem(dut):
     await ClockCycles(dut.clk, 1)
     dut.rst.value = 0
     await ClockCycles(dut.clk, 1)
-    await RisingEdge(dut.instruction_done)
+    # await RisingEdge(dut.instruction_done)
     # await ClockCycles(dut.clk, 200000)
 
 

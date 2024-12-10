@@ -14,6 +14,7 @@ module visualizer #(
   input wire [10:0] hcount_in,
   input wire [9:0] vcount_in,
   input wire tg_write_en,
+  input wire tg_proc_clk,
   input wire [$clog2(SCREEN_HEIGHT)-1:0] tg_addr,
   input wire [31:0] tg_input,
   output logic [7:0] red_out,
@@ -90,22 +91,49 @@ module visualizer #(
   assign red_out =    in_sprite[5] ? output_colors[23:16] : 0;
   assign green_out =  in_sprite[5] ? output_colors[15:8] : 0;
   assign blue_out =   in_sprite[5] ? output_colors[7:0] : 0;
-
+  //DUAL port ? 
   //  Xilinx Single Port Read First RAM (register values)
-  xilinx_single_port_ram_read_first #(
-    .RAM_WIDTH(32),                       // Specify RAM data width (should be 6 for 26 char but said 8 for ease)
-    .RAM_DEPTH(SCREEN_HEIGHT),                     // Specify RAM depth (number of entries)
-    .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    .INIT_FILE(`FPATH(visualizer.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+  // xilinx_single_port_ram_read_first #(
+  //   .RAM_WIDTH(32),                       // Specify RAM data width (should be 6 for 26 char but said 8 for ease)
+  //   .RAM_DEPTH(SCREEN_HEIGHT),                     // Specify RAM depth (number of entries)
+  //   .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+  //   //changed to dataMem.mem to start out 
+  //   .INIT_FILE(`FPATH(dataMem.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+  // ) register_values (
+  //   .addra(tg_write_en ? tg_addr : read_addr),     // Address bus, width determined from RAM_DEPTH
+  //   .dina(tg_input),       // RAM input data, width determined from RAM_WIDTH
+  //   .clka(pixel_clk_in),       // Clock
+  //   .wea(tg_write_en),         // Write enable
+  //   .ena(1),         // RAM Enable, for additional power savings, disable port when not in use
+  //   .rsta(rst_in),       // Output reset (does not affect memory contents)
+  //   .regcea(1),   // Output register enable
+  //   .douta(tg_output)      // RAM output data, width determined from RAM_WIDTH
+  // );
+  xilinx_true_dual_port_read_first_2_clock_ram #(
+    .RAM_WIDTH(32),
+    .RAM_DEPTH(SCREEN_HEIGHT),
+    .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+    .INIT_FILE(`FPATH(dataMem.mem))
   ) register_values (
-    .addra(tg_write_en ? tg_addr : read_addr),     // Address bus, width determined from RAM_DEPTH
-    .dina(tg_input),       // RAM input data, width determined from RAM_WIDTH
-    .clka(pixel_clk_in),       // Clock
-    .wea(tg_write_en),         // Write enable
-    .ena(1),         // RAM Enable, for additional power savings, disable port when not in use
-    .rsta(rst_in),       // Output reset (does not affect memory contents)
-    .regcea(1),   // Output register enable
-    .douta(tg_output)      // RAM output data, width determined from RAM_WIDTH
+    // Port A - Read port
+    .clka(pixel_clk_in),
+    .ena(1),
+    .wea(0),
+    .addra(read_addr),
+    .dina(),
+    .douta(tg_output),
+    .rsta(rst_in),
+    .regcea(1),
+    
+    // Port B - Write port
+    .clkb(tg_proc_clk),
+    .enb(1),
+    .web(tg_write_en),
+    .addrb(tg_addr),
+    .dinb(tg_input),
+    .doutb(0),
+    .rstb(rst_in),
+    .regceb(1)
   );
   
   //  Xilinx Single Port Read First RAM (image)
