@@ -39,7 +39,7 @@ class Test:
         for line_index, line in enumerate(code.split('\n')):
             for char_index, char in enumerate(line):
                 if char_index < CHAR_PER_LINE:
-                    if char in ["/", " ", "'"] or char.isalnum():
+                    if char in ["/", " ", "."] or char.isalnum():
                         buffer[line_index][char_index] = char
 
         return buffer

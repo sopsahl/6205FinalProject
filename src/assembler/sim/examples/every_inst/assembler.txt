@@ -4,7 +4,7 @@
 / Tests all instructions on the provided card
 
 
-'start'
+.start.
 
     / Core R-Type Instructions
     add r07, r01, r31      / ADD
@@ -42,18 +42,18 @@
     sw r01, r06, x4      / Store Word
 
     / Branch Instructions
-    beq r01, r02, 'labela'  / Branch Equal
-    bne r01, r02, 'labela'  / Branch Not Equal
-    blt r01, r02, 'labela'  / Branch Less Than
-    bge r01, r02, 'labela'  / Branch Greater or Equal
-    bltu r01, r02, 'labela' / Branch Less Than Unsigned
-    bgeu r01, r02, 'labela' / Branch Greater or Equal Unsigned
-'labela'
+    beq r01, r02, .labela.  / Branch Equal
+    bne r01, r02, .labela.  / Branch Not Equal
+    blt r01, r02, .labela.  / Branch Less Than
+    bge r01, r02, .labela.  / Branch Greater or Equal
+    bltu r01, r02, .labela. / Branch Less Than Unsigned
+    bgeu r01, r02, .labela. / Branch Greater or Equal Unsigned
+.labela.
 
     / Jump Instructions
-    jal r07, 'labelb'      / Jump And Link
+    jal r07, .labelb.      / Jump And Link
     jalr r07, r04, x0      / Jump And Link Register
-'labelb'
+.labelb.
 
     / Upper Immediate Instructions
     lui r07, x12345     / Load Upper Immediate

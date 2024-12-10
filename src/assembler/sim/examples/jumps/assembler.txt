@@ -4,13 +4,13 @@
 / Tests all instructions on the provided card
 
 
-'start'
+.start.
 / Jump Instructions
-jal r07, 'labelb'      / Jump And Link
+jal r07, .labelb.      / Jump And Link
 jalr r07, r04, x0    / Jump And Link Register
-'labelb'
+.labelb.
 / Jump Instructions
-jal r07, 'labelb'      / Jump And Link
+jal r07, .labelb.      / Jump And Link
 jalr r07, r04, x0      / Jump And Link Register
 
 / End of Program

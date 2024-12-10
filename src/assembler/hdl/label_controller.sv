@@ -59,7 +59,7 @@ module label_controller #(
                 case (state) 
                     IDLE: begin
                         if ((isAlpha || incoming_character == "/") && assembler_state == PC_MAPPING) mapping_state <= SKIP;
-                        else if (incoming_character == "'") begin 
+                        else if (incoming_character == ".") begin 
                             state <= BUSY;
                             label_buffer <= 0;
                         end 
@@ -67,7 +67,7 @@ module label_controller #(
                         if (isAlpha) begin
                             label_buffer <= {label_buffer[NUMBER_LETTERS - 2 : 0], incoming_character[4:0]};
                         end else begin
-                            if (incoming_character == "'") begin
+                            if (incoming_character == ".") begin
                                 state <= RETURN; 
                                 offset <= offset_buffer;
                             end else state <= ERROR;

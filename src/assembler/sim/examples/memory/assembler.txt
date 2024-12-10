@@ -3,7 +3,7 @@
 / RISC-V Instruction Test Program
 / Tests all instructions on the provided card
 
-'start'
+.start.
 
     / Load Instructions
     lb r07, r04, x0       / Load Byte

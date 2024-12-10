@@ -4,18 +4,18 @@
 / Tests all instructions on the provided card
 
 
-'start'
+.start.
     / Branch Instructions
-    beq r01, r02, 'labela'  / Branch Equal
-    bne r01, r02, 'labela'  / Branch Not Equal
-    blt r01, r02, 'labela'  / Branch Less Than
-    bge r01, r02, 'labela'  / Branch Greater or Equal
-    bltu r01, r02, 'labela' / Branch Less Than Unsigned
-    bgeu r01, r02, 'labela' / Branch Greater or Equal Unsigned
-'labela'
-    beq r01, r02, 'labela'  / Branch Equal
-    bne r01, r02, 'labela'  / Branch Not Equal
-    blt r01, r02, 'labela'  / Branch Less Than
-    bge r01, r02, 'labela'  / Branch Greater or Equal
-    bltu r01, r02, 'labela' / Branch Less Than Unsigned
-    bgeu r01, r02, 'labela' / Branch Greater or Equal Unsigned
+    beq r01, r02, .labela.  / Branch Equal
+    bne r01, r02, .labela.  / Branch Not Equal
+    blt r01, r02, .labela.  / Branch Less Than
+    bge r01, r02, .labela.  / Branch Greater or Equal
+    bltu r01, r02, .labela. / Branch Less Than Unsigned
+    bgeu r01, r02, .labela. / Branch Greater or Equal Unsigned
+.labela.
+    beq r01, r02, .labela.  / Branch Equal
+    bne r01, r02, .labela.  / Branch Not Equal
+    blt r01, r02, .labela.  / Branch Less Than
+    bge r01, r02, .labela.  / Branch Greater or Equal
+    bltu r01, r02, .labela. / Branch Less Than Unsigned
+    bgeu r01, r02, .labela. / Branch Greater or Equal Unsigned

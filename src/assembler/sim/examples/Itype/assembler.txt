@@ -4,7 +4,7 @@
 / Tests all instructions on the provided card
 
 
-'start'
+.start.
 
     / I-Type Immediate Instructions
     addi r07, r01, x0A     / ADD Immediate

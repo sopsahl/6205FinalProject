@@ -188,7 +188,7 @@ module assembler #(
             endcase 
 
             instruction_state <= (new_line) ? READ_INST :
-                (((incoming_character == "/" || incoming_character == "'") && instruction_state == READ_INST) || instruction_state == DONE) ? IDLE :
+                (((incoming_character == "/" || incoming_character == ".") && instruction_state == READ_INST) || instruction_state == DONE) ? IDLE :
                 (label_done || imm_done || inst_done || reg_done) ? next_instruction_state : instruction_state;
             
             // Buffers

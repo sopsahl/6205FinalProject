@@ -1,4 +1,4 @@
-.start
+.start.
     / Initialize base address and array size
     addi r01, r00, x1           / x1 = 1 for decrementing
     addi r10, r00, x0          / x10 = base_addr = 0
@@ -7,17 +7,17 @@
     / Initialize outer loop index i
     addi r12, r00, x0          / x12 = i = 0
 
-'outer'
+.outer.
     sub r31, r11, r01        / x31 = n - 1
-    bge  r12, r31, 'end' / if i >= n - 1, exit
+    bge  r12, r31, .end. / if i >= n - 1, exit
 
     / Initialize inner loop index j
     addi r13, r00, x0          / x13 = j = 0
 
-'inner'
+.inner.
     sub   r31, r11, r12      / x31 = n - i
     sub  r31, r31, r01       / x31 = n - i - 1
-    bge   r13, r31, 'inci'  / if j >= n - i - 1, increment i
+    bge   r13, r31, .inci.  / if j >= n - i - 1, increment i
 
     / Calculate address of A[j]
     slli  r16, r13, x2        / x16 = j * 4
@@ -31,7 +31,7 @@
     lw    r15, r17, x0        / x15 = A[j+1]
 
     / Compare A[j] and A[j+1]
-    blt   r14, r15, 'incj' / if A[j] < A[j+1], skip swapping
+    blt   r14, r15, .incj. / if A[j] < A[j+1], skip swapping
 
     / Swap A[j] and A[j+1]
     / Store A[j+1] into A[j]
@@ -44,12 +44,12 @@
     add   r17, r10, r16      / x17 = base_addr + ((j + 1) * 4)
     sw    r14, r17, x0        / A[j+1] = A[j]
 
-'incj'
+.incj.
     addi  r13, r13, x1        / j = j + 1
-    jal   r00, 'inner'     / Jump to inner_loop
+    jal   r00, .inner.     / Jump to inner_loop
 
-'inci'
+.inci.
     addi  r12, r12, x1        / i = i + 1
-    jal   r00, 'outer'     / Jump to outer_loop
+    jal   r00, .outer.     / Jump to outer_loop
 
-'end'
+.end.

@@ -4,7 +4,7 @@
 / Tests all R-type instructions
 
 
-'start'
+.start.
 
     / Core R-Type Instructions
     add r07, r01, r31      / ADD
