@@ -1,0 +1,16 @@
+# RISC-V Instruction Test Program
+# Tests all r-type instructions
+
+
+start:
+    # Core R-Type Instructions
+    add x7, x1, x31      # ADD
+    sub x7, x1, x2      # SUB
+    xor x7, x1, x2      # XOR
+    or x7, x1, x2       # OR
+    and x7, x1, x2      # AND
+    sll x7, x1, x2      # Shift Left Logical
+    srl x7, x1, x2      # Shift Right Logical
+    sra x7, x1, x30      # Shift Right Arithmetic
+    slt x7, x1, x2      # Set Less Than
+    sltu x7, x1, x2     # Set Less Than Unsigned

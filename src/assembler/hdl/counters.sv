@@ -51,7 +51,8 @@ module pc_mapping #(
 
     enum {
         IDLE,
-        WAITING
+        WAITING,
+        DONE
     } state;
 
     always_ff @(posedge clk_in) begin
@@ -62,13 +63,14 @@ module pc_mapping #(
             case (state)
                 IDLE : if (new_line) state <= WAITING;
                 WAITING : begin
-                    if (new_character && incoming_ascii != " ") begin
-                        if ((incoming_ascii >= "a" && incoming_ascii >= "z") || (incoming_ascii >= "A" && incoming_ascii >= "Z")) begin 
+                    if (new_character) begin
+                        if ((incoming_ascii == "/") || (incoming_ascii == "'") || (incoming_ascii >= "0" && incoming_ascii <= "9")) state <= IDLE;
+                        else if ((incoming_ascii >= "a" && incoming_ascii >= "z") || (incoming_ascii >= "A" && incoming_ascii >= "Z")) begin 
                             pc <= pc + 4;
                             state <= IDLE;
                         end
                     end
-                end
+                end 
             endcase
         end
     end

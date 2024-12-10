@@ -154,6 +154,9 @@ logic memory_hazard;
    
 // fetch_state_t fetch_state;
     // Initialize registers at start
+
+    //Synthesis: `FPATH(instructionMem.mem)
+    //simulation:absolute path 
    xilinx_single_port_ram_read_first #(
     .RAM_WIDTH(32),                       // Specify RAM data width
     .RAM_DEPTH(2048),                     // Specify RAM depth (number of entries)
@@ -169,7 +172,7 @@ logic memory_hazard;
     .regcea(!stall_decode),   // Output register enable
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
   );
-
+    //`FPATH(dataMem.mem)
   xilinx_true_dual_port_read_first_1_clock_ram #(
     .RAM_WIDTH(32),
     .RAM_DEPTH(1024),

@@ -1,0 +1,16 @@
+# RISC-V Instruction Test Program
+# Tests all instructions on the provided card
+
+
+start:
+
+    # I-Type Immediate Instructions
+    addi x7, x1, 0x0A     # ADD Immediate
+    xori x7, x1, 0xF0   # XOR Immediate
+    ori x7, x1, 0xF0    # OR Immediate
+    andi x7, x1, 0xF0   # AND Immediate
+    slli x7, x1, 0x4        # Shift Left Logical Imm
+    srli x7, x1, 0x4      # Shift Right Logical Imm
+    srai x7, x1, 0x4      # Shift Right Arithmetic Imm
+    slti x7, x1, 0x0A     # Set Less Than Imm
+    sltiu x7, x1, 0x0A    # Set Less Than Imm Unsigned

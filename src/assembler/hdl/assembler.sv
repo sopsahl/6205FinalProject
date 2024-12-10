@@ -51,14 +51,13 @@ module assembler #(
     assign opcode = (instruction_state == READ_INST) ? opcode_buffer : inst.opcode;
 
     always_comb begin
-        // case (inst.opcode) // For builds
-        case (opcode) // For Simulation
+        case (opcode) 
             OP_REG : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? DONE : IDLE;
-            OP_IMM, OP_LOAD, OP_STORE: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
+            OP_IMM, OP_LOAD, OP_JALR: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_IMM : (instruction_state == READ_IMM) ? DONE : IDLE;
-            OP_JALR : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
-                            (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_LABEL : (instruction_state == READ_LABEL) ? DONE : IDLE;
+            OP_STORE : next_instruction_state = (instruction_state == READ_INST) ? READ_RS2 :
+                            (instruction_state == READ_RS2) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_IMM : (instruction_state == READ_IMM) ? DONE : IDLE;
             OP_BRANCH : next_instruction_state = (instruction_state == READ_INST) ? READ_RS1 :
                             (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? READ_LABEL : (instruction_state == READ_LABEL) ? DONE : IDLE;
             OP_LUI, OP_AUIPC : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
@@ -158,7 +157,7 @@ module assembler #(
 
     pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
         .clk_in(clk_in),
-        .rst_in((assembler_state != INSTRUCTION_MAPPING) || rst_in),
+        .rst_in(assembler_state != INSTRUCTION_MAPPING ||rst_in),
         .evt_in(instruction_state == DONE),
         .count_out(inst_pc)
     );
@@ -169,7 +168,7 @@ module assembler #(
     // *****************************************
     // INSTRUCTION_MAPPING STATE LOGIC
 
-    logic inst_ready_buffer, new_instruction_buffer;
+    logic new_instruction_buffer = 0;
 
     always_ff @(posedge clk_in) begin
         if (assembler_state == INSTRUCTION_MAPPING && !rst_in) begin
@@ -193,7 +192,6 @@ module assembler #(
                 (label_done || imm_done || inst_done || reg_done) ? next_instruction_state : instruction_state;
             
             // Buffers
-            // inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
             new_instruction_buffer <= instruction_state == DONE; // Store a cycle delay
         
         end else instruction_state <= IDLE; // Either Reset or different State
@@ -208,11 +206,11 @@ endmodule // assembler
 function logic [31:0] create_inst(InstFields inst);
     case (inst.opcode) 
         OP_REG : return {inst.funct7, inst.rs2, inst.rs1, inst.funct3, inst.rd, inst.opcode};
-        OP_IMM : return {inst.imm[11:5] && inst.funct7, inst.imm[4:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
+        OP_IMM : return {inst.imm[11:5] | inst.funct7, inst.imm[4:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
         OP_LOAD, OP_JALR : return {inst.imm[11:0], inst.rs1, inst.funct3, inst.rd, inst.opcode};
         OP_STORE : return {inst.imm[11:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:0], inst.opcode};
         OP_BRANCH : return {inst.imm[12], inst.imm[10:5], inst.rs2, inst.rs1, inst.funct3, inst.imm[4:1], inst.imm[11], inst.opcode};
-        OP_LUI, OP_AUIPC : return {inst.imm[31:12], inst.rd, inst.opcode};
+        OP_LUI, OP_AUIPC : return {inst.imm[19:0], inst.rd, inst.opcode};
         OP_JAL : return {inst.imm[20], inst.imm[10:1], inst.imm[11], inst.imm[19:12], inst.rd, inst.opcode};
         default: return 32'b0;
     endcase

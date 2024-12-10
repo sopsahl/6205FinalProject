@@ -47,7 +47,7 @@ module immediate_interpreter (
                 case (state) 
                     IDLE: if (incoming_ascii == "x" || incoming_ascii == "X") state <= FIRST_NUM;
                     FIRST_NUM: begin
-                        immediate <= (isUtype) ? {28'b0, hex_value} : {{28{hex_value[3]}}, hex_value}; // Extend the MSB
+                        immediate <= {28'b0, hex_value};
                         state <= (isValid) ? BUSY : IDLE;
                     end BUSY: begin
                         if (isValid) immediate <= ((immediate << 4) | hex_value);

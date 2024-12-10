@@ -92,5 +92,4 @@ package constants;
         parameter logic [6:0] F7_SRA      = 7'b0100000;  // Shift Right Arithmetic
         parameter logic [6:0] F7_IMM      = 7'b1111111;  // IMMEDIATE f7 used in AND
 
-
 endpackage // constants
