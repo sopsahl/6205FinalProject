@@ -17,7 +17,8 @@ package constants;
         IDLE,
         PC_MAPPING,
         INSTRUCTION_MAPPING,
-        ERROR
+        ERROR,
+        SUCCESS
     } assembler_state_t;
 
     // Compressed ASCII Values

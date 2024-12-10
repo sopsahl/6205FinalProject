@@ -1,0 +1,67 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
+| Date         : Tue Dec 10 15:01:28 2024
+| Host         : eecs-digital-36 running 64-bit Ubuntu 24.04.1 LTS
+| Command      : report_utilization -file obj/post_synth_util.rpt -hierarchical -hierarchical_depth 4
+| Design       : top_level
+| Device       : xc7s50csga324-1
+| Speed File   : -1
+| Design State : Synthesized
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++--------------------------+--------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+|         Instance         |                            Module                            | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
++--------------------------+--------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+| top_level                |                                                        (top) |       2911 |       2909 |       0 |    2 | 2476 |     39 |      4 |          0 |
+|   (top_level)            |                                                        (top) |         13 |         13 |       0 |    0 |   40 |      0 |      0 |          0 |
+|   _assembler             |                                                    assembler |        623 |        623 |       0 |    0 |  521 |      0 |      0 |          0 |
+|     (_assembler)         |                                                    assembler |         41 |         41 |       0 |    0 |   81 |      0 |      0 |          0 |
+|     get_imm              |                                        immediate_interpreter |         18 |         18 |       0 |    0 |   26 |      0 |      0 |          0 |
+|     get_inst             |                                      instruction_interpreter |        226 |        226 |       0 |    0 |   29 |      0 |      0 |          0 |
+|     get_reg              |                                         register_interpreter |         15 |         15 |       0 |    0 |   10 |      0 |      0 |          0 |
+|     inst_pc_counter      |                                                   pc_counter |         15 |         15 |       0 |    0 |    8 |      0 |      0 |          0 |
+|     label_controller     |                                             label_controller |        292 |        292 |       0 |    0 |  358 |      0 |      0 |          0 |
+|       (label_controller) |                                             label_controller |         37 |         37 |       0 |    0 |   54 |      0 |      0 |          0 |
+|       _label_storage     |                                                label_storage |        255 |        255 |       0 |    0 |  304 |      0 |      0 |          0 |
+|     label_pc_counter     |                                                   pc_mapping |         16 |         16 |       0 |    0 |    9 |      0 |      0 |          0 |
+|   assembler_trig         |                                                    debouncer |         11 |         11 |       0 |    0 |   21 |      0 |      0 |          0 |
+|   blue_ser               |                                              tmds_serializer |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
+|   draw_characters        |                                            character_sprites |        175 |        174 |       0 |    1 |   61 |     18 |      1 |          0 |
+|     (draw_characters)    |                                            character_sprites |         54 |         53 |       0 |    1 |   61 |      0 |      0 |          0 |
+|     character_image      |          xilinx_single_port_ram_read_first__parameterized0_4 |         12 |         12 |       0 |    0 |    0 |     16 |      0 |          0 |
+|     character_pallete    |          xilinx_single_port_ram_read_first__parameterized1_5 |         89 |         89 |       0 |    0 |    0 |      0 |      1 |          0 |
+|     terminal_grid        |                          xilinx_single_port_ram_read_first_6 |         23 |         23 |       0 |    0 |    0 |      2 |      0 |          0 |
+|   green_ser              |                                            tmds_serializer_0 |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
+|   mhdmicw                |                                            hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
+|   mmo_visualizer         |                                                   visualizer |        212 |        211 |       0 |    1 |   40 |     16 |      2 |          0 |
+|     (mmo_visualizer)     |                                                   visualizer |         62 |         61 |       0 |    1 |   40 |      0 |      0 |          0 |
+|     character_image      |            xilinx_single_port_ram_read_first__parameterized0 |          0 |          0 |       0 |    0 |    0 |     16 |      0 |          0 |
+|     character_pallete    |            xilinx_single_port_ram_read_first__parameterized1 |        112 |        112 |       0 |    0 |    0 |      0 |      1 |          0 |
+|     register_values      | xilinx_true_dual_port_read_first_2_clock_ram__parameterized0 |         38 |         38 |       0 |    0 |    0 |      0 |      1 |          0 |
+|   mvg                    |                                                video_sig_gen |         91 |         91 |       0 |    0 |   21 |      0 |      0 |          0 |
+|   nolabel_line78         |                                       ps2_keyboard_interface |         65 |         65 |       0 |    0 |   30 |      0 |      0 |          0 |
+|   pc_counter             |                                                  evt_counter |          4 |          4 |       0 |    0 |    6 |      0 |      0 |          0 |
+|   pr                     |                                              riscv_processor |       1583 |       1583 |       0 |    0 | 1641 |      1 |      1 |          0 |
+|     (pr)                 |                                              riscv_processor |       1360 |       1360 |       0 |    0 | 1641 |      0 |      0 |          0 |
+|     dmem                 |                 xilinx_true_dual_port_read_first_1_clock_ram |        124 |        124 |       0 |    0 |    0 |      1 |      0 |          0 |
+|     imem                 |                 xilinx_true_dual_port_read_first_2_clock_ram |         99 |         99 |       0 |    0 |    0 |      0 |      1 |          0 |
+|   red_ser                |                                            tmds_serializer_1 |          1 |          1 |       0 |    0 |    1 |      0 |      0 |          0 |
+|   save_to_text_editor    |                                                  text_editor |         36 |         36 |       0 |    0 |    0 |      4 |      0 |          0 |
+|     text_editor_bram     |                            xilinx_single_port_ram_read_first |         36 |         36 |       0 |    0 |    0 |      4 |      0 |          0 |
+|   terminal               |                                          terminal_controller |         94 |         94 |       0 |    0 |   52 |      0 |      0 |          0 |
+|   tmds_blue              |                                                 tmds_encoder |          1 |          1 |       0 |    0 |   14 |      0 |      0 |          0 |
+|   tmds_green             |                                               tmds_encoder_2 |          1 |          1 |       0 |    0 |   14 |      0 |      0 |          0 |
+|   tmds_red               |                                               tmds_encoder_3 |          1 |          1 |       0 |    0 |   14 |      0 |      0 |          0 |
++--------------------------+--------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+
+

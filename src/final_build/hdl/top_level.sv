@@ -167,7 +167,7 @@ module top_level(
     .rst(enable_processor || assembler_state != SUCCESS),
     .pixel_clk_in(clk_pixel),
     .ending_pc(last_pc_program),
-    .instruction_write_address(num_instructions) 
+    .instruction_write_address(num_instructions),
     .instruction_write_data(new_instruction),
     .instruction_write_enable(assembler_new_inst),
     .pc_out(last_pc_executed),
