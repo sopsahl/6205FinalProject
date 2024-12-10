@@ -1,4 +1,4 @@
-'start'
+.start
     / Initialize base address and array size
     addi r01, r00, x1           / x1 = 1 for decrementing
     addi r10, r00, x0          / x10 = base_addr = 0
