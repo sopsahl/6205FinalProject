@@ -58,12 +58,13 @@ class Test:
 
 TESTS = [
     Test("EMPTY"), # WORKS
-    Test("EVERY_INST",  from_directory="every_inst"), # DOES NOT WORK
+    Test("EVERY_INST",  from_directory="every_inst"), # WORKS
     Test('R-Type', from_directory="Rtype"), # WORKS
     Test('I-Type', from_directory="Itype"), # WORKS
     Test('Branch', from_directory='branch'), # WORKS
     Test('Jumps', from_directory='jumps'), # WORKS
     Test('LUI and AUIPC', from_directory='lui_auipc'), # WORKS
-    Test('Loads and Stores', from_directory='memory') # WORKS
+    Test('Loads and Stores', from_directory='memory'), # WORKS
+    Test('BUBBLE SORT', from_directory='bubble_sort'), # WORKS
 ]
 
