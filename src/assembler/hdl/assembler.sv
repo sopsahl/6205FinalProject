@@ -158,7 +158,7 @@ module assembler #(
 
     pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
         .clk_in(clk_in),
-        .rst_in(rst_in),
+        .rst_in(assembler_state != INSTRUCTION_MAPPING ||rst_in),
         .evt_in(instruction_state == DONE),
         .count_out(inst_pc)
     );
