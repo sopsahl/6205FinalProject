@@ -1,5 +1,10 @@
 `timescale 1ns / 1ps
 `default_nettype none
+`ifdef SYNTHESIS
+`define FPATH(X) `"X`"
+`else /* ! SYNTHESIS */
+`define FPATH(X) `"../../data/X`"
+`endif  /* ! SYNTHESIS */
 
 import constants::*;
 
@@ -126,6 +131,54 @@ module top_level(
   end 
  end
 
+  // DOWNCYCLING
+
+  localparam FULL_CYCLE= 1<<16;
+  localparam HALF_DOWN_CYCLE = ( FULL_CYCLE>>1 );
+  logic [$clog2(FULL_CYCLE)-1:0] down_cycler_counter;
+  logic down_clk;
+  always_ff @(posedge clk_pixel) begin
+    if(!down_cycler_counter)begin 
+      down_cycler_counter<=1;
+    end 
+    else begin 
+      down_cycler_counter<=down_cycler_counter+1;
+    end
+  end
+
+  logic translation_done;
+
+  assign down_clk = (! down_cycler_counter || down_cycler_counter < HALF_DOWN_CYCLE);
+  logic enable_processor;
+  logic [31:0] last_pc_program;
+  logic [31:0] last_pc_executed;
+  logic processor_done;
+  logic [6:0] ss_c;
+  //SIGNALS for outside BRAMs writes;
+  logic processor_write_enable;
+  logic [31:0] processor_write_data;
+  logic [31:0] processor_write_address;
+
+  // *********************************
+  // PROCESSOR
+
+  riscv_processor pr(
+    .clk(down_clk),
+    .rst(enable_processor || assembler_state != SUCCESS),
+    .pixel_clk_in(clk_pixel),
+    .ending_pc(last_pc_program),
+    .instruction_write_address(num_instructions) 
+    .instruction_write_data(new_instruction),
+    .instruction_write_enable(assembler_new_inst),
+    .pc_out(last_pc_executed),
+    .instruction_done(processor_done),
+    .write_enable(processor_write_enable),
+    .w_data(processor_write_data),
+    .w_addr(processor_write_address)
+  );
+
+  // ****************************************
+
   terminal_controller #(
     .SCREEN_WIDTH(SCREEN_WIDTH),
     .SCREEN_HEIGHT(SCREEN_HEIGHT)
@@ -173,13 +226,14 @@ module top_level(
     .SIZE(16),
     .HEIGHT(1024),
     .SCREEN_WIDTH(SCREEN_WIDTH),
-    .SCREEN_HEIGHT(SCREEN_HEIGHT))
+    .SCREEN_HEIGHT(42))
   mmo_visualizer (
     .pixel_clk_in(clk_pixel),
     .rst_in(sys_rst),
-    .tg_write_en(0), // TODO: get values from processor running
-    .tg_addr(0),  // TODO: get values from processor running
-    .tg_input(0),  // TODO: get values from processor running
+    .tg_write_en((processor_write_enable)), // TODO: get values from processor running
+    .tg_addr(processor_write_address),  // TODO: get values from processor running
+    .tg_input(processor_write_data), 
+    .tg_proc_clk(down_clk), // TODO: get values from processor running
     .hcount_in(hcount),
     .vcount_in(vcount), // what is this for? x_com>128 ? x_com-128 : 0
     .red_out(mmo_red),
