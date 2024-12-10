@@ -51,8 +51,7 @@ module assembler #(
     assign opcode = (instruction_state == READ_INST) ? opcode_buffer : inst.opcode;
 
     always_comb begin
-        // case (inst.opcode) // For builds
-        case (opcode) // For Simulation
+        case (opcode) 
             OP_REG : next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
                             (instruction_state == READ_RD) ? READ_RS1 : (instruction_state == READ_RS1) ? READ_RS2 : (instruction_state == READ_RS2) ? DONE : IDLE;
             OP_IMM, OP_LOAD, OP_JALR: next_instruction_state = (instruction_state == READ_INST) ? READ_RD :
@@ -158,7 +157,7 @@ module assembler #(
 
     pc_counter #(.NUMBER_LINES(NUMBER_LINES)) inst_pc_counter (
         .clk_in(clk_in),
-        .rst_in(rst_in),
+        .rst_in(assembler_state != INSTRUCTION_MAPPING ||rst_in),
         .evt_in(instruction_state == DONE),
         .count_out(inst_pc)
     );
@@ -169,7 +168,7 @@ module assembler #(
     // *****************************************
     // INSTRUCTION_MAPPING STATE LOGIC
 
-    logic inst_ready_buffer, new_instruction_buffer =0;
+    logic new_instruction_buffer = 0;
 
     always_ff @(posedge clk_in) begin
         if (assembler_state == INSTRUCTION_MAPPING && !rst_in) begin
@@ -193,7 +192,6 @@ module assembler #(
                 (label_done || imm_done || inst_done || reg_done) ? next_instruction_state : instruction_state;
             
             // Buffers
-            // inst_ready_buffer <= inst_done; // We have a cycle delay for the instruction
             new_instruction_buffer <= instruction_state == DONE; // Store a cycle delay
         
         end else instruction_state <= IDLE; // Either Reset or different State

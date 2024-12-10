@@ -53,15 +53,12 @@ module label_controller #(
     logic isAlpha;
     assign isAlpha = (incoming_character >= "a" && incoming_character <= "z") || (incoming_character >= "A" && incoming_character <= "Z");
 
-    logic map_flag;
-    assign map_flag = (isAlpha || incoming_character == "/") && state == IDLE;
-
     always_ff @(posedge clk_in) begin
         if (valid_data && !rst_in && !new_line) begin
             if (new_character) begin
                 case (state) 
                     IDLE: begin
-                        if (isAlpha || incoming_character == "/") mapping_state <= SKIP;
+                        if ((isAlpha || incoming_character == "/") && assembler_state == PC_MAPPING) mapping_state <= SKIP;
                         else if (incoming_character == "'") begin 
                             state <= BUSY;
                             label_buffer <= 0;
@@ -101,7 +98,7 @@ module label_storage #(
     output logic signed [31 : 0] offset
 );  
     logic [STORAGE_SIZE - 1:0][(NUMBER_LETTERS * 5) - 1: 0] label_storage;
-    logic [STORAGE_SIZE - 1:0][$clog2(NUMBER_LINES) - 1 : 0] pc_storage;
+    logic [STORAGE_SIZE - 1:0][$clog2(NUMBER_LINES) + 1 : 0] pc_storage;
 
     always_ff @(posedge clk_in) begin
         if (rst_in) label_storage <= 0;
@@ -111,78 +108,19 @@ module label_storage #(
         end 
     end
 
-    // FOR SIMULATION
-    // ************************************************
-
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage0;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage1;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage2;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage3;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage4;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage5;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage6;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage7;
-    assign label_storage0 = label_storage[0];
-    assign label_storage1 = label_storage[1];
-    assign label_storage2 = label_storage[2];
-    assign label_storage3 = label_storage[3];
-    assign label_storage4 = label_storage[4];
-    assign label_storage5 = label_storage[5];
-    assign label_storage6 = label_storage[6];
-    assign label_storage7 = label_storage[7];
-
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage0;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage1;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage2;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage3;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage4;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage5;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage6;
-    logic [$clog2(NUMBER_LINES) - 1 : 0] pc_storage7;
-    assign pc_storage0 = pc_storage[0];
-    assign pc_storage1 = pc_storage[1];
-    assign pc_storage2 = pc_storage[2];
-    assign pc_storage3 = pc_storage[3];
-    assign pc_storage4 = pc_storage[4];
-    assign pc_storage5 = pc_storage[5];
-    assign pc_storage6 = pc_storage[6];
-    assign pc_storage7 = pc_storage[7];
-
     always_comb begin // Single Cycle Reads
         case (current_label)
-            label_storage0 : offset = $signed(pc_storage0) - $signed(pc);
-            label_storage1 : offset = $signed(pc_storage1) - $signed(pc);
-            label_storage2 : offset = $signed(pc_storage2) - $signed(pc);
-            label_storage3 : offset = $signed(pc_storage3) - $signed(pc);
-            label_storage4 : offset = $signed(pc_storage4) - $signed(pc);
-            label_storage5 : offset = $signed(pc_storage5) - $signed(pc);
-            label_storage6 : offset = $signed(pc_storage6) - $signed(pc);
-            label_storage7 : offset = $signed(pc_storage7) - $signed(pc);
+            label_storage[0] : offset = pc_storage[0] - pc;
+            label_storage[1] : offset = pc_storage[1] - pc;
+            label_storage[2] : offset = pc_storage[2] - pc;
+            label_storage[3] : offset = pc_storage[3] - pc;
+            label_storage[4] : offset = pc_storage[4] - pc;
+            label_storage[5] : offset = pc_storage[5] - pc;
+            label_storage[6] : offset = pc_storage[6] - pc;
+            label_storage[7] : offset = pc_storage[7] - pc;
             default : offset = 0;
         endcase
     end
-
-
-    // *****************************************
-    // comment out the above block when building
-    // and restore the below block
-    // *****************************************
-
-    // always_comb begin // Single Cycle Reads
-    //     case (current_label)
-            // label_storage[0] : offset = $signed(pc_storage[0]) - $signed(pc);
-            // label_storage[1] : offset = $signed(pc_storage[1]) - $signed(pc);
-            // label_storage[2] : offset = $signed(pc_storage[2]) - $signed(pc);
-            // label_storage[3] : offset = $signed(pc_storage[3]) - $signed(pc);
-            // label_storage[4] : offset = $signed(pc_storage[4]) - $signed(pc);
-            // label_storage[5] : offset = $signed(pc_storage[5]) - $signed(pc);
-            // label_storage[6] : offset = $signed(pc_storage[6]) - $signed(pc);
-            // label_storage[7] : offset = $signed(pc_storage[7]) - $signed(pc);
-            // default : offset = 0;
-    //     endcase
-    // end
-
-    // ****************************************************
 
 endmodule // label_storage
 

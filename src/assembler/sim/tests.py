@@ -39,7 +39,7 @@ class Test:
         for line_index, line in enumerate(code.split('\n')):
             for char_index, char in enumerate(line):
                 if char_index < CHAR_PER_LINE:
-                    if char in ["/", " ", "'"] or char.isalpha() or char.isalnum():
+                    if char in ["/", " ", "'"] or char.isalnum():
                         buffer[line_index][char_index] = char
 
         return buffer
@@ -48,20 +48,23 @@ class Test:
         self.returned_instructions.append(inst)
     
     def check_insts(self):
-        assert self.expected_instructions == self.returned_instructions, f'Set of Instructions differ\nExpected:\n{self.expected_instructions}\nActual:\n{self.returned_instructions}'
+        outputs = ''.join((str(expected) + " | " + str(actual) + (" MATCH\n" if expected == actual else '   DIFF\n')) for expected, actual in zip(self.expected_instructions, self.returned_instructions))
+        assert self.expected_instructions == self.returned_instructions, f'Set of Instructions differ\n\
+        Expected | Actual\n{outputs}'
 
     def check_error(self, line):
         assert self.error_line == line, f'Desired Error not on line {line}!'
 
 
 TESTS = [
-    # Test("EMPTY"), # WORKS
-    Test("EVERY_INST",  from_directory="every_inst"), # DOES NOT WORK
-    # Test('R-Type', from_directory="Rtype"), # WORKS
-    # Test('I-Type', from_directory="Itype"), # WORKS
-    # Test('Branch', from_directory='branch'), # WORKS
-    # Test('Jumps', from_directory='jumps'), # WORKS
-    # Test('LUI and AUIPC', from_directory='lui_auipc'), # WORKS
-    # Test('Loads and Stores', from_directory='memory') # WORKS
+    Test("EMPTY"), # WORKS
+    Test("EVERY_INST",  from_directory="every_inst"), # WORKS
+    Test('R-Type', from_directory="Rtype"), # WORKS
+    Test('I-Type', from_directory="Itype"), # WORKS
+    Test('Branch', from_directory='branch'), # WORKS
+    Test('Jumps', from_directory='jumps'), # WORKS
+    Test('LUI and AUIPC', from_directory='lui_auipc'), # WORKS
+    Test('Loads and Stores', from_directory='memory'), # WORKS
+    Test('BUBBLE SORT', from_directory='bubble_sort'), # WORKS
 ]
 

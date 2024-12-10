@@ -98,18 +98,6 @@ module top_level(
   logic [7:0] keyboard_char;
   logic is_instr_complete;
   logic [31:0][4:0] curr_instr;
-
-  // input_buffer keyboard_input (
-  //   .clk_in(clk_pixel), // TODO: fix clock differences
-  //   .clk_two(dclk),
-  //   .rst_in(sys_rst),
-  //   .data_in(data), // TODO: input keyboard
-  //   .key_pressed(buffer_x),
-  //   .enter_pressed(buffer_y),
-  //   .bksp_pressed(buffer_bksp),
-  //   .character(buffer_char)
-  // );
-
   logic break_entered;
 
   ps2_keyboard_interface(
