@@ -81,10 +81,10 @@ module terminal_controller #(
             44: char2ascii = 48;
             45: char2ascii = 124;
             46: char2ascii = 38;
-            47: char2ascii = 33;
-            48: char2ascii = 10;
-            49: char2ascii = 0; // scroll up
-            50: char2ascii = 1; // scroll down
+            47: char2ascii = 47;
+            48: char2ascii = 32; // enter
+            49: char2ascii = 0;  // scroll up
+            50: char2ascii = 1;  // scroll down
             default: char2ascii = 32;
         endcase
     end
@@ -173,7 +173,7 @@ module terminal_controller #(
                         end else begin
                             tg_we <= 1;
                             tg_addr <= cursor_y * SCREEN_WIDTH + cursor_x;
-                            tg_input <= 10;
+                            tg_input <= char2ascii;
 
                             cursor_x <= 0;
                             cursor_y <= cursor_y + 1;
