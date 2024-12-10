@@ -108,78 +108,19 @@ module label_storage #(
         end 
     end
 
-    // FOR SIMULATION
-    // ************************************************
-
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage0;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage1;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage2;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage3;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage4;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage5;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage6;
-    logic [(NUMBER_LETTERS * 5) - 1: 0] label_storage7;
-    assign label_storage0 = label_storage[0];
-    assign label_storage1 = label_storage[1];
-    assign label_storage2 = label_storage[2];
-    assign label_storage3 = label_storage[3];
-    assign label_storage4 = label_storage[4];
-    assign label_storage5 = label_storage[5];
-    assign label_storage6 = label_storage[6];
-    assign label_storage7 = label_storage[7];
-
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage0;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage1;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage2;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage3;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage4;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage5;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage6;
-    logic [$clog2(NUMBER_LINES) + 1 : 0] pc_storage7;
-    assign pc_storage0 = pc_storage[0];
-    assign pc_storage1 = pc_storage[1];
-    assign pc_storage2 = pc_storage[2];
-    assign pc_storage3 = pc_storage[3];
-    assign pc_storage4 = pc_storage[4];
-    assign pc_storage5 = pc_storage[5];
-    assign pc_storage6 = pc_storage[6];
-    assign pc_storage7 = pc_storage[7];
-
     always_comb begin // Single Cycle Reads
         case (current_label)
-            label_storage0 : offset = pc_storage0 - pc;
-            label_storage1 : offset = pc_storage1 - pc;
-            label_storage2 : offset = pc_storage2 - pc;
-            label_storage3 : offset = pc_storage3 - pc;
-            label_storage4 : offset = pc_storage4 - pc;
-            label_storage5 : offset = pc_storage5 - pc;
-            label_storage6 : offset = pc_storage6 - pc;
-            label_storage7 : offset = pc_storage7 - pc;
+            label_storage[0] : offset = pc_storage[0] - pc;
+            label_storage[1] : offset = pc_storage[1] - pc;
+            label_storage[2] : offset = pc_storage[2] - pc;
+            label_storage[3] : offset = pc_storage[3] - pc;
+            label_storage[4] : offset = pc_storage[4] - pc;
+            label_storage[5] : offset = pc_storage[5] - pc;
+            label_storage[6] : offset = pc_storage[6] - pc;
+            label_storage[7] : offset = pc_storage[7] - pc;
             default : offset = 0;
         endcase
     end
-
-
-    // *****************************************
-    // comment out the above block when building
-    // and restore the below block
-    // *****************************************
-
-    // always_comb begin // Single Cycle Reads
-    //     case (current_label)
-            // label_storage[0] : offset = pc_storage[0] - pc;
-            // label_storage[1] : offset = pc_storage[1] - pc;
-            // label_storage[2] : offset = pc_storage[2] - pc;
-            // label_storage[3] : offset = pc_storage[3] - pc;
-            // label_storage[4] : offset = pc_storage[4] - pc;
-            // label_storage[5] : offset = pc_storage[5] - pc;
-            // label_storage[6] : offset = pc_storage[6] - pc;
-            // label_storage[7] : offset = pc_storage[7] - pc;
-            // default : offset = 0;
-    //     endcase
-    // end
-
-    // ****************************************************
 
 endmodule // label_storage
 
