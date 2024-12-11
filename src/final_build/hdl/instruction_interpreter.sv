@@ -1,12 +1,13 @@
 `timescale 1ns / 1ps
 `default_nettype none
+import constants::*;
 
 // instruction_interpreter: gets the instruction (e.g. and, xor, ...)
 // Calculates the corresponding opcode, funct7, funct3
 // Up to 5 characters
 // done_flag high one cycle after delimiter (" " or ",")
 
-import constants::*;
+// import constants::*;
 
 module instruction_interpreter (
     input wire clk_in,

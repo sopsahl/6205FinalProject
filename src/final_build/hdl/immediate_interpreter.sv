@@ -1,12 +1,13 @@
 `timescale 1ns / 1ps
 `default_nettype none
+import constants::*;
 
 // immediate_interpreter: takes the immediate value (0 - FF_FF_FF_FF)
 // and converts to a hex immediate value
 // Suppots up to 4 bytes of data (8 characters)
 // done_flag is high 1 cycle after the delimiter (" " or ",")
 
-import constants::*;
+// import constants::*;
 
 module immediate_interpreter (
     input wire clk_in,

@@ -22,7 +22,7 @@ module assembler #(
     input assembler_state_t assembler_state, // Determines what we are doing at any given point
     output logic [31:0] instruction,
     output logic new_instruction
-);  
+    );  
 
     assign error_flag = inst_error || imm_error || reg_error || label_error; 
     assign new_instruction = new_instruction_buffer;

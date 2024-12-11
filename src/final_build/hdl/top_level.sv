@@ -1,10 +1,12 @@
 `timescale 1ns / 1ps
 `default_nettype none
+
 `ifdef SYNTHESIS
 `define FPATH(X) `"X`"
 `else /* ! SYNTHESIS */
 `define FPATH(X) `"../../data/X`"
 `endif  /* ! SYNTHESIS */
+
 
 import constants::*;
 
@@ -29,6 +31,7 @@ module top_level(
   );
   localparam SCREEN_WIDTH = 64;
   localparam SCREEN_HEIGHT = 256;
+  
 
   assign led = sw;
   //shut up those rgb LEDs (active high):
@@ -247,11 +250,11 @@ module top_level(
   assign green = sw[11] ? mmo_green : img_green;
   assign blue = sw[11] ? mmo_blue : img_blue;
 
-  logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] text_editor_addr;
-  logic [7:0] text_editor_output;
-
   // *************************************************
   // ASSEMBLY AND TEXT EDITOR
+
+  logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] text_editor_addr;
+  logic [7:0] text_editor_output;
 
   logic assembler_trigger;
   debouncer #(
@@ -262,21 +265,22 @@ module top_level(
     .rst_in(sys_rst),
     .dirty_in(btn[1]),
     .clean_out(assembler_trigger));
-  
-  assembler_state_t assembler_state = IDLE;
 
+  assembler_state_t assembler_state = IDLE;
+  
   enum {
-    DONE,
+    OFF,
+    START,
     SENDING_CHARS,
     NEW_LINE
-  } assembly_state_machine;
+  } text_transmission_state;
 
   logic [$clog2(SCREEN_HEIGHT) - 1:0] assembler_y;
   logic [2:0][$clog2(SCREEN_WIDTH) - 1:0] assembler_x;
   logic [2:0] assembler_new_char;
 
   logic assembler_new_line;
-  assign assembler_new_line = assembly_state_machine == NEW_LINE;
+  assign assembler_new_line = (text_transmission_state == NEW_LINE);
 
   logic assembler_line_done, assembler_line_error, assembler_new_inst;
   logic [31:0] new_instruction;
@@ -289,40 +293,50 @@ module top_level(
     .MAX_COUNT(SCREEN_HEIGHT)
   ) pc_counter (   
     .clk_in(clk_pixel),
-    .rst_in(sys_rst),
+    .rst_in(sys_rst || assembler_trigger),
     .evt_in(assembler_new_inst),
     .count_out(num_instructions)
   );
 
-  always_ff @(posedge clk_pixel) begin
-    if (sys_rst) assembler_state <= IDLE; // KEEP STUFF OFF
-    if (assembler_trigger) begin // START THE PROCESS
+  logic [$clog2(SCREEN_WIDTH) - 1:0] new_assembler_x;
+  assign new_assembler_x = (assembler_x[0] + !assembler_new_char[0]);
+
+  always_ff @(posedge clk_pixel) begin // Handles the assembler state
+    if (sys_rst) begin
+      assembler_state <= IDLE; // KEEP STUFF OFF
+      text_transmission_state <= OFF;
+    end else if (assembler_trigger) begin // START THE PROCESS
       assembler_state <= PC_MAPPING;
       assembler_x <= 0;
       assembler_y <= 0;
-      assembly_state_machine <= NEW_LINE;
+      text_transmission_state <= START;
       assembler_new_char <= 0;
     end else if (assembler_line_error) assembler_state <= ERROR; // ERROR HANDLING
     else if (assembler_state == PC_MAPPING || assembler_state == INSTRUCTION_MAPPING) begin
-      case (assembly_state_machine)
-        DONE: begin
-          if (assembler_state == PC_MAPPING) begin // STARTING THE INSTRUCTIOn MAPPING
-            assembler_state <= INSTRUCTION_MAPPING;
-            assembler_x <= 0;
-            assembler_y <= 0;
-            assembly_state_machine <= NEW_LINE;
-            assembler_new_char <= 0;
-          end else if (assembler_state == INSTRUCTION_MAPPING) assembler_state <= SUCCESS; // PROCESS DONE
-        end NEW_LINE: assembly_state_machine <= SENDING_CHARS;
+      case (text_transmission_state)
+        START: text_transmission_state <= NEW_LINE;
+        NEW_LINE: text_transmission_state <= SENDING_CHARS; // single high pulse
         SENDING_CHARS: begin // SENDING CHARACTERS
-            if (assembler_x[0] == SCREEN_WIDTH - 1 || assembler_line_done) begin // end of the line
-              assembly_state_machine <= (assembler_y == SCREEN_HEIGHT - 1) ? DONE : NEW_LINE;
-              assembler_x <= 0;
-              assembler_y <= assembler_y + 1; // Increment the line count
-              assembler_new_char <= 3'b001; // Pulse high on the third entry
-            end else begin // 
-              if (!assembler_new_char[0]) assembler_x <= {assembler_x[1:0], assembler_x[0] + 1'b1};
-              else assembler_x <= {assembler_x[1:0], assembler_x[0]};
+            if (assembler_x[2] == SCREEN_WIDTH - 1 || assembler_line_done) begin // end of the line
+              if (assembler_y == SCREEN_HEIGHT - 1) begin // LAST LINE
+                if (assembler_state == PC_MAPPING) begin // another go around
+                  assembler_state <= INSTRUCTION_MAPPING;
+                  assembler_y <= 0;
+                  text_transmission_state <= START;
+                end else begin // Ending protocol
+                  assembler_state <= SUCCESS; 
+                  text_transmission_state <= OFF;
+                end
+              end else begin // NEW LINE
+                text_transmission_state <= NEW_LINE;
+                assembler_y <= assembler_y + 1; // Increment the line count
+              end
+
+              assembler_x <= 0; // Reset the char count
+              assembler_new_char <= 0; // Reset the sending of chars
+
+            end else begin // ACTIVELY SENDING CHARACTERS
+              assembler_x <= {assembler_x[1:0], new_assembler_x};
               assembler_new_char <= {assembler_new_char[1:0], !assembler_new_char[0]};
             end
         end
@@ -342,7 +356,7 @@ module top_level(
     .rst_in(sys_rst || assembler_trigger), // wait until the button is not pressed to start
     .new_line(assembler_new_line), 
     .new_character(assembler_new_char[2]),
-    .line_count(assembler_y[2]),
+    .line_count(assembler_y),
     .char_count(assembler_x[2]),
     .incoming_character(text_editor_output), // Each new character 
     .done_flag(assembler_line_done), // Instruction is Ready
@@ -352,19 +366,27 @@ module top_level(
     .new_instruction(assembler_new_inst)
 );  
 
-
-  text_editor #(
-    .SIZE(16),
-    .HEIGHT(1024),
-    .SCREEN_WIDTH(SCREEN_WIDTH),
-    .SCREEN_HEIGHT(SCREEN_HEIGHT))
-  save_to_text_editor (
-    .pixel_clk_in(clk_pixel),
-    .rst_in(sys_rst),
-    .te_write_en(terminal_grid_write_enable),
-    .te_addr(terminal_grid_write_enable ? terminal_grid_addr : text_editor_addr),
-    .te_input(terminal_grid_write_enable ? terminal_grid_input : 0),
-    .te_output(text_editor_output)
+    xilinx_true_dual_port_read_first_1_clock_ram #(
+    .RAM_WIDTH(8),                       // Specify RAM data width
+    .RAM_DEPTH(SCREEN_HEIGHT*SCREEN_WIDTH),                     // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY"
+    .INIT_FILE("")                        // Specify name/location of RAM initialization file if using one (leave blank if not)
+    ) text_editor (
+    .addra(terminal_grid_addr),   // Writes (terminal)
+    .addrb(text_editor_addr),   // Reads (assembler)
+    .dina(terminal_grid_input),     // Port A RAM input data, width determined from RAM_WIDTH
+    .dinb(),     // Port B RAM input data, width determined from RAM_WIDTH
+    .clka(clk_pixel),     // clock
+    .wea(terminal_grid_write_enable),       // Port A write enable
+    .web(1'b0),       // Port B write enable
+    .ena(1'b1),       // Port A RAM Enable, for additional power savings, disable port when not in use
+    .enb((assembler_state == PC_MAPPING || assembler_state == INSTRUCTION_MAPPING)),       // Port B RAM Enable, for additional power savings, disable port when not in use
+    .rsta(sys_rst),     // Port A output reset (does not affect memory contents)
+    .rstb(sys_rst || assembler_trigger),     // Port B output reset (does not affect memory contents)
+    .regcea(1'b0), // Port A output register enable
+    .regceb(1'b1), // Port B output register enable
+    .douta(),   // Port A RAM output data, width determined from RAM_WIDTH
+    .doutb(text_editor_output)    // Port B RAM output data, width determined from RAM_WIDTH
   );
 
   // End of assmbler and text editor code

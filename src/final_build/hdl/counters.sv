@@ -2,7 +2,7 @@
 `default_nettype none
 
 module  evt_counter #( 
-    parameter MAX_COUNT = 256 
+    parameter MAX_COUNT = 256
 )(   
     input wire clk_in,
     input wire rst_in,
