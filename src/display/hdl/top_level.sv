@@ -155,8 +155,8 @@ module top_level(
 
   end 
  end
-  localparam FULL_CYCLE= 1<<16;
-  localparam HALF_DOWN_CYCLE = ( FULL_CYCLE>>1 );
+localparam FULL_CYCLE= 1<<16;
+localparam HALF_DOWN_CYCLE = ( FULL_CYCLE>>1 );
  logic [$clog2(FULL_CYCLE)-1:0] down_cycler_counter;
  logic down_clk;
   always_ff @(posedge clk_pixel) begin
@@ -167,6 +167,7 @@ module top_level(
       down_cycler_counter<=down_cycler_counter+1;
     end
   end
+
 
 
   assign down_clk = (! down_cycler_counter || down_cycler_counter < HALF_DOWN_CYCLE);
@@ -180,10 +181,36 @@ module top_level(
   logic processor_write_enable;
   logic [31:0] processor_write_data;
   logic [31:0] processor_write_address;
+  localparam MAX_INSTRUCTIONS=28;
+  ///stuff for the instruction_send
+  logic instruction_write_enable;
+  logic [31:0] instruction_data;
+  logic [31:0] instruction_address;
+  logic assembling_done;
+assembler_emulator ae (
+  .clk(clk_pixel),
+  .rst(sys_rst),
+  .data_valid(instruction_write_enable),
+  .data(instruction_data),
+  .data_address(instruction_address),
+  .done_transmitting(assembling_done)
+);
+logic [6:0] ss_c;
+seven_segment_controller sg (
+  .clk_in(clk_pixel),
+  .rst_in(sys_rst),
+  .val_in(assembling_done),
+  .cat_out(ss_c),
+  .an_out({ss0_an, ss1_an}));
+
 
   riscv_processor pr(
     .clk(down_clk),
-    .rst(enable_processor),
+    .pixel_clk(clk_pixel),
+    .instruction_write_data(instruction_data),
+    .instruction_write_enable(instruction_write_enable),
+    .instruction_write_address(instruction_address),
+    .rst(enable_processor || !assembling_done),
     .ending_pc(last_pc_program),
     .pc_out(last_pc_executed),
     .instruction_done(processor_done),
@@ -247,7 +274,7 @@ module top_level(
   mmo_visualizer (
     .pixel_clk_in(clk_pixel),
     .rst_in(sys_rst),
-    .tg_write_en((processor_write_enable)), // TODO: get values from processor running
+    .tg_write_en(processor_write_enable), // TODO: get values from processor running
     .tg_addr(processor_write_address),  // TODO: get values from processor running
     .tg_input(processor_write_data), 
     .tg_proc_clk(down_clk), // TODO: get values from processor running
@@ -339,8 +366,8 @@ module top_level(
   OBUFDS OBUFDS_red  (.I(tmds_signal[2]), .O(hdmi_tx_p[2]), .OB(hdmi_tx_n[2]));
   OBUFDS OBUFDS_clock(.I(clk_pixel), .O(hdmi_clk_p), .OB(hdmi_clk_n));
 
-  assign ss0_c = 0; //ss_c; //control upper four digit's cathodes!
-  assign ss1_c = 0; //ss_c; //same as above but for lower four digits!
+  assign ss0_c = ss_c; //ss_c; //control upper four digit's cathodes!
+  assign ss1_c = ss_c; //ss_c; //same as above but for lower four digits!
 
 endmodule // top_level
 
