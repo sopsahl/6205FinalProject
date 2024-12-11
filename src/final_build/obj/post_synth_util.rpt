@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (lin64) Build 5076996 Wed May 22 18:36:09 MDT 2024
-| Date         : Wed Dec 11 01:49:17 2024
-| Host         : eecs-digital-07 running 64-bit Ubuntu 24.04.1 LTS
+| Date         : Wed Dec 11 05:24:48 2024
+| Host         : eecs-digital-29 running 64-bit Ubuntu 24.04.1 LTS
 | Command      : report_utilization -file obj/post_synth_util.rpt -hierarchical -hierarchical_depth 4
 | Design       : top_level
 | Device       : xc7s50csga324-1
@@ -22,33 +22,32 @@ Table of Contents
 +--------------------------+--------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
 |         Instance         |                            Module                            | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
 +--------------------------+--------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
-| top_level                |                                                        (top) |       2882 |       2880 |       0 |    2 | 2488 |     39 |      4 |          0 |
-|   (top_level)            |                                                        (top) |         12 |         12 |       0 |    0 |   52 |      0 |      0 |          0 |
-|   _assembler             |                                                    assembler |        626 |        626 |       0 |    0 |  521 |      0 |      0 |          0 |
-|     (_assembler)         |                                                    assembler |         40 |         40 |       0 |    0 |   81 |      0 |      0 |          0 |
+| top_level                |                                                        (top) |       2912 |       2910 |       0 |    2 | 2459 |     35 |      4 |          0 |
+|   (top_level)            |                                                        (top) |         11 |         11 |       0 |    0 |   50 |      0 |      0 |          0 |
+|   _assembler             |                                                    assembler |        619 |        619 |       0 |    0 |  501 |      0 |      0 |          0 |
+|     (_assembler)         |                                                    assembler |         41 |         41 |       0 |    0 |   81 |      0 |      0 |          0 |
 |     get_imm              |                                        immediate_interpreter |         18 |         18 |       0 |    0 |   26 |      0 |      0 |          0 |
 |     get_inst             |                                      instruction_interpreter |        226 |        226 |       0 |    0 |   29 |      0 |      0 |          0 |
 |     get_reg              |                                         register_interpreter |         15 |         15 |       0 |    0 |   10 |      0 |      0 |          0 |
-|     inst_pc_counter      |                                                   pc_counter |         15 |         15 |       0 |    0 |    8 |      0 |      0 |          0 |
-|     label_controller     |                                             label_controller |        296 |        296 |       0 |    0 |  358 |      0 |      0 |          0 |
-|       (label_controller) |                                             label_controller |         41 |         41 |       0 |    0 |   54 |      0 |      0 |          0 |
-|       _label_storage     |                                                label_storage |        255 |        255 |       0 |    0 |  304 |      0 |      0 |          0 |
-|     label_pc_counter     |                                                   pc_mapping |         16 |         16 |       0 |    0 |    9 |      0 |      0 |          0 |
-|   assembler_trig         |                                                    debouncer |         12 |         12 |       0 |    0 |   21 |      0 |      0 |          0 |
+|     inst_pc_counter      |                                                   pc_counter |         12 |         12 |       0 |    0 |    6 |      0 |      0 |          0 |
+|     label_controller     |                                             label_controller |        295 |        295 |       0 |    0 |  342 |      0 |      0 |          0 |
+|       (label_controller) |                                             label_controller |         45 |         45 |       0 |    0 |   54 |      0 |      0 |          0 |
+|       _label_storage     |                                                label_storage |        250 |        250 |       0 |    0 |  288 |      0 |      0 |          0 |
+|     label_pc_counter     |                                                   pc_mapping |         12 |         12 |       0 |    0 |    7 |      0 |      0 |          0 |
 |   blue_ser               |                                              tmds_serializer |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
-|   draw_characters        |                                            character_sprites |        194 |        193 |       0 |    1 |   61 |     18 |      1 |          0 |
-|     (draw_characters)    |                                            character_sprites |         54 |         53 |       0 |    1 |   61 |      0 |      0 |          0 |
+|   draw_characters        |                                            character_sprites |        178 |        177 |       0 |    1 |   61 |     17 |      1 |          0 |
+|     (draw_characters)    |                                            character_sprites |         48 |         47 |       0 |    1 |   61 |      0 |      0 |          0 |
 |     character_image      |          xilinx_single_port_ram_read_first__parameterized0_4 |         12 |         12 |       0 |    0 |    0 |     16 |      0 |          0 |
-|     character_pallete    |          xilinx_single_port_ram_read_first__parameterized1_5 |        108 |        108 |       0 |    0 |    0 |      0 |      1 |          0 |
-|     terminal_grid        |                            xilinx_single_port_ram_read_first |         23 |         23 |       0 |    0 |    0 |      2 |      0 |          0 |
+|     character_pallete    |          xilinx_single_port_ram_read_first__parameterized1_5 |         98 |         98 |       0 |    0 |    0 |      0 |      1 |          0 |
+|     terminal_grid        |                            xilinx_single_port_ram_read_first |         23 |         23 |       0 |    0 |    0 |      1 |      0 |          0 |
 |   green_ser              |                                            tmds_serializer_0 |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
 |   mhdmicw                |                                            hdmi_clk_wiz_720p |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
-|   mmo_visualizer         |                                                   visualizer |        160 |        159 |       0 |    1 |   40 |     16 |      2 |          0 |
+|   mmo_visualizer         |                                                   visualizer |        212 |        211 |       0 |    1 |   40 |     16 |      2 |          0 |
 |     (mmo_visualizer)     |                                                   visualizer |         62 |         61 |       0 |    1 |   40 |      0 |      0 |          0 |
 |     character_image      |            xilinx_single_port_ram_read_first__parameterized0 |          0 |          0 |       0 |    0 |    0 |     16 |      0 |          0 |
-|     character_pallete    |            xilinx_single_port_ram_read_first__parameterized1 |         60 |         60 |       0 |    0 |    0 |      0 |      1 |          0 |
+|     character_pallete    |            xilinx_single_port_ram_read_first__parameterized1 |        112 |        112 |       0 |    0 |    0 |      0 |      1 |          0 |
 |     register_values      | xilinx_true_dual_port_read_first_2_clock_ram__parameterized0 |         38 |         38 |       0 |    0 |    0 |      0 |      1 |          0 |
-|   mvg                    |                                                video_sig_gen |         93 |         93 |       0 |    0 |   21 |      0 |      0 |          0 |
+|   mvg                    |                                                video_sig_gen |         98 |         98 |       0 |    0 |   21 |      0 |      0 |          0 |
 |   nolabel_line81         |                                       ps2_keyboard_interface |         64 |         64 |       0 |    0 |   30 |      0 |      0 |          0 |
 |   pc_counter             |                                                  evt_counter |          4 |          4 |       0 |    0 |    6 |      0 |      0 |          0 |
 |   pr                     |                                              riscv_processor |       1583 |       1583 |       0 |    0 | 1641 |      1 |      1 |          0 |
@@ -56,11 +55,12 @@ Table of Contents
 |     dmem                 |                 xilinx_true_dual_port_read_first_1_clock_ram |        124 |        124 |       0 |    0 |    0 |      1 |      0 |          0 |
 |     imem                 |                 xilinx_true_dual_port_read_first_2_clock_ram |         99 |         99 |       0 |    0 |    0 |      0 |      1 |          0 |
 |   red_ser                |                                            tmds_serializer_1 |          1 |          1 |       0 |    0 |    1 |      0 |      0 |          0 |
-|   terminal               |                                          terminal_controller |         84 |         84 |       0 |    0 |   52 |      0 |      0 |          0 |
-|   text_editor            | xilinx_true_dual_port_read_first_1_clock_ram__parameterized0 |         37 |         37 |       0 |    0 |    0 |      4 |      0 |          0 |
-|   tmds_blue              |                                                 tmds_encoder |          7 |          7 |       0 |    0 |   14 |      0 |      0 |          0 |
-|   tmds_green             |                                               tmds_encoder_2 |          2 |          2 |       0 |    0 |   14 |      0 |      0 |          0 |
-|   tmds_red               |                                               tmds_encoder_3 |          3 |          3 |       0 |    0 |   14 |      0 |      0 |          0 |
+|   sg                     |                                     seven_segment_controller |         20 |         20 |       0 |    0 |   25 |      0 |      0 |          0 |
+|   terminal               |                                          terminal_controller |         70 |         70 |       0 |    0 |   41 |      0 |      0 |          0 |
+|   text_editor            | xilinx_true_dual_port_read_first_1_clock_ram__parameterized0 |         35 |         35 |       0 |    0 |    0 |      1 |      0 |          0 |
+|   tmds_blue              |                                                 tmds_encoder |          4 |          4 |       0 |    0 |   14 |      0 |      0 |          0 |
+|   tmds_green             |                                               tmds_encoder_2 |         11 |         11 |       0 |    0 |   14 |      0 |      0 |          0 |
+|   tmds_red               |                                               tmds_encoder_3 |          2 |          2 |       0 |    0 |   14 |      0 |      0 |          0 |
 +--------------------------+--------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
 
 

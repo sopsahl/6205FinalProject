@@ -1,5 +1,4 @@
 `timescale 1ns / 1ps
-`default_nettype none
 
 import constants::*;
 
@@ -13,8 +12,6 @@ module assembler #(
     input wire rst_in,
     input wire new_line, 
     input wire new_character,
-    input wire [$clog2(NUMBER_LINES) - 1 : 0] line_count,
-    input wire [$clog2(CHAR_PER_LINE) - 1 : 0] char_count,
     input wire [7:0] incoming_character, // Each new character 
     output logic done_flag, // Instruction is Ready
     output logic error_flag, // Error encountered
@@ -188,7 +185,7 @@ module assembler #(
             endcase 
 
             instruction_state <= (new_line) ? READ_INST :
-                (((incoming_character == "/" || incoming_character == ".") && instruction_state == READ_INST) || instruction_state == DONE) ? IDLE :
+                (((incoming_character == "/" || incoming_character == ".") && instruction_state == READ_INST && new_character) || instruction_state == DONE) ? IDLE :
                 (label_done || imm_done || inst_done || reg_done) ? next_instruction_state : instruction_state;
             
             // Buffers

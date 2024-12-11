@@ -1,0 +1,47 @@
+.start.
+addi r01, r00, x1      // missed
+addi r10, r00, x0    // hit
+addi r11, r00, x2b      // hit
+
+addi r12, r00, x0       // hit
+
+.outer.
+sub r31, r11, r01     //wrong
+bge  r12, r31, .end.  
+
+addi r13, r00, x0         
+
+.inner.
+sub   r31, r11, r12      
+sub  r31, r31, r01      
+bge   r13, r31, .inci.  
+
+slli  r16, r13, x2       
+add   r17, r10, r16  
+lw    r14, r17, x0     
+
+addi  r18, r13, x1      
+slli  r16, r18, x2      
+add   r17, r10, r16     
+lw    r15, r17, x0       
+
+blt   r14, r15, .incj. 
+
+
+slli  r16, r13, x2       
+add   r17, r10, r16     
+sw    r15, r17, x0     
+
+slli  r16, r18, x2       
+add   r17, r10, r16     
+sw    r14, r17, x0      
+
+.incj.
+addi  r13, r13, x1    
+jal   r00, .inner.    
+
+.inci.
+addi  r12, r12, x1    
+jal   r00, .outer.  
+
+.end.

@@ -30,7 +30,7 @@ module top_level(
   input wire dclk
   );
   localparam SCREEN_WIDTH = 64;
-  localparam SCREEN_HEIGHT = 256;
+  localparam SCREEN_HEIGHT = 64;
   
 
   assign led = sw;
@@ -167,9 +167,9 @@ module top_level(
 
   riscv_processor pr(
     .clk(down_clk),
-    .rst(enable_processor || assembler_state != SUCCESS),
+    .rst(enable_processor || (assembler_state != SUCCESS)),
     .pixel_clk(clk_pixel),
-    .ending_pc(num_instructions << 2),
+    .ending_pc(),
     .instruction_write_address(num_instructions),
     .instruction_write_data(new_instruction),
     .instruction_write_enable(assembler_new_inst),
@@ -247,9 +247,9 @@ module top_level(
 
   logic [7:0] red, green, blue;
 
-  assign red = sw[11] ? mmo_red : img_red;
-  assign green = sw[11] ? mmo_green : img_green;
-  assign blue = sw[11] ? mmo_blue : img_blue;
+  assign red = sw[0] ? mmo_red : img_red;
+  assign green = sw[0] ? mmo_green : img_green;
+  assign blue = sw[0] ? mmo_blue : img_blue;
 
   // *************************************************
   // ASSEMBLY AND TEXT EDITOR
@@ -257,15 +257,26 @@ module top_level(
   logic [$clog2(SCREEN_WIDTH*SCREEN_HEIGHT)-1:0] text_editor_addr;
   logic [7:0] text_editor_output;
 
-  logic assembler_trigger;
-  debouncer #(
-    .CLK_PERIOD_NS(10),
-    .DEBOUNCE_TIME_MS(5))
-  assembler_trig (
+  // logic assembler_trigger;
+  // debouncer #(
+  //   .CLK_PERIOD_NS(10),
+  //   .DEBOUNCE_TIME_MS(5))
+  // assembler_trig (
+  //   .clk_in(clk_pixel),
+  //   .rst_in(sys_rst),
+  //   .dirty_in(btn[1]),
+  //   .clean_out(assembler_trigger));
+
+  logic [6:0] ss_c;
+  seven_segment_controller sg (
     .clk_in(clk_pixel),
     .rst_in(sys_rst),
-    .dirty_in(btn[1]),
-    .clean_out(assembler_trigger));
+    .val_in(assembler_state),
+    .cat_out(ss_c),
+    .an_out({ss0_an, ss1_an}));
+
+  logic assembler_trigger, assembler_trigger_buffer;
+  assign assembler_trigger = sw[1];
 
   assembler_state_t assembler_state = IDLE;
   
@@ -287,7 +298,7 @@ module top_level(
   logic [31:0] new_instruction;
 
   assign text_editor_addr =  (assembler_y * SCREEN_WIDTH) + assembler_x[0]; // locates the point in memory
-  assign rgb1 = (assembler_state == ERROR) ? 3'b100 : (assembler_state == SUCCESS) ? 3'b010 : 3'b001; // RED FOR ERROR & GREEN FOR SUCCESS
+  assign rgb1 = (assembler_state == ERROR) ? 3'b001 : (assembler_state == SUCCESS) ? 3'b010 : 3'b100; // RED FOR ERROR & GREEN FOR SUCCESS
 
   logic [$clog2(SCREEN_HEIGHT) - 1 : 0] num_instructions;
   evt_counter #( 
@@ -316,8 +327,10 @@ module top_level(
     else if (assembler_state == PC_MAPPING || assembler_state == INSTRUCTION_MAPPING) begin
       case (text_transmission_state)
         START: text_transmission_state <= NEW_LINE;
-        NEW_LINE: text_transmission_state <= SENDING_CHARS; // single high pulse
-        SENDING_CHARS: begin // SENDING CHARACTERS
+        NEW_LINE: begin 
+          text_transmission_state <= SENDING_CHARS; // single high pulse
+          assembler_new_char <= 3'b001;
+        end SENDING_CHARS: begin // SENDING CHARACTERS
             if (assembler_x[2] == SCREEN_WIDTH - 1 || assembler_line_done) begin // end of the line
               if (assembler_y == SCREEN_HEIGHT - 1) begin // LAST LINE
                 if (assembler_state == PC_MAPPING) begin // another go around
@@ -357,8 +370,6 @@ module top_level(
     .rst_in(sys_rst || assembler_trigger), // wait until the button is not pressed to start
     .new_line(assembler_new_line), 
     .new_character(assembler_new_char[2]),
-    .line_count(assembler_y),
-    .char_count(assembler_x[2]),
     .incoming_character(text_editor_output), // Each new character 
     .done_flag(assembler_line_done), // Instruction is Ready
     .error_flag(assembler_line_error), // Error encountered
@@ -371,7 +382,7 @@ module top_level(
     .RAM_WIDTH(8),                       // Specify RAM data width
     .RAM_DEPTH(SCREEN_HEIGHT*SCREEN_WIDTH),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY"
-    .INIT_FILE("")                        // Specify name/location of RAM initialization file if using one (leave blank if not)
+    .INIT_FILE(`FPATH(bubbleSort.mem))                  // Specify name/location of RAM initialization file if using one (leave blank if not)
     ) text_editor (
     .addra(terminal_grid_addr),   // Writes (terminal)
     .addrb(text_editor_addr),   // Reads (assembler)
@@ -381,7 +392,7 @@ module top_level(
     .wea(terminal_grid_write_enable),       // Port A write enable
     .web(1'b0),       // Port B write enable
     .ena(1'b1),       // Port A RAM Enable, for additional power savings, disable port when not in use
-    .enb((assembler_state == PC_MAPPING || assembler_state == INSTRUCTION_MAPPING)),       // Port B RAM Enable, for additional power savings, disable port when not in use
+    .enb(1'b1),       // Port B RAM Enable, for additional power savings, disable port when not in use
     .rsta(sys_rst),     // Port A output reset (does not affect memory contents)
     .rstb(sys_rst || assembler_trigger),     // Port B output reset (does not affect memory contents)
     .regcea(1'b0), // Port A output register enable
@@ -451,8 +462,8 @@ module top_level(
   OBUFDS OBUFDS_red  (.I(tmds_signal[2]), .O(hdmi_tx_p[2]), .OB(hdmi_tx_n[2]));
   OBUFDS OBUFDS_clock(.I(clk_pixel), .O(hdmi_clk_p), .OB(hdmi_clk_n));
 
-  assign ss0_c = 0; //ss_c; //control upper four digit's cathodes!
-  assign ss1_c = 0; //ss_c; //same as above but for lower four digits!
+  assign ss0_c = ss_c; //ss_c; //control upper four digit's cathodes!
+  assign ss1_c = ss_c; //ss_c; //same as above but for lower four digits!
 
 endmodule // top_level
 
