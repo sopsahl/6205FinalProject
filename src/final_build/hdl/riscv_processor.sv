@@ -8,12 +8,12 @@
 
 module riscv_processor (
     input  wire       clk,
-    input wire      pixel_clk_in,
     input  wire        rst,
-    input wire [31:0]  instruction_write_address,
-    input wire [31:0]  instruction_write_data,
-    input wire         instruction_write_enable,
     input  wire [31:0] ending_pc,
+    input wire  [31:0] instruction_write_data,
+    input wire    instruction_write_enable,
+    input wire  [31:0]  instruction_write_address,
+    input wire      pixel_clk,
   
     output logic [31:0] pc_out,
     output logic  instruction_done,
@@ -161,33 +161,47 @@ logic memory_hazard;
 
     //Synthesis: `FPATH(instructionMem.mem)
     //simulation:absolute path 
+//    xilinx_single_port_ram_read_first #(
+//     .RAM_WIDTH(32),                       // Specify RAM data width
+//     .RAM_DEPTH(2048),                     // Specify RAM depth (number of entries)
+//     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+//     .INIT_FILE(`FPATH(instructionMem.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+//    ) imem (
+//     .addra(pc>>2),//what if we fetched next_pc     // Address bus, width determined from RAM_DEPTH
+//     .dina(),       // RAM input data, width determined from RAM_WIDTH
+//     .clka(clk),       // Clock
+//     .wea(1'b0),         // Write enable
+//     .ena(!stall_decode),         // RAM Enable, for additional power savings, disable port when not in use
+//     .rsta(1'b0),       // Output reset (does not affect memory contents)
+//     .regcea(!stall_decode),   // Output register enable
+//     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
+//   );
    xilinx_true_dual_port_read_first_2_clock_ram #(
-    .RAM_WIDTH(32),                       // Specify RAM data width
-    .RAM_DEPTH(64),                     // Specify RAM depth (number of entries)
-    .RAM_PERFORMANCE("HIGH_PERFORMANCE") // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    // .INIT_FILE(`FPATH(instructionMem.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+    .RAM_WIDTH(32),
+    .RAM_DEPTH(64),
+    .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+    .INIT_FILE("")
    ) imem (
-    // PORT A READ PORT 
-    .addra(pc>>2),
+    // Port A - Read port
     .clka(clk),
-    .dina(),
-    .wea(0),
     .ena(!stall_decode),
-    .rsta(1'b0),
+    .wea(1'b0),
+    .addra(pc>>2),
+    .dina(),
+    .douta(douta),//should be the load value from 2 cycles later 
+    .rsta(0),
     .regcea(!stall_decode),
-    .douta(douta), 
-
     
     // Port B - Write port
-    .clkb(pixel_clk_in),
-    .enb(1),
+    .clkb(pixel_clk),
+    .enb(1),//last stage
     .web(instruction_write_enable),
     .addrb(instruction_write_address),
     .dinb(instruction_write_data),
-    .doutb(0),
+    .doutb(),
     .rstb(0),
-    .regceb()
-  );
+    .regceb(1'b1)
+);
     //`FPATH(dataMem.mem)
   xilinx_true_dual_port_read_first_1_clock_ram #(
     .RAM_WIDTH(32),

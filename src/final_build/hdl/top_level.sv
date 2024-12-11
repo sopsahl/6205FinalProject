@@ -154,7 +154,7 @@ module top_level(
   assign down_clk = (! down_cycler_counter || down_cycler_counter < HALF_DOWN_CYCLE);
   logic enable_processor;
   logic [31:0] last_pc_program;
-  logic [31:0] last_pc_executed;
+  // logic [31:0] last_pc_executed;
   logic processor_done;
   logic [6:0] ss_c;
   //SIGNALS for outside BRAMs writes;
@@ -168,17 +168,18 @@ module top_level(
   riscv_processor pr(
     .clk(down_clk),
     .rst(enable_processor || assembler_state != SUCCESS),
-    .pixel_clk_in(clk_pixel),
-    .ending_pc(last_pc_program),
+    .pixel_clk(clk_pixel),
+    .ending_pc(num_instructions << 2),
     .instruction_write_address(num_instructions),
     .instruction_write_data(new_instruction),
     .instruction_write_enable(assembler_new_inst),
-    .pc_out(last_pc_executed),
+    .pc_out(),
     .instruction_done(processor_done),
     .write_enable(processor_write_enable),
     .w_data(processor_write_data),
     .w_addr(processor_write_address)
   );
+
 
   // ****************************************
 
