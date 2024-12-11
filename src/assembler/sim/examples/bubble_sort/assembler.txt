@@ -2,7 +2,7 @@
     / Initialize base address and array size
     addi r01, r00, x1           / x1 = 1 for decrementing
     addi r10, r00, x0          / x10 = base_addr = 0
-    addi r11, r00, xa         / x11 = n = 10 (array size)
+    addi r11, r00, x02b         / x11 = n = 10 (array size)
 
     / Initialize outer loop index i
     addi r12, r00, x0          / x12 = i = 0

@@ -42,7 +42,7 @@ assign translation_done=(instruction_counter[2]==MAX_INSTRUCTIONS);
     .RAM_WIDTH(32),                       // Specify RAM data width
     .RAM_DEPTH(64),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    .INIT_FILE(`FPATH(instructionMem.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)`FPATH(instructionMem.mem)
+    .INIT_FILE(`FPATH(bubbleSort.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)`FPATH(instructionMem.mem)
  ) bro (
     .addra(instruction_counter[0]),     // Address bus, width determined from RAM_DEPTH
     .dina(0),       // RAM input data, width determined from RAM_WIDTH
