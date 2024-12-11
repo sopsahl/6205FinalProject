@@ -14,3 +14,12 @@ Ziyad Hassan (zhassan3@mit.edu)
 Tsegazeab Beteselassie (tsegaz@mit.edu)
 
 
+## Setup
+
+In order to flash the final build, just run the following command:
+
+```
+openFPGALoader src/final_build/obj/final.bit
+```
+
+
